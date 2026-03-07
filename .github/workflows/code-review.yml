@@ -1,0 +1,10 @@
+name: Code Review
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  bugbot:
+    uses: your-org/.github/.github/workflows/bugbot.yml@main
+    secrets:
+      CLAUDE_SETUP_TOKEN: ${{ secrets.CLAUDE_SETUP_TOKEN }}
