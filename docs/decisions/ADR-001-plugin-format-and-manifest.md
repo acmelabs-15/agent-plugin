@@ -18,8 +18,7 @@ status: "Accepted"
 date: "2026-03-07"
 authors: "Agent Plugin Core Team"
 tags: ["architecture", "plugin-format", "manifest", "decision", "plugin-json"]
-supersedes: ""
-superseded_by: ""
+
 ---
 
 ## Status
@@ -128,7 +127,7 @@ All plugins are inherently cross-platform. The plugin manager handles translatio
 
 **Deferred fields**: Plugin dependencies, conflicts, and source provenance are deferred to a future ADR (not yet written). These are load-bearing architectural concepts requiring dedicated design -- dependency resolution ordering, conflict detection algorithms, and provenance verification each warrant their own decision record.
 
-Plus component path declarations (see below).
+Plus component path declarations and platformConfig (see below).
 
 ### 7. Component Path Declarations
 
@@ -144,7 +143,39 @@ Skills, agents, hooks, prompts, and MCP server configs are declared as paths in 
 }
 ```
 
-### 8. Intelligent Conflict Resolution
+### 8. Platform Configuration (platformConfig)
+
+A `platformConfig` section in `plugin.json` enables manifest-level platform-specific defaults:
+
+```json
+{
+  "platformConfig": {
+    "defaults": {
+      "loadingStrategy": "auto-detect",
+      "filePatterns": ["src/**/*.ts"],
+      "approvedTools": ["Read", "Grep", "Glob"]
+    },
+    "claude-code": {
+      "model": "sonnet",
+      "context": "fork"
+    },
+    "cursor": {
+      "alwaysApply": false
+    }
+  }
+}
+```
+
+This follows a hybrid adapter + layered override pattern (ANALYSIS-014). Configuration resolves in 4 levels (higher overrides lower):
+
+1. **Agent Skills standard fields** (name, description) — portable across all platforms
+2. **Adapter default mapping** — cross-platform concepts (`loadingStrategy`, `filePatterns`, `approvedTools`) translated to platform-specific fields automatically
+3. **Manifest-level platformConfig** — per-platform defaults in plugin.json (this section)
+4. **Per-component overrides** — optional `platforms` block in SKILL.md/AGENT.md frontmatter
+
+80% of plugins only need levels 1-2. The three cross-platform concepts (`loadingStrategy`: always/file-conditional/manual/auto-detect, `filePatterns`: glob patterns, `approvedTools`: pre-approved tool list) map to platform-specific fields via the adapter layer.
+
+### 9. Intelligent Conflict Resolution
 
 Different strategies per component type rather than blanket blocking:
 
@@ -160,7 +191,7 @@ Different strategies per component type rather than blanket blocking:
 - **POS-002**: Root-level `plugin.json` eliminates the nested path confusion documented in Claude Code's format
 - **POS-003**: `installMode` gives plugin authors explicit control over whether their components are presented as a unit or a menu, creating appropriate UX for both tightly-coupled and loosely-coupled plugins
 - **POS-004**: Minimum required fields (`name`, `version`, `description`) match npm conventions, reducing cognitive load for JavaScript/TypeScript developers
-- **POS-005**: Intelligent per-type conflict resolution preserves user work and plugin functionality instead of failing on first conflict
+- **POS-005**: Always-namespace conflict resolution (ADR-003) eliminates collision risk entirely; hooks use overlay/recompute merge pattern
 
 ### Negative
 
@@ -212,7 +243,7 @@ Different strategies per component type rather than blanket blocking:
 
 - **Hybrid installMode**: `installMode` may need a third mode or intra-plugin component dependency declarations for hybrid plugins that combine independent skills with a shared MCP server. Currently, `bundle` forces all-or-nothing and `collection` implies full independence. A plugin with 3 independent skills that all require the same MCP server has no way to express "install any skill, but MCP is mandatory."
 - **5-component model scope**: The 5-component model (skills, agents, prompts, hooks, mcp) is a deliberate subset of Claude Code's 7-type system. We omit commands (legacy slash-command pattern being replaced by skills), lspServers (platform-specific, not portable), and outputStyles (niche formatting concern). If future platforms introduce new component types that are genuinely cross-platform, the open component path declaration pattern in Section 7 can accommodate them without schema changes.
-- **Platform translation layer**: How `plugin.json` maps to each platform's native format (Claude Code's SKILL.md, Cursor's rules files, etc.) requires a dedicated ADR. This ADR defines the canonical format; translation is a separate concern.
+- **Platform translation layer**: The platformConfig section (Section 8) and adapter layer handle translation to each platform's native format. See [[ANALYSIS-014-platform-config-patterns]] for the full cross-platform concept mapping and 4-level resolution order.
 
 ## Observations
 - [decision] Plugin = bundle model: one plugin contains many skills, agents, prompts, hooks, and typically one MCP server #plugin-format #architecture
@@ -220,7 +251,7 @@ Different strategies per component type rather than blanket blocking:
 - [decision] Minimum required fields: name, version, description — matching npm package.json conventions #manifest
 - [decision] No formatVersion field — schema evolution via additive changes, unknown field tolerance, doctor command, and migration wizards (ANALYSIS-007 research: 70% of config formats handle evolution without version fields) #manifest #versioning
 - [decision] installMode field distinguishes bundle (all-or-nothing) from collection (user picks components) #installation-ux
-- [decision] Intelligent per-type conflict resolution instead of blanket blocking #conflict-resolution
+- [decision] Conflict resolution superseded by ADR-003: always-namespace for components, overlay/recompute for hooks #conflict-resolution
 - [decision] Component paths declared in manifest for skills, agents, hooks, prompts, and MCP #manifest #component-discovery
 - [decision] JSON chosen over YAML/TOML for manifest: universal tooling, unambiguous parsing, JSON Schema support #manifest #format
 - [decision] prompts/ is a novel first-class component type not in reference systems, distinct from skills and agents #plugin-format
@@ -240,3 +271,13 @@ Different strategies per component type rather than blanket blocking:
 - relates_to [[ANALYSIS-004 TanStack Intent Deep Dive]]
 - relates_to [[ANALYSIS-005 Claude Code Plugin Format]]
 - relates_to [[SESSION-2026-03-07_01-agent-plugin-spec-ideation]]
+- relates_to [[ANALYSIS-014-platform-config-patterns]]
+- relates_to [[ANALYSIS-007-config-schema-versioning-patterns]]
+- relates_to [[ADR-003-conflict-resolution-and-namespacing]]
+
+## 9. Intelligent Conflict Resolution
+### 9. Conflict Resolution
+
+> **Superseded by [[ADR-003 Conflict Resolution and Namespacing]]**
+
+All installed components are automatically namespaced as `plugin-name:component-name` (always-namespace). Hooks use an overlay/recompute merge pattern with strictest-wins for blocking booleans. See ADR-003 for full details.

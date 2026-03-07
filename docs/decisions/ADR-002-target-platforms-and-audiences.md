@@ -13,8 +13,7 @@ tags:
 - cross-platform
 - mcp
 - distribution
-supersedes: ''
-superseded_by: ''
+
 ---
 
 # ADR-002 Target Platforms and Audiences
@@ -126,6 +125,7 @@ On plugin install, the tool MUST:
 
 - **Phase 1**: Design the manifest structure with self-bootstrap in mind. The manifest format must be capable of describing `agent-plugin` itself as a plugin.
 - **Phase 4**: Ship the self-bootstrap runtime. The tool can install and manage itself through its own plugin system.
+- **Acceptance Criteria**: (a) `agent-plugin install acmelabz/agent-plugin` works — the plugin.json describes the tool itself as a valid plugin. (b) The tool's own skills, agents, prompts, and hooks are authored as plugin components using its own format, dogfooding the full authoring pipeline.
 - **Rationale**: Design-first prevents retrofit breaking changes. Shipping the runtime later avoids premature complexity. This is a deliberate split: the manifest is stable from day one, the runtime matures over 3 phases before self-hosting.
 
 ## Consequences
@@ -187,7 +187,7 @@ On plugin install, the tool MUST:
 - **IMP-003**: Register the `acmelabz` npm organization at npmjs.com before any publish operations.
 - **IMP-004**: Design the manifest schema in Phase 1 with explicit fields for self-description (the manifest must be able to describe `agent-plugin` itself as a valid plugin).
 - **IMP-005**: Build the MCP server as an embedded component that starts automatically when AI assistants query for plugin metadata. No separate process management required.
-- **IMP-006**: Instruction file update logic must use AST-aware or section-aware merging, not naive string concatenation. Test with real-world `CLAUDE.md` and `.cursorrules` files to validate non-destructive updates.
+- **IMP-006**: Instruction file update logic uses a hybrid managed-section pattern (ANALYSIS-009): HTML comment markers (`<!-- BEGIN AGENT-PLUGIN:name -->` / `<!-- END AGENT-PLUGIN:name -->`) for shared files (CLAUDE.md, AGENTS.md), dedicated per-plugin files for per-file platforms (Cursor .mdc, Kiro steering, Windsurf rules, Copilot CLI path-specific). Tool-owned templates render content from plugin metadata; authors never write raw instruction content. Content sanitization mandatory (3 CVEs prove instruction file injection is a real attack vector).
 
 ## References
 
@@ -214,4 +214,8 @@ On plugin install, the tool MUST:
 
 - relates_to [[ANALYSIS-001 Agent Plugin Foundation and Vision]]
 - relates_to [[ANALYSIS-002 Platform Capability Matrix]]
-- relates_to [[SESSION-2026-03-07_01 Agent Plugin Spec Ideation]]
+- relates_to [[ADR-003-conflict-resolution-and-namespacing]]
+- relates_to [[SESSION-2026-03-07_01-agent-plugin-spec-ideation]]
+- relates_to [[ANALYSIS-008-platform-instruction-file-paths]]
+- relates_to [[ANALYSIS-009-instruction-file-update-patterns]]
+- relates_to [[ANALYSIS-014-platform-config-patterns]]

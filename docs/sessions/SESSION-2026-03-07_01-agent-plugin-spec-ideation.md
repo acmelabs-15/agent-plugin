@@ -13,8 +13,9 @@ tags:
 # SESSION-2026-03-07_01 Agent Plugin Spec Ideation
 
 **Status:** IN_PROGRESS
-**Branch:** main
+**Branch:** ideation/agent-plugin-spec
 **Starting Commit:** 84f8511 first commit
+**Current Commit:** 9306bc7 feat: add ideation research, ADRs, and session notes
 **Objective:** Work through the `@acmelabz/agent-plugin` comprehensive design specification using the ideation workflow, conducting web research, creating ADRs for architectural decisions, and producing feature specs in the features/ directory
 
 ---
@@ -70,11 +71,8 @@ tags:
 - [decision] Core optional fields: author, license, repository, homepage, keywords #manifest
 - [decision] platforms field REMOVED from plugin.json -- all plugins are inherently cross-platform, plugin manager handles translation to all 7 platforms #manifest #cross-platform
 - [decision] formatVersion REMOVED from plugin.json -- schema evolution via additive changes, unknown field tolerance, doctor command, upgrade/update auto-detection, migration wizards via clack/prompts (ANALYSIS-007: 70% of config formats handle evolution without version fields) #manifest #schema-evolution
-- [decision] Intelligent conflict resolution: name collisions (any type) prompt user to prefix or rename, choosing which to modify (existing or incoming), with cross-reference updates. Hook event collisions merge (run both, combine outputs, configurable order). #conflict-resolution
-- [decision] Colon namespace separator: plugin-name:component-name pattern for installed components. Platform adapters translate as needed. #namespacing
 - [decision] Component format: cross-platform core frontmatter (name, description, type, requires, sources) + platformConfig section for platform-specific overrides #component-format
 - [decision] Platform-aware frontmatter generation: on install, emit ONLY fields the target platform supports but include ALL supported fields. Source frontmatter is the superset. #platform-adaptation
-- [decision] Track renamed components: installer stores original-name to installed-name mapping for updates, removals, and cross-reference management #conflict-tracking
 - [decision] No graceful degradation tier -- only 6/6 platforms supported. Codex CLI, Cline, Gemini CLI excluded. Partial support creates silent failures worse than no support. #platforms #no-degradation
 - [decision] No publish command -- no registry means nothing to publish to. Distribution is handled by making the plugin available at any supported source (GitHub, GitLab, npm, local path). #distribution #no-publish
 - [decision] Source versioning: all source types support optional version specifier (e.g., owner/repo@v1.2.0, @scope/pkg@^2.0.0). No version = latest. Git sources use tags/releases, npm uses semver. #distribution #versioning
@@ -84,6 +82,23 @@ tags:
 - [fact] AGENTS.md read by 6/7 platforms, CLAUDE.md by 4/7, .claude/skills/ by 6/7, .agents/skills/ by 4/7 and emerging as standard #platforms #cross-platform-coverage
 - [decision] NEG-006 added to ADR-002: instruction file modification is an attack vector, deferred to ADR-004 #security
 - [decision] NEG-007 added to ADR-002: no centralized vetting in multi-source model, deferred to ADR-004 #security
+- [decision] Self-bootstrapping = self-install + dogfood: agent-plugin install acmelabz/agent-plugin works AND tool's own content uses plugin format #self-bootstrap
+- [decision] Three-audience bloat is not a real concern for CLI tools -- gunshi lazy loading handles it naturally #bloat
+- [decision] Instruction file updates must be templated/controlled, not AI freestyle -- content derived from author metadata with sanitization #instruction-files
+- [decision] Always-namespace adopted: auto-prefix every installed component with plugin-name:component-name (Claude Code model). Eliminates user-choice conflict resolution, rename tracking, state store for mappings, and cross-reference updates #namespacing #simplification
+- [decision] Colon separator is logical identifier only, NEVER in filenames (Windows forbids, macOS replaces). Plugin/component names validated as kebab-case #namespacing #validation
+- [decision] Hook merge: strictest wins for blocking hooks. Overlay/recompute pattern -- hook contributions stored per-plugin within the lockfile, merged deterministically on demand. Installation order irrelevant #hooks #merge
+- [decision] NEG-007: Strictest-wins can make plugins non-composable when security postures conflict. Mitigation scoped to ADR-004 #hooks #composability
+- [decision] Hook execution blocked until ADR-004 consent model is implemented -- hooks are stored but NOT executable until security policy exists #security #hooks
+- [decision] State store: single lockfile at project root (plugin-lock.json) or user home (~/.config/agent-plugin/plugin-lock.json for XDG). No .agent-plugins/ state directory. Lockfile is cache, not source of truth #state-management
+- [decision] Hook overlays stored as sections within the lockfile, not separate files. Simplifies design: one state file, no separate state directory #state-management #simplification
+- [decision] Lockfile corruption recovery: re-derive from installed plugin manifests on disk. doctor command handles proactive health checks #reliability
+- [decision] File permissions: lockfile mode 600, XDG config directory mode 700 #security #permissions
+- [decision] Hook merge security deferred to ADR-004 (forward reference from ADR-003) #security #deferred
+- [decision] P1-7/P1-9 injection sanitization covered by ANALYSIS-009 mandate + ANALYSIS-013 research. Implementation detail for feature spec, not ADR-level #sanitization
+- [decision] platformConfig: Hybrid D+C pattern adopted (adapter + layered overrides). 4-level resolution: Agent Skills standard fields → adapter concept mapping → plugin.json platformConfig → per-component platforms block. 3 cross-platform concepts: loadingStrategy, filePatterns, approvedTools. 80% of plugins only need levels 1-2 (estimated). #platform-config #architecture
+- [decision] Zod v4 (full, not Mini) as org-wide validation standard. Bundle size irrelevant for CLI/backend. Better DX via method chaining, IntelliSense, and built-in English error messages. #validation #org-standard
+- [decision] ADR-001 Section 9 updated to reference ADR-003 as authoritative for conflict resolution #cross-adr-consistency
 
 ---
 
@@ -125,7 +140,7 @@ Template reference: /Users/peter.kloss/Documents/examples/docs/features/FEAT-003
 
 ## Ideation Workflow Status
 
-**Current Position:** Phase 1 > Group 1 > ADR-002 P1 issue resolution (P1-7 of 12)
+**Current Position:** Phase 1 > Group 1 > ADR-003 ACCEPTED (Round 2 consensus: 3 Accept + 3 D&C). All Group 1 ADRs complete. Ready for Group 2.
 
 ### Phase 1: Research and Discovery
 
@@ -178,14 +193,49 @@ ADR status:
 - [ ] ADR-002 P1-2 skipped: Audience priority ordering deferred to Phase 4 (Epic/PRD)
 - [ ] ADR-002 P1-3 skipped: Phased delivery deferred to Phase 4 (Epic/PRD)
 - [ ] ADR-002 P1-6 skipped: skills.sh -- differentiation already clear
-- [ ] ADR-002 P1-7: Self-bootstrapping acceptance criteria -- IN PROGRESS
-- [ ] ADR-002 P1-8: Three-audience bloat risk
-- [ ] ADR-002 P1-9: Trust-on-first-use sources
-- [ ] ADR-002 P1-10: MCP metadata access control
-- [ ] ADR-002 P1-11: Instruction file management feasibility
-- [ ] ADR-002 P1-12: Bidirectional ADR-002/ADR-003 link
+- [x] ADR-002 P1-7 resolved: Self-bootstrapping = self-install + dogfood. Acceptance criteria added to ADR-002.
+- [x] ADR-002 P1-8 resolved: Not a real concern for CLI tools. gunshi lazy loading handles it.
+- [x] ADR-002 P1-9 skipped: Covered by NEG-006/NEG-007 (ADR-004 scope)
+- [x] ADR-002 P1-10 skipped: Covered by NEG-006/NEG-007 (ADR-004 scope)
+- [ ] ADR-002 P1-11: Instruction file update patterns -- ANALYSIS-009 research running in background
+- [x] ADR-002 P1-12 resolved: Bidirectional link added to ADR-002 Relations
 - [x] ADR-003 created
-- [ ] ADR-003 adr-review debate not yet run (after ADR-002 P1s complete)
+- [x] ADR-003 adr-review debate COMPLETE: UNANIMOUS NEEDS REVISION (0 Accept, 0 D&C, 6 Needs Revision)
+- [x] DEBATE-ADR-003 saved (7 P0, 14 P1, 8 P2)
+- [x] ADR-003 adr-review debate: UNANIMOUS NEEDS REVISION (0 Accept, 0 D&C, 6 Needs Revision)
+- [x] DEBATE-ADR-003 saved (7 P0, 14 P1, 8 P2)
+- [x] ADR-003 P0 Core: Always-namespace adopted (Claude Code model)
+- [x] ADR-003 P0-1: Keep as one ADR (not split)
+- [x] ADR-003 P0-2: MOOT (always-namespace is automatic, no interactive prompts needed)
+- [x] ADR-003 P0-3: MOOT (no renames with always-namespace)
+- [x] ADR-003 P0-4: MOOT (always-namespace works for both installModes)
+- [x] ADR-003 P0-5: Colon logical-only + kebab-case name validation
+- [x] ADR-003 P0-6: Strictest wins for blocking hooks + ANALYSIS-010/012 research
+- [x] ADR-003 P0-7: JSON lockfile, re-derive on corruption
+- [x] ADR-003 P1-1: MOOT (always-namespace adopted)
+- [x] ADR-003 P1-2: Resolved -- overlay/recompute pattern (order-independent)
+- [x] ADR-003 P1-3: COVERED by P0-5 (colon logical-only)
+- [x] ADR-003 P1-4: RESOLVED -- hybrid D+C pattern with cross-platform concepts + per-platform blocks
+- [x] ADR-003 P1-5: MOOT (no renames)
+- [x] ADR-003 P1-6: COVERED (colon logical-only, low migration cost)
+- [x] ADR-003 P1-7: COVERED by ANALYSIS-009 + ANALYSIS-013 sanitization
+- [x] ADR-003 P1-8: COVERED by P0-7 (re-derive from disk)
+- [x] ADR-003 P1-9: COVERED by ANALYSIS-009 + ANALYSIS-013 sanitization
+- [x] ADR-003 P1-10: MOOT (no prompts with always-namespace)
+- [x] ADR-003 P1-11: RESOLVED -- both plugin.json (defaults) AND per-component (overrides), adapter as base
+- [x] ADR-003 P1-12: MOOT (no renames)
+- [x] ADR-003 P1-13: RESOLVED -- 4-level resolution order (standard < adapter < manifest < component)
+- [x] ADR-003 P1-14: Forward reference to ADR-004 added
+- [x] ADR-003 ALL P0s RESOLVED, ALL P1s RESOLVED
+- [x] ADR-003 REWRITTEN by architect agent incorporating all P0/P1 resolutions into 6-decision structure
+- [x] ADR-003 adr-review Round 2: CONSENSUS REACHED (3 Accept, 3 D&C)
+- [x] ADR-003 Round 2 P1-R2-1 resolved: ADR-001 Section 9 updated to reference ADR-003
+- [x] ADR-003 Round 2 P1-R2-2 resolved: Lockfile at project root (plugin-lock.json) or user home (~/.config/agent-plugin/), no .agent-plugins/ directory
+- [x] ADR-003 Round 2 P1-R2-3: deepmerge customMerge dispatch -- noted for implementation (path-context-aware)
+- [x] ADR-003 Round 2 P1-R2-4 resolved: NEG-007 added (strictest-wins composability constraint)
+- [x] ADR-003 Round 2 P1-R2-5 resolved: File permissions added (lockfile 600, XDG dir 700)
+- [x] ADR-003 Round 2 P1-R2-6 resolved: Hook execution blocked until ADR-004 consent model
+- [x] ADR-003 COMPLETE
 
 #### Group 2: Core Technology Stack (Section 4 -- Dependencies) -- STARTING
 
@@ -342,12 +392,54 @@ Each dependency is a SUGGESTION from the spec that needs research and validation
 - [ ] P1-2 skipped: Audience priority ordering deferred to Phase 4 #deferred
 - [ ] P1-3 skipped: Phased delivery deferred to Phase 4 #deferred
 - [ ] P1-6 skipped: skills.sh differentiation already clear #deferred
-- [ ] P1-7 through P1-12: IN PROGRESS #review
+- [x] [fix] P1-7 resolved: Self-bootstrapping acceptance criteria added (self-install + dogfood) #self-bootstrap
+- [x] [fix] P1-8 resolved: Bloat not a real concern for CLI tools, gunshi lazy loading sufficient #accepted
+- [x] [fix] P1-9 skipped: Content hashing covered by NEG-006/NEG-007 (ADR-004 scope) #security
+- [x] [fix] P1-10 skipped: MCP access control covered by NEG-006/NEG-007 (ADR-004 scope) #security
+- [ ] P1-11: Instruction file update patterns -- ANALYSIS-009 research spawned #research
+- [x] [fix] P1-12 resolved: Bidirectional ADR-002/ADR-003 link added #cleanup
 
-### ADR-003 Status
+### ADR-003 Review and P0/P1 Resolution
 
 - [x] [adr] ADR-003 Conflict Resolution and Namespacing created #architecture
-- [ ] adr-review debate not yet run (pending ADR-002 P1 completion) #review
+- [x] [review] brain:adr-review debate run -- UNANIMOUS NEEDS REVISION (0 Accept, 0 D&C, 6 Needs Revision) #review
+- [x] [review] DEBATE-ADR-003 saved (7 P0, 14 P1, 8 P2) #review
+- [x] [decision] P0 Core: Always-namespace adopted -- eliminates decisions 2+3 from original ADR #simplification
+- [x] [decision] P0-1: Keep as one ADR, not split #structure
+- [x] [decision] P0-2/3/4: MOOT with always-namespace #simplification
+- [x] [decision] P0-5: Colon logical-only + kebab-case name validation #namespacing
+- [x] [decision] P0-6: Strictest wins for blocking hooks, research spawned (ANALYSIS-010, 012) #hooks
+- [x] [decision] P0-7: JSON lockfile at .agent-plugins/plugin-lock.json, re-derive on corruption #state
+- [x] [decision] P1-2: Overlay/recompute pattern for hook merge ordering #hooks
+- [x] [decision] P1-7/P1-9: Injection sanitization covered by ANALYSIS-009 + ANALYSIS-013 #security
+- [x] [decision] P1-14: Forward reference to ADR-004 for hook security #deferred
+- [x] [decision] P1-4/P1-11/P1-13: platformConfig resolved -- hybrid D+C with 4-level resolution (ANALYSIS-014) #platform-config
+- [x] [decision] ADR-003 fully rewritten incorporating all P0/P1 resolutions #architecture
+
+### Background Research Spawned
+
+- [x] [research] ANALYSIS-009 Instruction File Update Patterns -- COMPLETE #instruction-files
+- [x] [research] ANALYSIS-010 Hook Merge/Unmerge Patterns -- COMPLETE (overlay/recompute recommended) #hooks
+- [x] [research] ANALYSIS-011 Lockfile Management Patterns -- COMPLETE (atomically + integer versioning + re-derive) #state-management
+- [x] [research] ANALYSIS-012 JSON Config Merge Patterns -- COMPLETE (deepmerge + customMerge + Zod validation) #json-merge
+- [x] [research] ANALYSIS-013 Input Sanitization Patterns -- COMPLETE (Zod v4 + shell-quote + validator) #security
+- [x] [research] ANALYSIS-014 Platform Config Patterns -- COMPLETE (hybrid D+C, 4-level resolution, cross-platform concepts) #platform-config
+
+### ADR-003 Round 2 Review and P1 Resolutions
+
+- [x] [review] ADR-003 adr-review Round 2 (convergence check on rewritten ADR) -- 6 agents spawned in parallel #review
+- [x] [review] Round 2 result: CONSENSUS REACHED (3 Accept, 3 D&C) -- Architect Accept, Critic Accept, Independent Thinker D&C, Security D&C, Analyst D&C, High-Level Advisor Accept #consensus
+- [x] [review] DEBATE-ADR-003 updated with Round 2 verdicts, new issues, dissent record #review
+- [x] [fix] P1-R2-1: ADR-001 Section 9 updated to reference ADR-003 as authoritative for conflict resolution #cross-adr
+- [x] [decision] P1-R2-2: Lockfile at project root (plugin-lock.json) for project scope, ~/.config/agent-plugin/ for user scope. No .agent-plugins/ directory. #state-management
+- [x] [decision] P1-R2-2: Hook overlays stored as sections within the lockfile, not separate files #simplification
+- [x] [fix] P1-R2-3: customMerge dispatch noted for implementation (path-context-aware, not global name matching) #implementation-note
+- [x] [fix] P1-R2-4: NEG-007 added to ADR-003 (strictest-wins composability constraint) #consequences
+- [x] [fix] P1-R2-5: File permissions added to ADR-003 Decision 3 (lockfile 600, XDG dir 700) #security
+- [x] [fix] P1-R2-6: Hook execution constraint added to ADR-003 Decision 2 (stored but NOT executable until ADR-004) #security
+- [x] [fix] ADR-003 duplicate Decision 2/3 sections removed (Brain MCP replace_section artifact) #cleanup
+- [x] [fix] ADR-003 inline Decision 2/3 text updated to match simplified lockfile model #cleanup
+- [x] [update] ADR-001 POS-005 and observation updated to reference ADR-003 always-namespace #cross-adr
 
 ### File Name Fixes
 
@@ -414,7 +506,7 @@ From /Users/peter.kloss/Downloads/agent-plugin-design-spec.md:
 | created | [[ANALYSIS-008-platform-instruction-file-paths]] | COMPLETE |
 | created | [[ADR-001-plugin-format-and-manifest]] | ACCEPTED |
 | created | [[ADR-002-target-platforms-and-audiences]] | ACCEPTED (P1 in progress) |
-| created | [[ADR-003-conflict-resolution-and-namespacing]] | ACCEPTED (pending review) |
+| created | [[ADR-003-conflict-resolution-and-namespacing]] | ACCEPTED (Round 2 consensus reached) |
 | created | [[DEBATE-ADR-001-plugin-format-and-manifest]] | COMPLETE (2 Accept, 3 D&C, 1 Block) |
 | created | [[DEBATE-ADR-002-target-platforms-and-audiences]] | COMPLETE (0 Accept, 4 D&C, 1 Needs Revision) |
 | deleted | ADR-001-target-platforms-and-selection-criteria | Premature duplicate |
@@ -422,6 +514,18 @@ From /Users/peter.kloss/Downloads/agent-plugin-design-spec.md:
 | deleted | REVIEW-ADR-002-target-platforms-and-audiences | Ad-hoc, replaced by adr-review skill |
 | deleted | 6x REVIEW-*-ADR-002 individual notes | Consolidated into DEBATE-ADR-002 |
 | renamed | ADR-001, ADR-002, ADR-003, ANALYSIS-008 | From space-separated to kebab-case file names |
+| created | [[ANALYSIS-009-instruction-file-update-patterns]] | COMPLETE |
+| created | [[ANALYSIS-010-hook-merge-unmerge-patterns]] | COMPLETE |
+| created | [[DEBATE-ADR-003-conflict-resolution-and-namespacing]] | COMPLETE (Round 1: unanimous Needs Revision; Round 2: CONSENSUS 3 Accept + 3 D&C) |
+| created | [[ANALYSIS-011-lockfile-management-patterns]] | COMPLETE |
+| created | [[ANALYSIS-012-json-config-merge-patterns]] | COMPLETE |
+| created | [[ANALYSIS-013-input-sanitization-patterns]] | COMPLETE |
+| created | [[ANALYSIS-014-platform-config-patterns]] | COMPLETE |
+| created | [[CRIT-003 ADR-003 Round 2 Convergence Review]] | COMPLETE (critic agent saved) |
+| created | [[ANALYSIS-015-ADR-003-convergence-round2-validation]] | COMPLETE (analyst agent saved) |
+| updated | [[ADR-001-plugin-format-and-manifest]] | Section 9 superseded by ADR-003, POS-005 updated, observation updated |
+| updated | [[ADR-003-conflict-resolution-and-namespacing]] | Decisions 2+3 rewritten (lockfile model, composability, permissions, hook execution gate) |
+| updated | [[DEBATE-ADR-003-conflict-resolution-and-namespacing]] | Round 2 verdicts, new P1/P2 issues, dissent record, consensus status |
 
 ### Code Files
 
@@ -464,6 +568,13 @@ From /Users/peter.kloss/Downloads/agent-plugin-design-spec.md:
 - relates_to [[ADR-003-conflict-resolution-and-namespacing]]
 - relates_to [[DEBATE-ADR-001-plugin-format-and-manifest]]
 - relates_to [[DEBATE-ADR-002-target-platforms-and-audiences]]
+- relates_to [[DEBATE-ADR-003-conflict-resolution-and-namespacing]]
+- relates_to [[ANALYSIS-009-instruction-file-update-patterns]]
+- relates_to [[ANALYSIS-010-hook-merge-unmerge-patterns]]
+- relates_to [[ANALYSIS-011-lockfile-management-patterns]]
+- relates_to [[ANALYSIS-012-json-config-merge-patterns]]
+- relates_to [[ANALYSIS-013-input-sanitization-patterns]]
+- relates_to [[ANALYSIS-014-platform-config-patterns]]
 
 ---
 
