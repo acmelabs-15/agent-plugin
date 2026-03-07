@@ -16,7 +16,7 @@ tags:
 
 ## 1. Objective and Scope
 
-**Objective**: Document gunshi v0.29.2 command patterns, lazy loading mechanics, nested subcommand support, global flags, context passing, and limitations to inform implementation of the @acmelabz/agent-plugin CLI command tree.
+**Objective**: Document gunshi v0.29.2 command patterns, lazy loading mechanics, nested subcommand support, global flags, context passing, and limitations to inform implementation of the @acmelabs-15/agent-plugin CLI command tree.
 
 **Scope**: gunshi v0.29.2 API surface as published on npm. Includes Command, CommandContext, CliOptions, LazyCommand types. Covers plugin system for global flags. Excludes i18n features (not needed for this project).
 
@@ -584,7 +584,7 @@ The `onErrorCommand` hook on CliOptions catches errors from any command executio
 
 **Verdict**: Proceed with implementation
 **Confidence**: High
-**Rationale**: gunshi v0.29.2 provides all capabilities needed for the @acmelabz/agent-plugin CLI command tree. Nested subcommands (unlimited depth, since v0.28.0) handle the `new mcp init` three-level pattern. Lazy loading is built-in. Global flags work through the plugin system. Command aliases require a simple workaround (same object reference). The only gap is native alias support, which is trivially solved. All findings are verified from source type definitions.
+**Rationale**: gunshi v0.29.2 provides all capabilities needed for the @acmelabs-15/agent-plugin CLI command tree. Nested subcommands (unlimited depth, since v0.28.0) handle the `new mcp init` three-level pattern. Lazy loading is built-in. Global flags work through the plugin system. Command aliases require a simple workaround (same object reference). The only gap is native alias support, which is trivially solved. All findings are verified from source type definitions.
 
 ### User Impact
 

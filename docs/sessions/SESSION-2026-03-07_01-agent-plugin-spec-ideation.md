@@ -15,8 +15,8 @@ tags:
 **Status:** IN_PROGRESS
 **Branch:** ideation/agent-plugin-spec
 **Starting Commit:** 84f8511 first commit
-**Current Commit:** 0c6e4fc feat: complete ADR-003 review cycle and resolve all P1 issues
-**Objective:** Work through the `@acmelabz/agent-plugin` comprehensive design specification using the ideation workflow, conducting web research, creating ADRs for architectural decisions, and producing feature specs in the features/ directory
+**Current Commit:** 82d027b feat: add ADR-005/006/007 with research and debate logs
+**Objective:** Work through the `@acmelabs-15/agent-plugin` comprehensive design specification using the ideation workflow, conducting web research, creating ADRs for architectural decisions, and producing feature specs in the features/ directory
 
 ---
 
@@ -58,7 +58,7 @@ tags:
 - [decision] Target ALL 7 full-support platforms: Claude Code, Cursor, GitHub Copilot CLI, Kiro, OpenCode, Amp, Windsurf #platforms
 - [decision] Must update platform-specific instruction files (CLAUDE.md, AGENTS.md, etc.) on install without breaking existing content #platform-instructions
 - [decision] Full three-audience model (Consumer CLI + Author CLI + AI MCP) in single package -- MCP server is key differentiator, shared core logic with thin audience-specific layers #audiences
-- [decision] Package name: `@acmelabz/agent-plugin` (scoped) -- need to register `acmelabz` npm org at npmjs.com #naming
+- [decision] Package name: `@acmelabs-15/agent-plugin` (scoped) -- need to register `acmelabs-15` npm org at npmjs.com #naming
 - [decision] Self-bootstrapping: design manifest structure in Phase 1, ship runtime in Phase 4 #self-bootstrap
 - [decision] Own plugin format, no hosted registry. Sources: GitHub shorthand (owner/repo), full GitHub URL, GitLab URL, local path, npm package #distribution
 - [decision] Borrow SKILL.md standard concepts from Vercel skills, extend pattern to agents/prompts/hooks/MCPs #format-standard
@@ -82,7 +82,7 @@ tags:
 - [fact] AGENTS.md read by 6/7 platforms, CLAUDE.md by 4/7, .claude/skills/ by 6/7, .agents/skills/ by 4/7 and emerging as standard #platforms #cross-platform-coverage
 - [decision] NEG-006 added to ADR-002: instruction file modification is an attack vector, deferred to ADR-004 #security
 - [decision] NEG-007 added to ADR-002: no centralized vetting in multi-source model, deferred to ADR-004 #security
-- [decision] Self-bootstrapping = self-install + dogfood: agent-plugin install acmelabz/agent-plugin works AND tool's own content uses plugin format #self-bootstrap
+- [decision] Self-bootstrapping = self-install + dogfood: agent-plugin install acmelabs-15/agent-plugin works AND tool's own content uses plugin format #self-bootstrap
 - [decision] Three-audience bloat is not a real concern for CLI tools -- gunshi lazy loading handles it naturally #bloat
 - [decision] Instruction file updates must be templated/controlled, not AI freestyle -- content derived from author metadata with sanitization #instruction-files
 - [decision] Always-namespace adopted: auto-prefix every installed component with plugin-name:component-name (Claude Code model). Eliminates user-choice conflict resolution, rename tracking, state store for mappings, and cross-reference updates #namespacing #simplification
@@ -185,7 +185,7 @@ Discussion topics completed (one at a time):
 - [x] Platform list: ALL 7 full-support platforms (Claude Code, Cursor, Copilot CLI, Kiro, OpenCode, Amp, Windsurf)
 - [x] Platform instruction file management on install (new requirement)
 - [x] Three-audience model: CONFIRMED full three-audience model (Consumer CLI + Author CLI + AI MCP) in single package
-- [x] Naming: CONFIRMED @acmelabz/agent-plugin (scoped). Need to register acmelabz npm org.
+- [x] Naming: CONFIRMED @acmelabs-15/agent-plugin (scoped). Need to register acmelabs-15 npm org.
 - [x] Self-bootstrapping: CONFIRMED design manifest structure in Phase 1, ship runtime in Phase 4
 - [x] Interop: Own format, no hosted registry. Multiple source types. Borrow concepts from Vercel skills SKILL.md standard, extend to agents/prompts/hooks/MCPs
 - [x] Deep research: ANALYSIS-003, ANALYSIS-004, ANALYSIS-005 complete
@@ -319,7 +319,7 @@ ADR status:
 - [ ] Source resolution (npm, GitHub, local)
 - [ ] Platform support model and detection
 - [ ] Installation mechanics (scope, conflicts, hook merging, MCP merging)
-- [ ] Manifest format (acmelabz.json vs package.json field vs other approaches)
+- [ ] Manifest format (acmelabs-15.json vs package.json field vs other approaches)
 
 #### Group 5: Data and Storage (Sections 10-11) -- NOT STARTED
 
@@ -406,7 +406,7 @@ ADR status:
 - [x] [decision] All 7 full-support platforms targeted #platforms
 - [x] [decision] Platform instruction file management required on install #new-requirement
 - [x] [decision] Full three-audience model confirmed (Consumer + Author + AI) #audiences
-- [x] [decision] Package name @acmelabz/agent-plugin confirmed, npm org registration needed #naming
+- [x] [decision] Package name @acmelabs-15/agent-plugin confirmed, npm org registration needed #naming
 - [x] [decision] Self-bootstrapping: design Phase 1, ship Phase 4 #architecture
 - [x] [decision] Own format, no registry, multiple source types #distribution
 - [x] [decision] Plugin = bundle model with plugin.json manifest #format
@@ -536,7 +536,7 @@ ADR status:
 
 From /Users/peter.kloss/Downloads/agent-plugin-design-spec.md:
 
-**Package:** @acmelabz/agent-plugin
+**Package:** @acmelabs-15/agent-plugin
 **Runtime:** Bun | **Language:** TypeScript (strict mode) | **License:** MIT
 
 **Three Audiences:**

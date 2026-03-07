@@ -14,7 +14,7 @@ tags:
 
 ## 1. Objective and Scope
 
-**Objective**: Which npm package(s) should @acmelabz/agent-plugin use for deep JSON merging in the overlay/recompute pattern, and what custom merge strategy do we need for "strictest wins" semantics with array concatenation?
+**Objective**: Which npm package(s) should @acmelabs-15/agent-plugin use for deep JSON merging in the overlay/recompute pattern, and what custom merge strategy do we need for "strictest wins" semantics with array concatenation?
 
 **Scope**: Package comparison of 10 deep merge libraries. Community best practices from ESLint, webpack, Vite, Docker Compose, and Kubernetes. Security analysis (prototype pollution). Determinism and testing concerns. Recommended approach with implementation guidance.
 

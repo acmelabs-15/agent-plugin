@@ -16,7 +16,7 @@ tags:
 
 ## 1. Objective and Scope
 
-**Objective**: How should @acmelabz/agent-plugin update platform instruction files when a plugin is installed, updated, or removed? Research best practices for non-destructive file updates, templating, content sanitization, and cross-platform formatting.
+**Objective**: How should @acmelabs-15/agent-plugin update platform instruction files when a plugin is installed, updated, or removed? Research best practices for non-destructive file updates, templating, content sanitization, and cross-platform formatting.
 
 **Scope**: Covers 6 research questions: (1) how existing plugin/extension systems update instruction files, (2) non-destructive file update patterns, (3) templating patterns for instruction file content, (4) sanitization of author-supplied content, (5) cross-platform content uniformity vs adaptation, (6) managed section structure for install/update/uninstall lifecycle.
 

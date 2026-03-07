@@ -17,7 +17,7 @@ tags:
 
 ## 1. Objective and Scope
 
-**Objective**: Analyze TanStack Intent (v0.0.12) to document its complete architecture, SKILL.md format, CLI surface, source resolution, state tracking, and unique patterns. Identify what `@acmelabz/agent-plugin` should borrow versus what Vercel already covers.
+**Objective**: Analyze TanStack Intent (v0.0.12) to document its complete architecture, SKILL.md format, CLI surface, source resolution, state tracking, and unique patterns. Identify what `@acmelabs-15/agent-plugin` should borrow versus what Vercel already covers.
 
 **Scope**: Full source code analysis of `packages/intent/` (11 TypeScript source files, 5 meta-skills, 3 workflow templates, validation scripts). Excludes TanStack ecosystem libraries (Query, Router, Form) as none have published skills yet.
 

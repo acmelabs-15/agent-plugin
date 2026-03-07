@@ -14,13 +14,13 @@ tags:
 
 ## 1. Objective and Scope
 
-**Objective**: Validate the foundational design of `@acmelabz/agent-plugin` against the current AI coding agent ecosystem. Determine competitive positioning, naming fitness, three-audience model viability, and self-bootstrapping risk profile.
+**Objective**: Validate the foundational design of `@acmelabs-15/agent-plugin` against the current AI coding agent ecosystem. Determine competitive positioning, naming fitness, three-audience model viability, and self-bootstrapping risk profile.
 
 **Scope**: CLI plugin ecosystem landscape, three-audience model validation, naming analysis, self-bootstrapping assessment. Excludes individual dependency evaluations (gunshi, drizzle-orm, etc.) which are separate research tasks.
 
 ## 2. Context
 
-The `@acmelabz/agent-plugin` project proposes a CLI + embedded MCP server + skill system for managing AI agent plugins across 5 coding platforms (Claude Code, Cursor, Windsurf, Codex, Gemini CLI). Three target audiences: Consumers (install plugins), Authors (create/publish), AI Assistants (operate via MCP tools). Self-bootstrapping: uses itself to create its own content.
+The `@acmelabs-15/agent-plugin` project proposes a CLI + embedded MCP server + skill system for managing AI agent plugins across 5 coding platforms (Claude Code, Cursor, Windsurf, Codex, Gemini CLI). Three target audiences: Consumers (install plugins), Authors (create/publish), AI Assistants (operate via MCP tools). Self-bootstrapping: uses itself to create its own content.
 
 The project enters a market that has evolved rapidly between late 2024 and early 2026, with multiple established competitors and a maturing plugin/skills ecosystem.
 
@@ -124,12 +124,12 @@ Evidence of precedent:
 
 ### 4.3 Naming Analysis
 
-**Current name**: `@acmelabz/agent-plugin` (scoped) / `agent-plugin` (unscoped)
+**Current name**: `@acmelabs-15/agent-plugin` (scoped) / `agent-plugin` (unscoped)
 
 | Factor | Finding |
 |--------|---------|
 | npm `agent-plugin` | Taken. Unrelated Vue.js template package (22 versions, low usage). |
-| npm `@acmelabz/agent-plugin` | Available. |
+| npm `@acmelabs-15/agent-plugin` | Available. |
 | Competitor naming | Vercel uses "skills", Codex uses "skills", Claude Code uses "plugins", AWS uses "agent-plugins" |
 | Industry terminology | "plugin" used by Claude Code and AWS. "skill" used by Vercel, Codex, Gemini CLI. "extension" used by Gemini CLI and Cursor. |
 
@@ -143,7 +143,7 @@ Evidence of precedent:
 - `agent-craft` -- authoring-focused
 - `agentpkg` -- package manager framing (like `winget`, `pkg`)
 - `plugsmith` -- plugin smithy/forge metaphor
-- Keep `@acmelabz/agent-plugin` -- scoped name avoids npm collision, "plugin" is the most comprehensive term (Claude Code plugins include skills, agents, hooks, MCP, LSP)
+- Keep `@acmelabs-15/agent-plugin` -- scoped name avoids npm collision, "plugin" is the most comprehensive term (Claude Code plugins include skills, agents, hooks, MCP, LSP)
 
 ### 4.4 Self-Bootstrapping Assessment
 
@@ -171,7 +171,7 @@ Evidence of precedent:
 
 ### Competitive Position Matrix
 
-| Capability | `@acmelabz/agent-plugin` (planned) | `npx skills` (Vercel) | Claude Code Plugins | Codex Skills | Gemini CLI Extensions |
+| Capability | `@acmelabs-15/agent-plugin` (planned) | `npx skills` (Vercel) | Claude Code Plugins | Codex Skills | Gemini CLI Extensions |
 |-----------|-------------------------------------|----------------------|--------------------|--------------|-----------------------|
 | Cross-platform | 5 platforms | 40+ agents | Claude Code only | Codex only | Gemini CLI only |
 | Skills | Yes | Yes | Yes | Yes | Yes |
@@ -204,13 +204,13 @@ The current landscape splits into two camps:
 
 2. **Platform-native plugin systems** (Claude Code plugins, Codex skills, Gemini extensions): Full-featured but locked to one platform. Rich component model but no portability.
 
-`@acmelabz/agent-plugin` targets the gap between these camps: full-featured plugin management that works across platforms. This is a real gap. No existing tool occupies this space.
+`@acmelabs-15/agent-plugin` targets the gap between these camps: full-featured plugin management that works across platforms. This is a real gap. No existing tool occupies this space.
 
 ### Competitive Threat Assessment
 
 The primary threat is not any single competitor but ecosystem lock-in. Claude Code's plugin system is comprehensive and well-designed. If Claude Code dominates the market, cross-platform plugin management becomes less valuable. The value proposition depends on multi-platform development remaining common.
 
-Vercel's `npx skills` has strong momentum (8,800 stars) but is intentionally limited to skills. It does not aspire to manage MCP servers, hooks, or agents. The two tools could coexist: `npx skills` for simple skill distribution, `@acmelabz/agent-plugin` for full plugin lifecycle management.
+Vercel's `npx skills` has strong momentum (8,800 stars) but is intentionally limited to skills. It does not aspire to manage MCP servers, hooks, or agents. The two tools could coexist: `npx skills` for simple skill distribution, `@acmelabs-15/agent-plugin` for full plugin lifecycle management.
 
 ### Three-Audience Model
 
@@ -224,7 +224,7 @@ Viable but should be designed in from Phase 1, not retrofitted in Phase 4. The s
 
 | Priority | Recommendation | Rationale | Effort |
 |----------|---------------|-----------|--------|
-| P0 | Keep `@acmelabz/agent-plugin` scoped name | Unscoped `agent-plugin` is taken. Scoped name is available and avoids AWS `agent-plugins` confusion. | None |
+| P0 | Keep `@acmelabs-15/agent-plugin` scoped name | Unscoped `agent-plugin` is taken. Scoped name is available and avoids AWS `agent-plugins` confusion. | None |
 | P0 | Design self-bootstrapping manifest format in Phase 1 | Retrofitting in Phase 4 risks breaking changes. Compiler bootstrapping literature shows early design prevents costly rework. | Low |
 | P1 | Position as "full plugin manager" not "skills installer" | Differentiates from Vercel skills ecosystem. Claude Code's "plugin" terminology validates this framing. | Low |
 | P1 | Prioritize Claude Code + Codex + Cursor in Phase 1 | These 3 have the largest user bases and the most mature plugin/MCP infrastructure. Windsurf and Gemini CLI can follow. | Medium |
@@ -249,7 +249,7 @@ Viable but should be designed in from Phase 1, not retrofitted in Phase 4. The s
 - [fact] Claude Code has a comprehensive first-party plugin system with 9,000+ plugins and official marketplace with enterprise features #ecosystem
 - [fact] Vercel's `npx skills` has 8,800 GitHub stars and supports 40+ agents but is limited to SKILL.md files only #competitor
 - [fact] No existing tool manages the full plugin lifecycle (skills + agents + hooks + MCP + commands) across multiple coding platforms #market-gap
-- [fact] The unscoped npm name `agent-plugin` is taken by an unrelated Vue.js package; `@acmelabz/agent-plugin` is available #naming
+- [fact] The unscoped npm name `agent-plugin` is taken by an unrelated Vue.js package; `@acmelabs-15/agent-plugin` is available #naming
 - [fact] AWS uses the term "agent-plugins" for their similar cross-platform plugin project, creating naming collision risk #naming
 - [decision] Three-audience model (CLI + Author CLI + AI MCP) is novel and has partial precedents but no full implementation exists #architecture
 - [risk] Self-bootstrapping as Phase 4 retrofit creates breaking-change risk; should be designed in Phase 1 #architecture

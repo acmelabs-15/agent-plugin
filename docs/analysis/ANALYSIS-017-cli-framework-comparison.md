@@ -17,7 +17,7 @@ tags:
 
 ## 1. Objective and Scope
 
-**Objective**: Evaluate gunshi as the CLI framework for `@acmelabz/agent-plugin` and compare it against 7 alternatives to determine the optimal choice for a cross-platform AI agent plugin manager.
+**Objective**: Evaluate gunshi as the CLI framework for `@acmelabs-15/agent-plugin` and compare it against 7 alternatives to determine the optimal choice for a cross-platform AI agent plugin manager.
 
 **Scope**: gunshi, commander, yargs, oclif, citty, clipanion, meow, cac. Comparison criteria: adoption, TypeScript support, lazy command loading, subcommand nesting, help generation, plugin/extension architecture, Bun compatibility, bundle size, active maintenance.
 

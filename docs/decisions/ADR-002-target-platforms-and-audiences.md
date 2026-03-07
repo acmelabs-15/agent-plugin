@@ -24,7 +24,7 @@ tags:
 
 ## Context
 
-We are designing `@acmelabz/agent-plugin`, a cross-platform AI agent plugin manager. The AI coding agent ecosystem is fragmented across 16+ platforms, each with varying levels of extensibility. ANALYSIS-002 evaluated these platforms against 6 required capabilities: prompts, skills, agents, hooks, MCPs, and running agents in parallel.
+We are designing `@acmelabs-15/agent-plugin`, a cross-platform AI agent plugin manager. The AI coding agent ecosystem is fragmented across 16+ platforms, each with varying levels of extensibility. ANALYSIS-002 evaluated these platforms against 6 required capabilities: prompts, skills, agents, hooks, MCPs, and running agents in parallel.
 
 The market lacks a unified plugin management solution that works across platforms. Developers building AI-assisted workflows are locked into single-platform tooling, and there is no standard way to package, distribute, and install agent capabilities across the ecosystem.
 
@@ -83,7 +83,7 @@ These platforms may be added in the future if they close their capability gaps. 
 
 ### 4. Three-Audience Model in a Single Package
 
-The package `@acmelabz/agent-plugin` serves three audiences through a single distribution:
+The package `@acmelabs-15/agent-plugin` serves three audiences through a single distribution:
 
 - **Consumer CLI**: End users install plugins via `agent-plugin install owner/repo`. Manages dependencies, updates platform instruction files, handles version management.
 - **Author CLI**: Plugin creators scaffold, build, and validate plugins via `agent-plugin init`, `agent-plugin build`, `agent-plugin validate`. Provides templates, linting, and packaging. There is no `publish` command — distribution is handled by making the plugin available at any supported source (GitHub repo, GitLab repo, npm package, local path).
@@ -93,8 +93,8 @@ The architecture uses shared core logic with thin audience-specific layers. No s
 
 ### 5. Package Identity
 
-- **npm package name**: `@acmelabz/agent-plugin` (scoped under the `acmelabz` npm organization)
-- **Action required**: Register the `acmelabz` organization at npmjs.com before first publish
+- **npm package name**: `@acmelabs-15/agent-plugin` (scoped under the `acmelabs-15` npm organization)
+- **Action required**: Register the `acmelabs-15` organization at npmjs.com before first publish
 
 ### 6. Platform Instruction File Management
 
@@ -125,7 +125,7 @@ On plugin install, the tool MUST:
 
 - **Phase 1**: Design the manifest structure with self-bootstrap in mind. The manifest format must be capable of describing `agent-plugin` itself as a plugin.
 - **Phase 4**: Ship the self-bootstrap runtime. The tool can install and manage itself through its own plugin system.
-- **Acceptance Criteria**: (a) `agent-plugin install acmelabz/agent-plugin` works — the plugin.json describes the tool itself as a valid plugin. (b) The tool's own skills, agents, prompts, and hooks are authored as plugin components using its own format, dogfooding the full authoring pipeline.
+- **Acceptance Criteria**: (a) `agent-plugin install acmelabs-15/agent-plugin` works — the plugin.json describes the tool itself as a valid plugin. (b) The tool's own skills, agents, prompts, and hooks are authored as plugin components using its own format, dogfooding the full authoring pipeline.
 - **Rationale**: Design-first prevents retrofit breaking changes. Shipping the runtime later avoids premature complexity. This is a deliberate split: the manifest is stable from day one, the runtime matures over 3 phases before self-hosting.
 
 ## Consequences
@@ -162,7 +162,7 @@ On plugin install, the tool MUST:
 
 ### Separate Packages per Audience
 
-- **ALT-003**: **Description**: Publish `@acmelabz/agent-plugin-cli` (consumer), `@acmelabz/agent-plugin-author` (author), and `@acmelabz/agent-plugin-mcp` (AI assistants) as independent packages
+- **ALT-003**: **Description**: Publish `@acmelabs-15/agent-plugin-cli` (consumer), `@acmelabs-15/agent-plugin-author` (author), and `@acmelabs-15/agent-plugin-mcp` (AI assistants) as independent packages
 - **ALT-003**: **Rejection Reason**: The three audiences share substantial core logic (manifest parsing, source resolution, platform detection). Separate packages would duplicate this logic, complicate versioning, and fragment the user experience. A single package with thin audience layers is simpler.
 
 ### Import from Vercel/Claude Code Ecosystems
@@ -184,7 +184,7 @@ On plugin install, the tool MUST:
 
 - **IMP-001**: Begin with platform adapter interfaces for all 7 primary targets. Each adapter handles instruction file detection, parsing, and safe update for its platform.
 - **IMP-002**: No graceful degradation adapters. Only 6/6 platforms are supported. Platforms that close capability gaps can be added via a new platform adapter.
-- **IMP-003**: Register the `acmelabz` npm organization at npmjs.com before any publish operations.
+- **IMP-003**: Register the `acmelabs-15` npm organization at npmjs.com before any publish operations.
 - **IMP-004**: Design the manifest schema in Phase 1 with explicit fields for self-description (the manifest must be able to describe `agent-plugin` itself as a valid plugin).
 - **IMP-005**: Build the MCP server as an embedded component that starts automatically when AI assistants query for plugin metadata. No separate process management required.
 - **IMP-006**: Instruction file update logic uses a hybrid managed-section pattern (ANALYSIS-009): HTML comment markers (`<!-- BEGIN AGENT-PLUGIN:name -->` / `<!-- END AGENT-PLUGIN:name -->`) for shared files (CLAUDE.md, AGENTS.md), dedicated per-plugin files for per-file platforms (Cursor .mdc, Kiro steering, Windsurf rules, Copilot CLI path-specific). Tool-owned templates render content from plugin metadata; authors never write raw instruction content. Content sanitization mandatory (3 CVEs prove instruction file injection is a real attack vector).
@@ -202,12 +202,12 @@ On plugin install, the tool MUST:
 - [decision] 7 primary target platforms selected based on 6/6 capability score: Claude Code, Cursor, GitHub Copilot CLI, Kiro, OpenCode, Amp, Windsurf #platforms #cross-platform
 - [decision] No graceful degradation tier — platforms below 6/6 are excluded entirely; partial support creates silent failures worse than no support #platforms #no-degradation
 - [decision] Three-audience model in single package: Consumer CLI, Author CLI, AI Assistants via embedded MCP server #architecture #audiences
-- [decision] Package scoped as @acmelabz/agent-plugin on npm #distribution #npm
+- [decision] Package scoped as @acmelabs-15/agent-plugin on npm #distribution #npm
 - [decision] Own plugin format borrowing from Vercel skills standard, no hosted registry, multiple source types #distribution #format
 - [decision] Platform instruction files (CLAUDE.md, .cursorrules, etc.) managed non-destructively on install #platforms #instruction-files
 - [decision] Self-bootstrap: design manifest in Phase 1, ship runtime in Phase 4 to prevent retrofit breaking changes #architecture #self-bootstrap
 - [requirement] All 6 capabilities required for primary platform support: prompts, skills, agents, hooks, MCPs, parallel agents #platforms #criteria
-- [constraint] Must register acmelabz npm org before first publish #npm #prerequisite
+- [constraint] Must register acmelabs-15 npm org before first publish #npm #prerequisite
 - [insight] MCP server for AI assistants is the key differentiator versus competitor plugin managers #differentiation #mcp
 
 ## Relations

@@ -15,7 +15,7 @@ tags:
 
 ## 1. Objective and Scope
 
-**Objective**: Reverse-engineer the Vercel `skills` package (v1.4.4) to document its complete SKILL.md format specification, source resolution patterns, installation mechanics, state tracking, and CLI surface. Identify what `@acmelabz/agent-plugin` should borrow versus extend.
+**Objective**: Reverse-engineer the Vercel `skills` package (v1.4.4) to document its complete SKILL.md format specification, source resolution patterns, installation mechanics, state tracking, and CLI surface. Identify what `@acmelabs-15/agent-plugin` should borrow versus extend.
 
 **Scope**: Full source code analysis of `vercel-labs/skills` repository. Example skills from `vercel-labs/agent-skills`. Excludes competitive analysis (covered in ANALYSIS-001).
 
@@ -370,7 +370,7 @@ When scanning a repository for skills:
 
 Uses GitHub Trees API to fetch folder SHAs. Compares stored `skillFolderHash` against current tree SHA. Any file change in the skill directory triggers an update.
 
-## 10. What to BORROW for @acmelabz/agent-plugin
+## 10. What to BORROW for @acmelabs-15/agent-plugin
 
 ### 10.1 SKILL.md Format (BORROW directly)
 

@@ -31,7 +31,7 @@ tags:
 
 ## Context and Problem Statement
 
-`@acmelabz/agent-plugin` is a cross-platform CLI with an embedded MCP server for managing AI agent plugins across 7 platforms. ADR-005 established Bun as the runtime. The design specification proposed a dependency list, but each library requires validation against 4 criteria: Bun compatibility, security posture, maintenance health, and actual necessity for a CLI tool (not a browser application).
+`@acmelabs-15/agent-plugin` is a cross-platform CLI with an embedded MCP server for managing AI agent plugins across 7 platforms. ADR-005 established Bun as the runtime. The design specification proposed a dependency list, but each library requires validation against 4 criteria: Bun compatibility, security posture, maintenance health, and actual necessity for a CLI tool (not a browser application).
 
 Which libraries should constitute the core dependency stack, and which proposed dependencies should be removed?
 

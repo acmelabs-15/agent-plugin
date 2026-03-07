@@ -15,7 +15,7 @@ tags:
 
 ## 1. Objective and Scope
 
-**Objective**: What packages, patterns, and architectural approaches should @acmelabz/agent-plugin use to validate and sanitize plugin-authored content before injecting it into platform configuration files (JSON, YAML frontmatter, markdown, shell command strings)?
+**Objective**: What packages, patterns, and architectural approaches should @acmelabs-15/agent-plugin use to validate and sanitize plugin-authored content before injecting it into platform configuration files (JSON, YAML frontmatter, markdown, shell command strings)?
 
 **Scope**: Covers (1) Node.js/TypeScript validation and sanitization package landscape, (2) injection vector analysis per target format, (3) community best practices from VSCode, npm, GitHub Actions, WordPress, ESLint, and OWASP, (4) schema validation vs sanitization design decision, (5) recommended approach with package selections.
 

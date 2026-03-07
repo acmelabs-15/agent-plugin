@@ -27,7 +27,7 @@ tags: ["architecture", "plugin-format", "manifest", "decision", "plugin-json"]
 
 ## Context
 
-We are designing the plugin format for `@acmelabz/agent-plugin`, a cross-platform AI agent plugin manager targeting 7 platforms: Claude Code, Cursor, GitHub Copilot CLI, Kiro, OpenCode, Amp, and Windsurf.
+We are designing the plugin format for `@acmelabs-15/agent-plugin`, a cross-platform AI agent plugin manager targeting 7 platforms: Claude Code, Cursor, GitHub Copilot CLI, Kiro, OpenCode, Amp, and Windsurf.
 
 Three reference systems were analyzed to inform this decision:
 

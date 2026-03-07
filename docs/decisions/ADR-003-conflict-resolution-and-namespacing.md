@@ -25,7 +25,7 @@ tags:
 
 ## Context and Problem Statement
 
-`@acmelabz/agent-plugin` is a cross-platform AI agent plugin manager. Plugins are bundles containing multiple component types (skills, agents, prompts, hooks, MCP). When installing plugins from different sources, four problems must be solved:
+`@acmelabs-15/agent-plugin` is a cross-platform AI agent plugin manager. Plugins are bundles containing multiple component types (skills, agents, prompts, hooks, MCP). When installing plugins from different sources, four problems must be solved:
 
 1. **Naming collisions**: Multiple plugins may define components with the same name (e.g., two plugins both provide a skill called `code-review`). Without disambiguation, the second install silently overwrites the first.
 2. **Hook merging**: Hook components have different collision semantics than named components. Multiple hooks on the same event are additive, not conflicting. Blocking hooks (e.g., Claude Code PreToolUse) require a resolution rule when plugins disagree.

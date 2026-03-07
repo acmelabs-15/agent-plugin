@@ -21,7 +21,7 @@ tags:
 
 ## Context
 
-We are selecting the runtime for `@acmelabz/agent-plugin`, a cross-platform CLI tool with an embedded MCP server for managing AI agent plugins across 7 coding platforms. The runtime choice affects three critical dimensions:
+We are selecting the runtime for `@acmelabs-15/agent-plugin`, a cross-platform CLI tool with an embedded MCP server for managing AI agent plugins across 7 coding platforms. The runtime choice affects three critical dimensions:
 
 1. **CLI startup performance**: The tool is invoked per-command. Every millisecond of cold start latency compounds across developer workflows. A plugin manager that feels sluggish on every invocation erodes trust and adoption.
 2. **Development velocity**: Native TypeScript execution eliminates the build-test-debug cycle friction that slows iteration on a greenfield project.
@@ -47,7 +47,7 @@ An additional strategic factor: Anthropic acquired Oven (Bun's parent company) i
 
 ## Decision
 
-We adopt **Bun 1.3.x** as the sole runtime for @acmelabz/agent-plugin with a **Bun-only distribution strategy**. No Node.js consumer support is provided.
+We adopt **Bun 1.3.x** as the sole runtime for @acmelabs-15/agent-plugin with a **Bun-only distribution strategy**. No Node.js consumer support is provided.
 
 ### Runtime: Bun 1.3.x
 
@@ -68,7 +68,7 @@ Following the Tigris CLI pattern, we distribute through two channels (both Bun-o
 **Primary: npm package**
 
 ```bash
-bunx @acmelabz/agent-plugin install <plugin>
+bunx @acmelabs-15/agent-plugin install <plugin>
 ```
 
 The npm package works with bunx. Bun executes TypeScript directly — no build step required.
@@ -203,7 +203,7 @@ Bun-specific APIs (Bun.file, Bun.Glob, bun:sqlite) provide measurable developer 
 
 ## Observations
 
-- [decision] Bun 1.3.x adopted as runtime for @acmelabz/agent-plugin based on 4-8x cold start advantage over Node.js #runtime #bun
+- [decision] Bun 1.3.x adopted as runtime for @acmelabs-15/agent-plugin based on 4-8x cold start advantage over Node.js #runtime #bun
 - [decision] Bun-only distribution strategy: npm package (bunx) as primary, compiled standalone binaries as secondary; no npx/Node.js support #distribution #bun-only
 - [decision] Node.js rejected due to 40-120ms cold start and mandatory TypeScript build step #runtime #node
 - [decision] Deno 2.x rejected due to 3-5x slower startup than Bun and permission model friction #runtime #deno

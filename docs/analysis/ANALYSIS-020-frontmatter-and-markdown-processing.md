@@ -16,7 +16,7 @@ tags:
 
 ## 1. Objective and Scope
 
-**Objective**: Evaluate frontmatter parsing and markdown processing libraries for `@acmelabz/agent-plugin`, determining which libraries to adopt and whether full markdown processing is needed.
+**Objective**: Evaluate frontmatter parsing and markdown processing libraries for `@acmelabs-15/agent-plugin`, determining which libraries to adopt and whether full markdown processing is needed.
 
 **Scope**: Frontmatter parsers (gray-matter, front-matter, manual YAML parsing). Markdown processors (micromark, remark/unified, markdown-it, marked). Bundle size, maintenance, security, Bun compatibility, TypeScript support. Excludes HTML rendering frameworks.
 
@@ -83,7 +83,7 @@ The `yaml` npm package (eemeli/yaml v2.x) does NOT have these vulnerabilities. I
 
 ### 4.4 Does This Project Need Full Markdown Processing?
 
-Analysis of how markdown content is used in `@acmelabz/agent-plugin`:
+Analysis of how markdown content is used in `@acmelabs-15/agent-plugin`:
 
 | Use Case | What's Needed | Full Parser Required? |
 |----------|---------------|----------------------|

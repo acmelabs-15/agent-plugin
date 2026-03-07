@@ -14,13 +14,13 @@ tags:
 
 ## 1. Objective and Scope
 
-**Objective**: How should @acmelabz/agent-plugin merge plugin hooks into platform configuration on install, and cleanly unmerge them on uninstall, across 7 target platforms with different hook formats?
+**Objective**: How should @acmelabs-15/agent-plugin merge plugin hooks into platform configuration on install, and cleanly unmerge them on uninstall, across 7 target platforms with different hook formats?
 
 **Scope**: Covers 5 research questions: (1) community best practices for configuration hook merging in CLI tools, (2) existing packages/libraries for safe configuration merging with provenance tracking, (3) architectural patterns (marker-based, overlay, diff/patch, manifest tracking, lockfile), (4) robustness concerns (manual edits, force removal, conflicts, atomicity, rollback), (5) real-world examples from 10+ production systems.
 
 ## 2. Context
 
-@acmelabz/agent-plugin is a cross-platform AI agent plugin manager targeting 7 platforms: Claude Code, Cursor, GitHub Copilot CLI, Kiro, OpenCode, Amp, and Windsurf. When a plugin is installed, its hooks must be merged with existing hooks. When uninstalled, its hooks must be cleanly removed without disturbing other plugins' hooks or user-owned hooks.
+@acmelabs-15/agent-plugin is a cross-platform AI agent plugin manager targeting 7 platforms: Claude Code, Cursor, GitHub Copilot CLI, Kiro, OpenCode, Amp, and Windsurf. When a plugin is installed, its hooks must be merged with existing hooks. When uninstalled, its hooks must be cleanly removed without disturbing other plugins' hooks or user-owned hooks.
 
 Prior decisions established:
 - ADR-003: Hook event collisions are additive (both hooks run), not conflicting. Users can configure execution order.

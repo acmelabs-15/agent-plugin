@@ -21,7 +21,7 @@ tags:
 
 ## 2. Context
 
-The design specification for @acmelabz/agent-plugin references 19 @clack/prompts components. An earlier Bun 1.3.8 compatibility test (documented in DEBATE-ADR-006) found 16 APIs available. This analysis investigates whether the remaining APIs (autocomplete, autocompleteMultiselect, path, box, taskLog, progress) actually exist in v1.1.0 or require custom implementation.
+The design specification for @acmelabs-15/agent-plugin references 19 @clack/prompts components. An earlier Bun 1.3.8 compatibility test (documented in DEBATE-ADR-006) found 16 APIs available. This analysis investigates whether the remaining APIs (autocomplete, autocompleteMultiselect, path, box, taskLog, progress) actually exist in v1.1.0 or require custom implementation.
 
 ANALYSIS-018 (line 63) listed autocomplete/search as "No" for @clack/prompts. That assessment was accurate for v0.x but became incorrect after v1.0.0 shipped on 2026-01-28.
 

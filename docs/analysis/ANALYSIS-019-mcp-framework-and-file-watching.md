@@ -17,13 +17,13 @@ tags:
 
 ## 1. Objective and Scope
 
-**Objective**: Evaluate MCP server framework options (fastmcp vs @modelcontextprotocol/sdk) and file watching libraries (watcher, chokidar, @parcel/watcher, Bun built-in) for the @acmelabz/agent-plugin project.
+**Objective**: Evaluate MCP server framework options (fastmcp vs @modelcontextprotocol/sdk) and file watching libraries (watcher, chokidar, @parcel/watcher, Bun built-in) for the @acmelabs-15/agent-plugin project.
 
 **Scope**: API ergonomics, boilerplate reduction, transport support, Bun compatibility, bundle size, maintenance backing, cross-platform reliability, and recommendation for each category. Excludes runtime selection (covered in ANALYSIS-016).
 
 ## 2. Context
 
-The @acmelabz/agent-plugin project embeds an MCP server exposing 14+ tools for AI assistants to manage plugins programmatically. The same core logic is shared between CLI and MCP server. The runtime is Bun (per ADR decision). File watching is needed only for the `dev` command (author workflow, not consumer-facing).
+The @acmelabs-15/agent-plugin project embeds an MCP server exposing 14+ tools for AI assistants to manage plugins programmatically. The same core logic is shared between CLI and MCP server. The runtime is Bun (per ADR decision). File watching is needed only for the `dev` command (author workflow, not consumer-facing).
 
 The MCP protocol reached specification version 2025-11-25. The ecosystem has stabilized with formal governance, a specification enhancement proposal (SEP) process, and the MCP Registry for server discovery. OpenAI adopted MCP in March 2025. The protocol is production-ready.
 

@@ -14,13 +14,13 @@ tags:
 
 ## 1. Objective and Scope
 
-**Objective**: How should plugin authors define platform-specific configuration (platformConfig) for their components in @acmelabz/agent-plugin? Should this config live per-component, in a centralized manifest, or in a layered system? How should the CLI wizard guide authors through defining these fields?
+**Objective**: How should plugin authors define platform-specific configuration (platformConfig) for their components in @acmelabs-15/agent-plugin? Should this config live per-component, in a centralized manifest, or in a layered system? How should the CLI wizard guide authors through defining these fields?
 
 **Scope**: Research across 15 plugin/extension systems to identify configuration location patterns, platform-specific field handling, and CLI wizard UX patterns for multi-platform configuration. Includes AI coding assistants (Claude Code, Cursor, Kiro, OpenCode, Amp, Windsurf, GitHub Copilot CLI), ecosystem tools (TanStack Intent, Vercel Skills, Agent Skills spec), general-purpose plugin systems (VSCode, JetBrains, Backstage, Terraform, Nx, WordPress), and CLI wizard tools (@clack/prompts, Yeoman, create-next-app).
 
 ## 2. Context
 
-@acmelabz/agent-plugin targets 7 AI coding platforms. Each platform uses different configuration fields for skills/agents/rules:
+@acmelabs-15/agent-plugin targets 7 AI coding platforms. Each platform uses different configuration fields for skills/agents/rules:
 
 | Platform | Skill/Rule Format | Key Platform-Specific Fields |
 |----------|------------------|------------------------------|

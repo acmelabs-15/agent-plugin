@@ -17,7 +17,7 @@ tags:
 
 ## 1. Objective and Scope
 
-**Objective**: Does `@acmelabz/agent-plugin` need SQLite, an ORM, full-text search, or semantic search given the JSON lockfile decision in ADR-003? If so, which libraries should be used?
+**Objective**: Does `@acmelabs-15/agent-plugin` need SQLite, an ORM, full-text search, or semantic search given the JSON lockfile decision in ADR-003? If so, which libraries should be used?
 
 **Scope**: Evaluates 4 technology decisions from the original design spec: (1) SQLite via `bun:sqlite` or `drizzle-orm`, (2) full-text search via `@orama/orama`, (3) semantic search via `@huggingface/transformers`, (4) lighter alternatives. Assesses necessity before evaluating implementation.
 

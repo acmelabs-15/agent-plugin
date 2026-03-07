@@ -14,7 +14,7 @@ tags:
 
 ## 1. Objective and Scope
 
-**Objective**: How should @acmelabz/agent-plugin implement its JSON lockfile (`plugin-lock.json`) for tracking installed plugins, their components, and file modifications? What packages and patterns make this robust?
+**Objective**: How should @acmelabs-15/agent-plugin implement its JSON lockfile (`plugin-lock.json`) for tracking installed plugins, their components, and file modifications? What packages and patterns make this robust?
 
 **Scope**: Covers 4 research questions: (1) how pnpm, yarn, and npm handle their lockfiles internally, (2) what packages exist for robust lockfile implementation, (3) community best practices for lockfile management, (4) recommended approach for our use case.
 
@@ -22,7 +22,7 @@ tags:
 
 ## 2. Context
 
-@acmelabz/agent-plugin needs a JSON lockfile (`plugin-lock.json`) to track:
+@acmelabs-15/agent-plugin needs a JSON lockfile (`plugin-lock.json`) to track:
 - Installed plugins and their versions
 - Component inventory per plugin (hooks, skills, MCPs, templates, etc.)
 - File modifications made during installation (for clean uninstall)

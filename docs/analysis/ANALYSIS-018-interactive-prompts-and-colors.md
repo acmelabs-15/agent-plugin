@@ -15,7 +15,7 @@ tags:
 
 ## 1. Objective and Scope
 
-**Objective**: Evaluate interactive CLI prompt frameworks and terminal color libraries for the @acmelabz/agent-plugin CLI tool. Determine best fit for a cross-platform AI agent plugin manager with ~20 commands, wizard flows, and CI/non-interactive mode requirements.
+**Objective**: Evaluate interactive CLI prompt frameworks and terminal color libraries for the @acmelabs-15/agent-plugin CLI tool. Determine best fit for a cross-platform AI agent plugin manager with ~20 commands, wizard flows, and CI/non-interactive mode requirements.
 
 **Scope**: Prompt frameworks (@clack/prompts, @inquirer/prompts, prompts, enquirer) and color libraries (picocolors, chalk, kleur, colorette, ansis). Excludes terminal UI frameworks (ink, blessed) and argument parsers.
 

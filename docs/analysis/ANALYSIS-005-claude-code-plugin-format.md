@@ -14,7 +14,7 @@ tags:
 
 ## 1. Objective and Scope
 
-**Objective**: Document the complete Claude Code plugin format, manifest schema, directory conventions, component types, namespacing rules, marketplace integration, and lifecycle. Identify concepts to borrow for `@acmelabz/agent-plugin`.
+**Objective**: Document the complete Claude Code plugin format, manifest schema, directory conventions, component types, namespacing rules, marketplace integration, and lifecycle. Identify concepts to borrow for `@acmelabs-15/agent-plugin`.
 
 **Scope**: Claude Code plugin system as of version 1.0.33+. Covers plugin.json manifest, directory structure, all component types (skills, agents, hooks, commands, MCP, LSP), marketplace.json format, namespacing, installation lifecycle, and real-world examples from the official marketplace.
 
@@ -618,7 +618,7 @@ plugin-dev/
 
 This plugin has no `.claude-plugin/plugin.json`. It relies on the marketplace entry with `strict: false` (implied) for all metadata.
 
-## 11. Concepts to Borrow for @acmelabz/agent-plugin
+## 11. Concepts to Borrow for @acmelabs-15/agent-plugin
 
 ### Borrow Directly
 

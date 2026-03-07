@@ -15,7 +15,7 @@ tags:
 
 ## 1. Objective and Scope
 
-**Objective**: How do popular CLI tools handle CI/non-interactive mode, and what patterns should @acmelabz/agent-plugin adopt for graceful degradation from interactive prompts to flag-based input?
+**Objective**: How do popular CLI tools handle CI/non-interactive mode, and what patterns should @acmelabs-15/agent-plugin adopt for graceful degradation from interactive prompts to flag-based input?
 
 **Scope**: CI detection, non-interactive fallback, JSON output, error handling for missing inputs. Excludes authentication flows and deployment-specific concerns.
 

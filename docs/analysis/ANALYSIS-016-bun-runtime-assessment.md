@@ -16,13 +16,13 @@ tags:
 
 ## 1. Objective and Scope
 
-**Objective**: Evaluate Bun as the runtime for `@acmelabz/agent-plugin`, a cross-platform CLI tool that manages AI agent plugins across 7 coding platforms.
+**Objective**: Evaluate Bun as the runtime for `@acmelabs-15/agent-plugin`, a cross-platform CLI tool that manages AI agent plugins across 7 coding platforms.
 
 **Scope**: Bun maturity, performance (especially CLI startup), cross-platform support, native APIs, npm compatibility, distribution strategies, community adoption, and risks compared to Node.js and Deno. Excludes framework-level decisions (gunshi, etc.) except for Bun compatibility.
 
 ## 2. Context
 
-The design spec proposes Bun as the runtime. The tool is a CLI + embedded MCP server published as `@acmelabz/agent-plugin` on npm. It uses TypeScript strict mode with dependencies: gunshi (CLI framework), @clack/prompts, zod v4, deepmerge, gray-matter. It must work on Windows, macOS, and Linux.
+The design spec proposes Bun as the runtime. The tool is a CLI + embedded MCP server published as `@acmelabs-15/agent-plugin` on npm. It uses TypeScript strict mode with dependencies: gunshi (CLI framework), @clack/prompts, zod v4, deepmerge, gray-matter. It must work on Windows, macOS, and Linux.
 
 In December 2025, Anthropic acquired Oven (the company behind Bun). Claude Code ships as a Bun-compiled binary to millions of developers. This acquisition fundamentally changes the risk calculus for Bun adoption.
 
@@ -142,13 +142,13 @@ The @clack/prompts compatibility is the highest-risk dependency. Multiple GitHub
 ### 4.9 Distribution Options
 
 **Option A: npm package with Bun shebang**
-- Users install via `npm install -g @acmelabz/agent-plugin`
+- Users install via `npm install -g @acmelabs-15/agent-plugin`
 - Entry point uses `#!/usr/bin/env bun` shebang
 - Requires Bun installed on user's machine
 - Risk: forces users to install Bun
 
 **Option B: npm package with Node.js shebang (develop with Bun)**
-- Users install via `npm install -g @acmelabz/agent-plugin`
+- Users install via `npm install -g @acmelabs-15/agent-plugin`
 - Entry point uses `#!/usr/bin/env node` shebang
 - Requires TypeScript compilation step for distribution
 - Works with Node.js OR Bun (bun run respects node shebang by default)
@@ -276,7 +276,7 @@ Mitigation: Use npm distribution as the primary channel (dependencies resolved a
 
 Use **Option D (Dual distribution)** following the Tigris CLI pattern:
 
-1. **Primary**: npm package with Node.js shebang. Users install via `npm install -g @acmelabz/agent-plugin` or `npx @acmelabz/agent-plugin`. Works with both Node.js and Bun. Requires a TypeScript build step for distribution.
+1. **Primary**: npm package with Node.js shebang. Users install via `npm install -g @acmelabs-15/agent-plugin` or `npx @acmelabs-15/agent-plugin`. Works with both Node.js and Bun. Requires a TypeScript build step for distribution.
 
 2. **Secondary**: Compiled Bun binaries for macOS, Linux, Windows. Published as GitHub releases. For users who do not have Node.js/Bun installed.
 
@@ -320,7 +320,7 @@ This hybrid approach maximizes reach while preserving Bun's development experien
 - [risk] @clack/prompts has documented Bun compatibility issues with multiple sequential text prompts (GitHub issues #4835, #3099, #7033) #dependency-risk
 - [risk] Windows ARM64 Bun support is broken with an open tracking issue #cross-platform
 - [insight] Dual distribution (npm + compiled binary) following Tigris CLI pattern maximizes user reach while preserving Bun development advantages #distribution
-- [decision] Bun is recommended as the development runtime for @acmelabz/agent-plugin based on startup performance, native TypeScript, Anthropic backing, and Claude Code ecosystem alignment #runtime-choice
+- [decision] Bun is recommended as the development runtime for @acmelabs-15/agent-plugin based on startup performance, native TypeScript, Anthropic backing, and Claude Code ecosystem alignment #runtime-choice
 
 ## Relations
 
