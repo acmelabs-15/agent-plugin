@@ -15,7 +15,7 @@ tags:
 **Status:** IN_PROGRESS
 **Branch:** ideation/agent-plugin-spec
 **Starting Commit:** 84f8511 first commit
-**Current Commit:** 9306bc7 feat: add ideation research, ADRs, and session notes
+**Current Commit:** 0c6e4fc feat: complete ADR-003 review cycle and resolve all P1 issues
 **Objective:** Work through the `@acmelabz/agent-plugin` comprehensive design specification using the ideation workflow, conducting web research, creating ADRs for architectural decisions, and producing feature specs in the features/ directory
 
 ---
@@ -99,6 +99,27 @@ tags:
 - [decision] platformConfig: Hybrid D+C pattern adopted (adapter + layered overrides). 4-level resolution: Agent Skills standard fields → adapter concept mapping → plugin.json platformConfig → per-component platforms block. 3 cross-platform concepts: loadingStrategy, filePatterns, approvedTools. 80% of plugins only need levels 1-2 (estimated). #platform-config #architecture
 - [decision] Zod v4 (full, not Mini) as org-wide validation standard. Bundle size irrelevant for CLI/backend. Better DX via method chaining, IntelliSense, and built-in English error messages. #validation #org-standard
 - [decision] ADR-001 Section 9 updated to reference ADR-003 as authoritative for conflict resolution #cross-adr-consistency
+- [decision] Command tree finalized: publish removed (no registry), new mcp init uses @modelcontextprotocol/sdk + zod, completions via @gunshi/plugin-completion, 7 platforms per ADR-002 #command-tree
+- [decision] upgrade only (update alias dropped): convention is upgrade = install newer versions. No alias to avoid npm-style naming confusion. #command-alias
+- [decision] --conflict flag REMOVED: always-namespace (ADR-003) eliminates file conflicts between plugins. No user choice needed. #conflict-resolution #simplification
+- [decision] picocolors REMOVED: @clack/prompts v1.1.0 replaced picocolors with node:util styleText. Use styleText directly for terminal colors. Zero dependencies. #colors #dependency-change
+- [decision] CI detection via ci-info package (zero deps, 50+ CI vendors). Three-layer precedence: --ci flag > env var > TTY check. #ci-mode
+- [decision] --ci and --yes are DISTINCT: --yes auto-confirms but keeps visual feedback (spinners, colors, progress). --ci is full non-interactive (implies --yes, no spinners, no colors). #ci-mode #flags
+- [decision] 5 global flags: --ci, --yes/-y, --json, --verbose/-v, --quiet/-q. Output stack: quiet (errors only) < default < verbose. --json overrides all for structured output. #global-flags
+- [decision] Three-tier input resolution pattern: (1) Interactive → @clack/prompts select/multiselect, (2) CI → error with flag hint, (3) MCP → error response with options list for agent self-correction. Core architectural principle. #input-resolution #three-tier
+- [decision] Context-aware interactive fallback: no-subcommand shows p.select() menu. plugin.json present → author commands first. Otherwise consumer commands first. #interactive-ux
+- [decision] 16 validation rules for p.text() inputs: 3 naming, 3 uniqueness, 3 paths/patterns (glob not regex for hook matchers), 3 misc, 4 source format validation (npm, git HTTPS, git shorthand, local path) #validation
+- [decision] Bun ADOPTED as runtime: 4-8x faster CLI startup (8-15ms vs 40-120ms), native TypeScript, Anthropic-owned (acquired Oven Dec 2025), Claude Code proves production viability. Dual distribution: npm primary + optional compiled binaries. #runtime #adopted
+- [decision] @clack/prompts ADOPTED for interactive CLI: built-in wizard flows via group(), spinners, visual framing. Bun stdin risk (GitHub issues #4835, #3099, #7033) noted but mitigatable via testing/fallback. #interactive-prompts #adopted
+- [decision] picocolors REMOVED: @clack/prompts v1.1.0 replaced it with node:util styleText. Use styleText directly. #colors #removed
+- [decision] gunshi ADOPTED as CLI framework: built-in lazy loading (critical for 20+ commands), explicit Bun support, full TypeScript inference. kazupon (Vue.js core team) as maintainer. citty as documented fallback (similar API). Pin exact version (pre-1.0). #cli-framework #adopted
+- [decision] @modelcontextprotocol/sdk ADOPTED for MCP server (skip fastmcp): official SDK with Bun support, fastmcp wraps it anyway (adds overhead), fastmcp value-adds (auth, CORS) irrelevant for stdio embedded server. Direct v2 upgrade path. #mcp #adopted
+- [decision] chokidar v5 ADOPTED for file watching (watcher as fallback): 123M weekly downloads, zero native deps, ESM-only. Only used for author dev command. @parcel/watcher broken on Bun, Bun fs.watch has recursive watching bugs. #file-watching #adopted
+- [decision] yaml 2.x ADOPTED for frontmatter parsing (gray-matter DISQUALIFIED due to CVE-2025-64718 in pinned js-yaml@^3.13.1, inactive maintainer 5 years). Manual 5-10 line parser + Zod v4 validation. Zero dependencies. #frontmatter #adopted
+- [decision] Markdown processing REMOVED from MVP -- no markdown-to-HTML rendering needed. Tool extracts frontmatter and passes body as-is. Add micromark only if concrete use case emerges later. #markdown #removed
+- [decision] drizzle-orm + SQLite REMOVED -- JSON lockfile (ADR-003) sufficient for 5-20 plugins. bun:sqlite built-in if ever needed at scale. #database #removed
+- [decision] @orama/orama full-text search REMOVED permanently -- Array.filter() on name/description/tags sufficient. No plugin manager bundles search engines. #search #removed
+- [decision] @huggingface/transformers semantic search REMOVED permanently -- over-engineering for CLI plugin manager. AI assistants via MCP already have semantic understanding. #search #removed
 
 ---
 
@@ -140,7 +161,7 @@ Template reference: /Users/peter.kloss/Documents/examples/docs/features/FEAT-003
 
 ## Ideation Workflow Status
 
-**Current Position:** Phase 1 > Group 1 > ADR-003 ACCEPTED (Round 2 consensus: 3 Accept + 3 D&C). All Group 1 ADRs complete. Ready for Group 2.
+**Current Position:** Phase 1 > Group 3 COMPLETE. All ADRs (001-007) accepted. Ready for Group 4 (Source and Platform).
 
 ### Phase 1: Research and Discovery
 
@@ -237,31 +258,61 @@ ADR status:
 - [x] ADR-003 Round 2 P1-R2-6 resolved: Hook execution blocked until ADR-004 consent model
 - [x] ADR-003 COMPLETE
 
-#### Group 2: Core Technology Stack (Section 4 -- Dependencies) -- STARTING
+#### Group 2: Core Technology Stack (Section 4 -- Dependencies) -- COMPLETE
 
 Background research running: [[ANALYSIS-006-runtime-cli-framework-validation-stack]] (Bun vs Node/Deno, gunshi vs alternatives, zod vs alternatives)
 
 Each dependency is a SUGGESTION from the spec that needs research and validation:
 
-- [ ] Runtime: Bun (vs Node.js, Deno)
-- [ ] CLI framework: gunshi (vs commander, yargs, oclif, citty, clipanion)
-- [ ] Validation: zod (vs valibot, arktype, typebox)
-- [ ] Interactive prompts: @clack/prompts (vs inquirer, prompts, enquirer)
-- [ ] Shell completions: @bomb.sh/tab (vs alternatives)
-- [ ] Frontmatter parsing: gray-matter (vs alternatives)
-- [ ] Markdown processing: micromark + mdast (vs unified/remark, markdown-it)
-- [ ] Database: drizzle-orm + SQLite (vs better-sqlite3, prisma, json files)
-- [ ] Full-text search: @orama/orama (vs flexsearch, lunr, minisearch)
-- [ ] Semantic search: @huggingface/transformers (vs alternatives, or skip entirely)
-- [ ] MCP framework: fastmcp (vs @modelcontextprotocol/sdk)
-- [ ] File watching: watcher (vs chokidar, node:fs.watch)
-- [ ] Colors: picocolors (vs chalk, kleur)
+- [x] Runtime: Bun ADOPTED (vs Node.js, Deno) -- 4-8x faster startup, native TypeScript, Anthropic-owned. Dual distribution: npm primary + optional compiled binaries. [[ANALYSIS-016-bun-runtime-assessment]] #decided
+- [x] CLI framework: gunshi ADOPTED (vs commander, yargs, oclif, citty, clipanion) -- built-in lazy loading, explicit Bun support, full TypeScript inference. citty as documented fallback. [[ANALYSIS-017-cli-framework-comparison]] #decided
+- [x] Validation: zod v4 full ADOPTED (decided during ADR-003 review) -- org-wide standard, bundle size irrelevant for CLI #decided
+- [x] Interactive prompts: @clack/prompts ADOPTED -- built-in wizard flows (group()), spinners, visual framing. Bun stdin risk mitigatable. [[ANALYSIS-018-interactive-prompts-and-colors]] #decided
+- [x] Shell completions: gunshi plugin-completion ADOPTED, supports bash/zsh/fish/powershell. [[ANALYSIS-017-cli-framework-comparison]] #decided
+- [x] Frontmatter parsing: yaml 2.x ADOPTED (gray-matter DISQUALIFIED: CVE-2025-64718 in js-yaml@^3.13.1, inactive 5 years). Manual 5-10 line parser + Zod validation. [[ANALYSIS-020-frontmatter-and-markdown-processing]] #decided
+- [x] Markdown processing: REMOVED -- no markdown-to-HTML needed at launch. Tool extracts frontmatter and passes body as-is to platform adapters. Add micromark later only if concrete use case emerges. [[ANALYSIS-020-frontmatter-and-markdown-processing]] #decided
+- [x] Database: REMOVED -- JSON lockfile (ADR-003) is sufficient. drizzle-orm dropped. bun:sqlite available built-in if ever needed later. [[ANALYSIS-021-data-storage-and-search]] #decided
+- [x] Full-text search: REMOVED permanently -- Array.filter() on name/description/tags sufficient for 5-20 plugins. @orama/orama dropped. [[ANALYSIS-021-data-storage-and-search]] #decided
+- [x] Semantic search: REMOVED permanently -- over-engineering for a plugin manager. AI assistants via MCP already have semantic understanding. @huggingface/transformers dropped. [[ANALYSIS-021-data-storage-and-search]] #decided
+- [x] MCP framework: @modelcontextprotocol/sdk ADOPTED (skip fastmcp) -- official SDK, Bun-supported, no wrapper overhead, direct v2 upgrade path. [[ANALYSIS-019-mcp-framework-and-file-watching]] #decided
+- [x] File watching: chokidar v5 ADOPTED (watcher as fallback) -- 123M weekly downloads, 0 native deps, ESM-only. Only used for author dev command. [[ANALYSIS-019-mcp-framework-and-file-watching]] #decided
+- [x] Colors: picocolors REMOVED -- @clack/prompts v1.1.0 replaced with node:util styleText. Use styleText directly. [[ANALYSIS-018-interactive-prompts-and-colors]] #decided #superseded
 
-#### Group 3: CLI Architecture (Sections 5-6) -- NOT STARTED
+#### Group 3: CLI Architecture (Sections 5-6) -- COMPLETE
 
-- [ ] Command tree structure
-- [ ] @clack/prompts usage patterns
-- [ ] CI mode and non-interactive fallbacks
+Research completed:
+
+- [x] [[ANALYSIS-022-clack-prompts-api-surface-and-gaps]] -- All 19 APIs exist in v1.1.0, 6 added in v1.0.0
+- [x] [[ANALYSIS-023-gunshi-command-patterns-and-capabilities]] -- lazy loading, 3-level nesting, plugin system for globals
+- [x] [[ANALYSIS-024-cli-ci-mode-and-non-interactive-patterns]] -- ci-info recommended, three-layer detection
+
+Decisions made:
+
+- [x] Command tree: `publish` removed (ADR-002), `new mcp init` uses @modelcontextprotocol/sdk + zod (ADR-006), completions via @gunshi/plugin-completion (ADR-006), 7 platforms per ADR-002 #decided
+- [x] Command alias: `upgrade` only (update alias dropped to avoid npm naming confusion) #decided
+- [x] `--conflict` flag REMOVED: always-namespace (ADR-003) prevents file conflicts. Reinstall/upgrade overwrites own files. #decided
+- [x] picocolors REMOVED from dependency stack: @clack/prompts v1.1.0 replaced it with node:util styleText. Use styleText directly. #decided
+- [x] CI detection: Use `ci-info` package (zero deps, 50+ vendors). Three-layer: flag > env var > TTY check. #decided
+- [x] `--ci` vs `--yes` are DISTINCT flags: --yes auto-confirms (keeps spinners/colors), --ci is full non-interactive (implies --yes). #decided
+- [x] Global flags: 5 total (--ci, --yes/-y, --json, --verbose/-v, --quiet/-q). Flag interaction matrix defined. --quiet wins over --verbose. #decided
+- [x] Command-specific flags: add (--scope, --platforms, no --conflict), upgrade (--version). --platforms is plural. #decided
+- [x] Three-tier input resolution: Interactive → @clack/prompts select/multiselect; CI → error with flag hint; MCP → error with options list for agent self-correction. #decided
+- [x] Interactive fallback: No-subcommand shows context-aware p.select() menu. Author project (plugin.json present) → author commands first. #decided
+- [x] 16 validation rules: 3 naming, 3 uniqueness, 3 paths/patterns (glob not regex), 3 misc, 4 source format (npm/git HTTPS/git shorthand/local) #decided
+- [x] @clack/prompts: 12 APIs tested on Bun 1.3.8 (PASS), 6 v1.0.0 additions source-confirmed (Bun verification pending) #verified
+- [x] MCP error response schema: 5 typed error codes, CWE-209 sanitization, options for agent self-correction #decided
+- [x] JSON response envelope: ok/data/error with semver stability guarantee #decided
+- [x] Exit codes: 0 success, 1 runtime error, 2 usage error #decided
+- [x] Hook matchers restricted to glob patterns (ReDoS prevention, CWE-1333) #decided
+- [x] p.password() removed from component mapping (no use case) #decided
+
+ADR status:
+
+- [x] ADR-007 created, debated via adr-review skill (6-agent debate)
+- [x] DEBATE-ADR-007 saved (Round 1: 6/6 ACCEPT_WITH_CONDITIONS; 4 P0, 19 P1)
+- [x] ADR-007 P0/P1 resolutions applied (MCP schema, JSON envelope, 12/12 count, source taxonomy, flag matrix, glob matchers, exit codes, picocolors note, update alias dropped, testing matrix, p.password() removed)
+- [x] ADR-007 Round 2: UNANIMOUS ACCEPT (6/6), 3 D&C from independent thinker
+- [x] ADR-007 COMPLETE
 
 #### Group 4: Source and Platform (Sections 7-9) -- NOT STARTED
 
@@ -346,7 +397,7 @@ Each dependency is a SUGGESTION from the spec that needs research and validation
 - [x] [research] Claude Code plugin format -- [[ANALYSIS-005-claude-code-plugin-format]] #format #bundle-model
 - [x] [research] Config schema versioning patterns -- [[ANALYSIS-007-config-schema-versioning-patterns]] #versioning #manifest
 - [x] [research] Platform instruction file paths -- [[ANALYSIS-008-platform-instruction-file-paths]] #platforms #file-paths
-- [ ] [research] Runtime/CLI/validation stack -- [[ANALYSIS-006-runtime-cli-framework-validation-stack]] #dependencies (background, in progress)
+- [x] [research] Runtime/CLI/validation stack -- [[ANALYSIS-006-runtime-cli-framework-validation-stack]] #dependencies (stale, superseded by ANALYSIS-016 through 021)
 
 ### Group 1 Discussion
 
@@ -441,6 +492,38 @@ Each dependency is a SUGGESTION from the spec that needs research and validation
 - [x] [fix] ADR-003 inline Decision 2/3 text updated to match simplified lockfile model #cleanup
 - [x] [update] ADR-001 POS-005 and observation updated to reference ADR-003 always-namespace #cross-adr
 
+### Group 2: Core Technology Stack Research and Decisions
+
+- [x] [research] Bun runtime assessment -- [[ANALYSIS-016-bun-runtime-assessment]] COMPLETE #runtime
+- [x] [decision] Bun ADOPTED as runtime (user accepted) #runtime
+- [x] [research] Interactive prompts and colors -- [[ANALYSIS-018-interactive-prompts-and-colors]] COMPLETE #prompts #colors
+- [x] [decision] @clack/prompts ADOPTED for interactive CLI (user accepted) #prompts
+- [x] [decision] picocolors initially adopted, later REMOVED in Group 3 (replaced by node:util styleText in @clack/prompts v1.1.0) #colors #superseded
+- [x] [research] CLI framework comparison -- [[ANALYSIS-017-cli-framework-comparison]] COMPLETE #cli-framework
+- [x] [research] MCP framework and file watching -- [[ANALYSIS-019-mcp-framework-and-file-watching]] COMPLETE #mcp #file-watching
+- [x] [research] Shell completions, frontmatter, markdown, data storage, search -- COMPLETE (ANALYSIS-020, 021) #remaining-deps
+
+### Group 3: CLI Architecture Research and ADR-007
+
+- [x] [research] @clack/prompts API surface -- [[ANALYSIS-022-clack-prompts-api-surface-and-gaps]] COMPLETE #clack #api
+- [x] [research] gunshi command patterns -- [[ANALYSIS-023-gunshi-command-patterns-and-capabilities]] COMPLETE #gunshi #cli
+- [x] [research] CLI CI mode patterns -- [[ANALYSIS-024-cli-ci-mode-and-non-interactive-patterns]] COMPLETE #ci #patterns
+- [x] [test] @clack/prompts v1.0.0+ APIs: 12 tested on Bun 1.3.8 (ALL PASS), 6 v1.0.0 additions source-confirmed #clack #bun-compat
+- [x] [decision] picocolors REMOVED: @clack/prompts v1.1.0 uses node:util styleText instead #dependency-change
+- [x] [decision] ci-info adopted for CI detection (zero deps, 50+ vendors) #ci
+- [x] [decision] update alias dropped -- upgrade only #command-tree
+- [x] [adr] ADR-007 CLI Architecture and Interaction Model created (10 decisions) #architecture
+- [x] [adr] ADR-006 amended: picocolors removed, ci-info added, total deps 13 (9 new + 4 from ADR-003) #amendment
+- [x] [review] ADR-007 adr-review Round 1: 6/6 ACCEPT_WITH_CONDITIONS (4 P0, 19 P1, 19 P2) #review
+- [x] [fix] P0-A: MCP error response Zod schema added (Decision 9) #p0
+- [x] [fix] P0-B: Common JSON response envelope added (Decision 10) #p0
+- [x] [fix] P0-C: Component count corrected (12 tested + 6 pending) #p0
+- [x] [fix] P0-D: Source format taxonomy added (4 types, rules 13-16) #p0
+- [x] [fix] P1: Flag interaction matrix, glob hook matchers, MCP sanitization, exit codes, picocolors note, update alias, testing matrix, p.password() removed #p1
+- [x] [review] ADR-007 Round 2: UNANIMOUS ACCEPT (6/6), 3 D&C from independent thinker #convergence
+- [x] [fix] 6x individual REVIEW-ADR-007-* notes deleted, all content in DEBATE-ADR-007 #cleanup
+- [x] [fix] DEBATE-ADR-007 renamed from space-separated to kebab-case #naming
+
 ### File Name Fixes
 
 - [x] [fix] Renamed ADR-001, ADR-002, ADR-003 from space-separated to kebab-case file names #naming
@@ -501,12 +584,12 @@ From /Users/peter.kloss/Downloads/agent-plugin-design-spec.md:
 | created | [[ANALYSIS-003-vercel-skills-format-deep-dive]] | COMPLETE |
 | created | [[ANALYSIS-004-tanstack-intent-deep-dive]] | COMPLETE |
 | created | [[ANALYSIS-005-claude-code-plugin-format]] | COMPLETE |
-| created | [[ANALYSIS-006-runtime-cli-framework-validation-stack]] | IN_PROGRESS (background) |
+| created | [[ANALYSIS-006-runtime-cli-framework-validation-stack]] | STALE (superseded by ANALYSIS-016 through 021) |
 | created | [[ANALYSIS-007-config-schema-versioning-patterns]] | COMPLETE |
 | created | [[ANALYSIS-008-platform-instruction-file-paths]] | COMPLETE |
 | created | [[ADR-001-plugin-format-and-manifest]] | ACCEPTED |
-| created | [[ADR-002-target-platforms-and-audiences]] | ACCEPTED (P1 in progress) |
-| created | [[ADR-003-conflict-resolution-and-namespacing]] | ACCEPTED (Round 2 consensus reached) |
+| created | [[ADR-002-target-platforms-and-audiences]] | ACCEPTED |
+| created | [[ADR-003-conflict-resolution-and-namespacing]] | ACCEPTED |
 | created | [[DEBATE-ADR-001-plugin-format-and-manifest]] | COMPLETE (2 Accept, 3 D&C, 1 Block) |
 | created | [[DEBATE-ADR-002-target-platforms-and-audiences]] | COMPLETE (0 Accept, 4 D&C, 1 Needs Revision) |
 | deleted | ADR-001-target-platforms-and-selection-criteria | Premature duplicate |
@@ -526,6 +609,23 @@ From /Users/peter.kloss/Downloads/agent-plugin-design-spec.md:
 | updated | [[ADR-001-plugin-format-and-manifest]] | Section 9 superseded by ADR-003, POS-005 updated, observation updated |
 | updated | [[ADR-003-conflict-resolution-and-namespacing]] | Decisions 2+3 rewritten (lockfile model, composability, permissions, hook execution gate) |
 | updated | [[DEBATE-ADR-003-conflict-resolution-and-namespacing]] | Round 2 verdicts, new P1/P2 issues, dissent record, consensus status |
+| created | [[ADR-005-runtime-and-distribution-strategy]] | ACCEPTED (Round 2: Unanimous Accept 6/6) |
+| created | [[ADR-006-core-dependency-stack]] | ACCEPTED (Round 2: Unanimous Accept 6/6) |
+| created | [[DEBATE-ADR-005-runtime-and-distribution-strategy]] | Round 1 + Round 2 verdicts |
+| created | [[DEBATE-ADR-006-core-dependency-stack]] | Round 1 + Round 2 verdicts |
+| created | [[ANALYSIS-016-bun-runtime-assessment]] | COMPLETE |
+| created | [[ANALYSIS-017-cli-framework-comparison]] | COMPLETE |
+| created | [[ANALYSIS-018-interactive-prompts-and-colors]] | COMPLETE |
+| created | [[ANALYSIS-019-mcp-framework-and-file-watching]] | COMPLETE |
+| created | [[ANALYSIS-020-frontmatter-and-markdown-processing]] | COMPLETE |
+| created | [[ANALYSIS-021-data-storage-and-search]] | COMPLETE |
+| created | [[ANALYSIS-022-clack-prompts-api-surface-and-gaps]] | COMPLETE |
+| created | [[ANALYSIS-023-gunshi-command-patterns-and-capabilities]] | COMPLETE |
+| created | [[ANALYSIS-024-cli-ci-mode-and-non-interactive-patterns]] | COMPLETE |
+| created | [[ADR-007-cli-architecture-and-interaction-model]] | ACCEPTED (Round 2: Unanimous Accept 6/6) |
+| created | [[DEBATE-ADR-007-cli-architecture-and-interaction-model]] | COMPLETE |
+| updated | [[ADR-006-core-dependency-stack]] | Amended: picocolors removed, ci-info added, total deps updated to 13 |
+| deleted | 6x REVIEW-ADR-007-* individual notes | Consolidated into DEBATE-ADR-007 |
 
 ### Code Files
 
@@ -575,6 +675,22 @@ From /Users/peter.kloss/Downloads/agent-plugin-design-spec.md:
 - relates_to [[ANALYSIS-012-json-config-merge-patterns]]
 - relates_to [[ANALYSIS-013-input-sanitization-patterns]]
 - relates_to [[ANALYSIS-014-platform-config-patterns]]
+- relates_to [[ANALYSIS-015-ADR-003-convergence-round2-validation]]
+- relates_to [[ANALYSIS-016-bun-runtime-assessment]]
+- relates_to [[ANALYSIS-017-cli-framework-comparison]]
+- relates_to [[ANALYSIS-018-interactive-prompts-and-colors]]
+- relates_to [[ANALYSIS-019-mcp-framework-and-file-watching]]
+- relates_to [[ANALYSIS-020-frontmatter-and-markdown-processing]]
+- relates_to [[ANALYSIS-021-data-storage-and-search]]
+- relates_to [[ANALYSIS-022-clack-prompts-api-surface-and-gaps]]
+- relates_to [[ANALYSIS-023-gunshi-command-patterns-and-capabilities]]
+- relates_to [[ANALYSIS-024-cli-ci-mode-and-non-interactive-patterns]]
+- relates_to [[ADR-005-runtime-and-distribution-strategy]]
+- relates_to [[ADR-006-core-dependency-stack]]
+- relates_to [[ADR-007-cli-architecture-and-interaction-model]]
+- relates_to [[DEBATE-ADR-005-runtime-and-distribution-strategy]]
+- relates_to [[DEBATE-ADR-006-core-dependency-stack]]
+- relates_to [[DEBATE-ADR-007-cli-architecture-and-interaction-model]]
 
 ---
 
@@ -586,3 +702,27 @@ From /Users/peter.kloss/Downloads/agent-plugin-design-spec.md:
 | MUST | Update Brain memory with learnings | [ ] | |
 | MUST | Run markdownlint | [ ] | |
 | MUST | Commit all changes | [ ] | |
+
+- [x] [fix] ADR-005 updated for Bun-only distribution: removed npx/Node.js consumer support, IMP-005, IMP-010, NEG-004 per user instruction #bun-only
+- [x] [fix] ADR-006 P0/P1 resolutions applied: validator CVE pin, supply chain controls, clack gate, version pinning, MADR frontmatter, cold start alignment, ADR-003 boundary, MCP SDK pin, Zod peer dep, governance policy, hook exec reference, gunshi estimate revised #adr-006-fixes
+
+- [x] [test] @clack/prompts Bun 1.3.8 compatibility test: ALL PASS — setRawMode works, all APIs available, EPERM regression from 1.3.2 fixed. Pin Bun >= 1.3.8. #clack #bun-compat #verified
+- [x] [fix] ADR-005 file renamed to kebab-case (ADR-005-runtime-and-distribution-strategy) #naming
+- [x] [fix] ADR-006 file renamed to kebab-case (ADR-006-core-dependency-stack) #naming
+- [x] [fix] ANALYSIS-020 file renamed to kebab-case (ANALYSIS-020-frontmatter-and-markdown-processing) #naming
+- [x] [fix] ADR-005 updated for Bun-only distribution: removed npx/Node.js consumer support, IMP-005, IMP-010, NEG-004 per user instruction #bun-only
+- [x] [review] ADR-006 adr-review debate: 6 agents completed (3 P0, 11 P1, 13 P2). DEBATE-ADR-006 created. #review
+- [x] [fix] ADR-006 all P0/P1 resolutions applied: validator CVE pin, supply chain controls, @clack gate, version pinning, MADR frontmatter, cold start alignment, ADR-003 boundary, MCP SDK pin, governance policy, hook exec reference, gunshi estimate revised #adr-006-fixes
+- [x] [review] ADR-005 Round 2 convergence check: UNANIMOUS ACCEPT (6/6). All P0/P1 resolved. Cosmetic numbering gaps only remaining note. #convergence #accepted
+- [x] [review] ADR-006 Round 2 convergence check: UNANIMOUS ACCEPT (6/6). All P0/P1 resolved. @gunshi/plugin-completion "latest" vs pinning policy (P2) noted for implementation. #convergence #accepted
+- [x] [update] DEBATE-ADR-005 and DEBATE-ADR-006 updated with Round 2 verdicts and consensus status #debate-logs
+
+- [decision] User prefers over-specification in ADRs to prevent implementation assumptions. Keep all detail (component mapping, validation rules, three-tier pattern) to constrain implementation. #user-preference #adr-style
+- [decision] ADR-007 P0 resolutions: add MCP error schema, add JSON envelope, correct 12/12 count, add source format taxonomy (4 types: npm, git HTTPS, git shorthand, local path) #adr-007 #p0
+- [decision] ADR-007 P1 resolutions: add flag interaction matrix, keep D7/D8 detail as-is, keep three-tier #adr-007 #p1
+
+- [constraint] ADR review agents must NOT create individual REVIEW notes. All agent responses go into the single DEBATE-ADR-NNN note only. No separate critique/ notes per agent. #adr-review #convention
+
+- [fact] ADR-007 ACCEPTED: Round 2 unanimous Accept (6/6), 3 Disagree-and-Commit positions from independent thinker #adr-007 #accepted
+- [fact] ADR-007 now has 10 decisions: original 8 + Decision 9 (MCP error schema) + Decision 10 (JSON envelope) #adr-007
+- [decision] Group 3 (CLI Architecture) COMPLETE. Next: Group 4 (Source and Platform — Sections 7-9) #progress
