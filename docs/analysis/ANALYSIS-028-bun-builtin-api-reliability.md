@@ -1,5 +1,5 @@
 ---
-title: ANALYSIS-028-bun-builtin-api-reliability
+title: ANALYSIS-028 Bun Builtin API Reliability
 type: analysis
 permalink: analysis/analysis-028-bun-builtin-api-reliability
 tags:

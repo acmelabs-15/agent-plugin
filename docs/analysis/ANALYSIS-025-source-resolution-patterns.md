@@ -1,5 +1,5 @@
 ---
-title: ANALYSIS-025-source-resolution-patterns
+title: ANALYSIS-025 Source Resolution Patterns
 type: analysis
 permalink: analysis/analysis-025-source-resolution-patterns
 tags:

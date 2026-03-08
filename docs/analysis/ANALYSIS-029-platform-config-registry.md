@@ -1,5 +1,5 @@
 ---
-title: ANALYSIS-029-platform-config-registry
+title: ANALYSIS-029 Platform Config Registry
 type: analysis
 permalink: analysis/analysis-029-platform-config-registry
 tags:

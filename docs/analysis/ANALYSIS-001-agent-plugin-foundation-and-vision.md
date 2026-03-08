@@ -1,5 +1,5 @@
 ---
-title: ANALYSIS-001-agent-plugin-foundation-and-vision
+title: ANALYSIS-001 Agent Plugin Foundation and Vision
 type: note
 permalink: analysis/analysis-001-agent-plugin-foundation-and-vision
 tags:

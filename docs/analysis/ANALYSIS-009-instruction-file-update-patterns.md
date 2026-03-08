@@ -1,5 +1,5 @@
 ---
-title: ANALYSIS-009-instruction-file-update-patterns
+title: ANALYSIS-009 Instruction File Update Patterns
 type: analysis
 permalink: analysis/analysis-009-instruction-file-update-patterns
 tags:

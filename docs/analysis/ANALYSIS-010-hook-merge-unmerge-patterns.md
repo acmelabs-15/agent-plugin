@@ -1,5 +1,5 @@
 ---
-title: ANALYSIS-010-hook-merge-unmerge-patterns
+title: ANALYSIS-010 Hook Merge Unmerge Patterns
 type: note
 permalink: analysis/analysis-010-hook-merge-unmerge-patterns
 tags:

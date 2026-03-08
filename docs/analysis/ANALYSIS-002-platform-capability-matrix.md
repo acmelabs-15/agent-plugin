@@ -1,5 +1,5 @@
 ---
-title: ANALYSIS-002-platform-capability-matrix
+title: ANALYSIS-002 Platform Capability Matrix
 type: note
 permalink: analysis/analysis-002-platform-capability-matrix
 tags:

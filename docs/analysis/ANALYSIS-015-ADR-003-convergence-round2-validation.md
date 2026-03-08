@@ -1,5 +1,5 @@
 ---
-title: ANALYSIS-015-ADR-003-convergence-round2-validation
+title: ANALYSIS-015 ADR-003 Convergence Round 2 Validation
 type: analysis
 permalink: analysis/analysis-015-adr-003-convergence-round2-validation
 tags:

@@ -1,5 +1,5 @@
 ---
-title: ANALYSIS-005-claude-code-plugin-format
+title: ANALYSIS-005 Claude Code Plugin Format
 type: analysis
 permalink: analysis/analysis-005-claude-code-plugin-format
 tags:

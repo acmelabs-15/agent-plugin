@@ -1,5 +1,5 @@
 ---
-title: ANALYSIS-014-platform-config-patterns
+title: ANALYSIS-014 Platform Config Patterns
 type: note
 permalink: analysis/analysis-014-platform-config-patterns
 tags:

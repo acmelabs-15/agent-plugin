@@ -1,5 +1,5 @@
 ---
-title: ANALYSIS-017-cli-framework-comparison
+title: ANALYSIS-017 CLI Framework Comparison
 type: note
 permalink: analysis/analysis-017-cli-framework-comparison
 tags:

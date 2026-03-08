@@ -1,5 +1,5 @@
 ---
-title: ANALYSIS-007-config-schema-versioning-patterns
+title: ANALYSIS-007 Config Schema Versioning Patterns
 type: note
 permalink: analysis/analysis-007-config-schema-versioning-patterns
 tags:

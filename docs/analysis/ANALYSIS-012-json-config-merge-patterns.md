@@ -1,5 +1,5 @@
 ---
-title: ANALYSIS-012-json-config-merge-patterns
+title: ANALYSIS-012 JSON Config Merge Patterns
 type: analysis
 permalink: analysis/analysis-012-json-config-merge-patterns
 tags:

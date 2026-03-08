@@ -1,5 +1,5 @@
 ---
-title: ANALYSIS-018-interactive-prompts-and-colors
+title: ANALYSIS-018 Interactive Prompts and Colors
 type: note
 permalink: analysis/analysis-018-interactive-prompts-and-colors
 tags:

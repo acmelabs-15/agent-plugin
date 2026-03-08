@@ -1,5 +1,5 @@
 ---
-title: ANALYSIS-013-input-sanitization-patterns
+title: ANALYSIS-013 Input Sanitization Patterns
 type: note
 permalink: analysis/analysis-013-input-sanitization-patterns
 tags:

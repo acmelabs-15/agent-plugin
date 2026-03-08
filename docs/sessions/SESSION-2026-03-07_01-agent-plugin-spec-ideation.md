@@ -15,7 +15,7 @@ tags:
 **Status:** IN_PROGRESS
 **Branch:** ideation/agent-plugin-spec
 **Starting Commit:** 84f8511 first commit
-**Current Commit:** 82d027b feat: add ADR-005/006/007 with research and debate logs
+**Current Commit:** 709f39d style: apply markdownlint fixes to analysis and decision docs
 **Objective:** Work through the `@acmelabs-15/agent-plugin` comprehensive design specification using the ideation workflow, conducting web research, creating ADRs for architectural decisions, and producing feature specs in the features/ directory
 
 ---
@@ -140,6 +140,19 @@ tags:
 - [decision] CLI generation extracted from ADR-010 into ADR-011 per debate consensus (5/6 reviewers agreed on split) #architecture #extraction
 - [decision] Dependency model: deps defined by agent-plugin package (platforms.config.json), not plugin authors. Multiselect prompt for missing deps including package managers. Tracked in lockfile for uninstall reverse multiselect. #dependencies
 - [decision] MCP daemon lifecycle commands: built-in start/stop/restart/status for every plugin with MCP server. Restart safety: never touches stdio instances managed by Claude Code. PID file tracking at ~/.local/share/agent-plugin/pids/. #mcp #daemon-lifecycle
+- [decision] MCP tool registry: on-demand for v1 (read from MCP servers transiently). No persistent tool schema storage in lockfile. Defer persistence to v2 if cross-plugin discovery latency is a problem. #mcp #data-storage
+- [decision] Dual-location manifest: NO. plugin.json only (ADR-001 mandate). No embedded "agentPlugin" field in package.json. Simplifies manifest discovery and validation. #manifest #simplification
+- [decision] Content-type command groups replace ADR-007 `new` subtree: skill/agent/mcp/command/hook/instruction each get create/remove/list subcommands. eval/improve only for types with creator skills. #command-tree #scaffolding
+- [decision] Template rendering: yaml 2.x stringify for YAML frontmatter + tagged template literals for TypeScript code. Zero new dependencies. gray-matter DISQUALIFIED (CVE-2025-64718). #templates #zero-deps
+- [decision] Schema-first architecture: single Zod v4 schema per wizard drives all 3 interfaces (interactive, CI, MCP). Prevents interface drift. #schema-first #consistency
+- [decision] Bundled creator skills: skill-creator, agent-creator, mcp-builder (adapted from Anthropic), instruction-evaluator (original). Self-bootstrapping via self-install. #creator-skills #self-bootstrap
+- [decision] eval/improve split: eval = read-only analysis with report, improve = interactive diff preview with Why annotations and 3 apply modes. #eval-improve #lifecycle
+- [decision] rules/ renamed to instructions/. Instructions merge into AGENTS.md (6/7 platforms) + CLAUDE.md at install time. #instructions #rename
+- [decision] MCP server scaffolding: @modelcontextprotocol/sdk with separate tool files and marker comments for create-tool patching. No per-MCP biome.json or package.json. #mcp #scaffolding
+- [decision] eval/improve trust model: executes bundled first-party Bun TypeScript scripts (not user code). HTML eval viewer via Bun.serve(). Shared viewer infrastructure across skill/agent/mcp eval. #trust-model #security
+- [decision] Faithfulness principle: creator skills stay close to Anthropic originals. Exceptions: Python→Bun TS conversion, fastmcp→@modelcontextprotocol/sdk, minor verbiage alignment. #faithfulness #creator-skills
+- [decision] Commands restored as 6th content type (amending ADR-001). Commands are cross-platform, not Claude Code legacy. #commands #manifest
+- [decision] Zod v4 + MCP SDK verified compatible on Bun. Min versions: SDK >= 1.23.0, Zod >= 4.1.13. MCP SDK works 100% on Bun (zero Node.js dependency). #compatibility #bun
 
 ---
 
@@ -181,7 +194,7 @@ Template reference: /Users/peter.kloss/Documents/examples/docs/features/FEAT-003
 
 ## Ideation Workflow Status
 
-**Current Position:** Phase 1 > Group 4 COMPLETE. All ADRs (001-011) accepted. ADR-008 through ADR-011 created, debated (6-agent adr-review), P0s resolved, and accepted. Ready for Group 5.
+**Current Position:** Phase 1 > Group 6 COMPLETE. All ADRs (001-012) accepted. Groups 1-6 done. Ready for Group 7 (Commands).
 
 ### Phase 1: Research and Discovery
 
@@ -365,16 +378,54 @@ ADR status:
 - [x] DEBATE-ADR-008, DEBATE-ADR-009, DEBATE-ADR-010, DEBATE-ADR-011 all saved to critique/
 - [x] Group 4 COMPLETE: All 4 ADRs accepted
 
-#### Group 5: Data and Storage (Sections 10-11) -- NOT STARTED
+#### Group 5: Data and Storage (Sections 10-11) -- COMPLETE (covered by existing decisions)
 
-- [ ] Storage approach (SQLite vs JSON lockfile vs other)
-- [ ] Schema design
-- [ ] Search integration approach
+- [x] Storage approach: JSON lockfile adopted in ADR-003 Decision 3. SQLite/drizzle-orm removed (ANALYSIS-021). bun:sqlite as deferred upgrade path.
+- [x] Schema design: lockfile schema in ADR-003 (plugin inventory, component registry, hook overlays, file modification history). ADR-010 adds installedDeps. ADR-011 adds CLI command selections.
+- [x] Search: Array.filter() sufficient for 5-20 plugins (ANALYSIS-021). @orama/orama deferred to Phase 4. @huggingface/transformers permanently removed.
+- [x] MCP tool registry: on-demand (read from MCP servers transiently, not persisted in lockfile). Avoids staleness risk. Defer persistence to v2 if latency is a problem.
+- [x] Dual-location manifest: NO. plugin.json only (ADR-001). No embedded package.json field. Simplifies discovery and validation.
 
-#### Group 6: Scaffolding Wizards (Section 12) -- NOT STARTED
+#### Group 6: Scaffolding Wizards (Section 12) -- COMPLETE
 
-- [ ] Wizard design patterns
-- [ ] Content type scaffolding (agent, skill, command, hook, rule, MCP)
+Research completed:
+
+- [x] [[ANALYSIS-031-scaffolding-wizard-patterns]] -- Template strategies, @clack/prompts group() patterns, wizard specs for all 7 content types
+- [x] [[ANALYSIS-032-mcp-sdk-bun-runtime-compatibility]] -- Verified MCP SDK + Zod v4 work 100% on Bun runtime
+
+All decisions discussed one at a time with user:
+
+- [x] Template rendering: yaml 2.x stringify + tagged template literals (zero new deps, gray-matter disqualified by CVE-2025-64718)
+- [x] Schema-first architecture: single Zod v4 schema per wizard drives interactive prompts, CI flags, and MCP tool parameters
+- [x] Multi-group wizard flow: sequential group() calls with p.log.step() separators (agent create: 4 groups, mcp create: 2 groups)
+- [x] Manifest auto-update: all create wizards auto-update plugin.json with flat array naming matching ADR-001
+- [x] MCP server scaffolding: @modelcontextprotocol/sdk with separate tool files and marker comments for create-tool patching
+- [x] Content-type command groups replace ADR-007 `new` subtree (skill/agent/mcp/command/hook/instruction with subcommands)
+- [x] Bundled creator skills: skill-creator, agent-creator, mcp-builder (adapted from Anthropic sources), instruction-evaluator (original)
+- [x] eval/improve split: eval = read-only analysis with report, improve = interactive diff preview with apply modes
+- [x] Instructions replace rules: rules/ → instructions/, merge into AGENTS.md (6/7 platforms) + CLAUDE.md
+- [x] Wizard simplifications: emoji prefix dropped, autoLoadAgents dropped, skill frontmatter aligned with Claude Code SKILL.md fields
+- [x] Interactive improve preview: color-coded diff, "Why" annotations, three apply modes (apply all, review one-by-one, skip)
+- [x] Remove confirmation: p.confirm() showing files, manifest entries, and dependent content. --yes flag for CI.
+- [x] Trust model: eval/improve executes bundled first-party Bun TypeScript scripts (not user code). HTML viewer via Bun.serve(). Shared viewer across all eval subcommands.
+- [x] Faithfulness principle: creator skills stay close to Anthropic implementations. Exceptions: Python→Bun TS, fastmcp→SDK, minor verbiage tweaks.
+- [x] Commands restored as content type: ADR-001 amendment needed (IMP-005) to add commands as 6th component
+- [x] Zod v4 + MCP SDK verified compatible: min SDK >= 1.23.0, Zod >= 4.1.13 (ANALYSIS-032)
+
+ADR status:
+
+- [x] ADR-012 Scaffolding and Content Management created (11 decisions)
+- [x] ADR-012 adr-review Round 1: unanimous NEEDS REVISION (0 Accept, 6 Needs Rev). 7 consolidated P0 issues.
+- [x] P0-1 resolved: MCP lifecycle commands (start/stop/restart/status) removed from author CLI (consumer-only, ADR-011)
+- [x] P0-2 resolved: content.* nesting replaced with flat array names matching ADR-001
+- [x] P0-3 resolved: Commands kept as content type, IMP-005 tracks ADR-001 amendment
+- [x] P0-4 resolved: IMP-006 notes creator skills independently shippable, phasing deferred to project plan
+- [x] P0-5 resolved: IMP-007 tracks ANALYSIS-031 gray-matter cleanup
+- [x] P0-6 resolved: Decision 11 added with trust model, HTML viewer, faithfulness principle
+- [x] P0-7 resolved: Verified compatible, minimum versions documented, ANALYSIS-032 created
+- [x] ADR-012 adr-review Round 2: ACCEPTED (5 Accept, 1 D&C). All P0s resolved.
+- [x] DEBATE-ADR-012 saved with both rounds
+- [x] ADR-012 COMPLETE
 
 #### Group 7: Commands (Sections 13-14) -- NOT STARTED
 
@@ -574,6 +625,13 @@ ADR status:
 - [x] [fix] Renamed ANALYSIS-008 from space-separated to kebab-case file name #naming
 - [x] [fix] Deleted premature ADR-001-target-platforms-and-selection-criteria #cleanup
 
+### Group 5: Data and Storage Quick-Pass
+
+- [x] [analysis] Group 5 quick-pass: 9/11 spec topics already decided by ADR-003, ADR-010, ADR-011, ANALYSIS-021 #data-storage
+- [x] [decision] MCP tool registry: on-demand for v1, not persisted in lockfile. Avoids schema staleness. #mcp #data-storage
+- [x] [decision] Dual-location manifest rejected: plugin.json only, no package.json embedded field #manifest #simplification
+- [x] [fact] Group 5 COMPLETE: all data storage decisions covered by existing ADRs #complete
+
 ---
 
 ## Requirements Context
@@ -691,6 +749,14 @@ From /Users/peter.kloss/Downloads/agent-plugin-design-spec.md:
 | updated | [[ANALYSIS-030-auto-generated-cli-from-mcp-tools]] | CLI decisions now in ADR-011 |
 | renamed | DEBATE-ADR-008, 009, 010 | From CRIT-NNN to DEBATE-ADR-NNN convention |
 | fixed | DEBATE-ADR-001 through 007 | Frontmatter: titles with spaces, type changed to critique, permalinks fixed |
+| created | [[ANALYSIS-031-scaffolding-wizard-patterns]] | COMPLETE |
+| created | [[ANALYSIS-032-mcp-sdk-bun-runtime-compatibility]] | COMPLETE |
+| created | [[ADR-012-scaffolding-and-content-management]] | ACCEPTED (Round 2: 5 Accept, 1 D&C) |
+| created | [[DEBATE-ADR-012-scaffolding-and-content-management]] | COMPLETE (Round 1: unanimous Needs Revision; Round 2: 5 Accept + 1 D&C) |
+| deleted | ANALYSIS-031 Scaffolding Wizard Patterns (space-separated) | Duplicate of kebab-case version |
+| deleted | CRIT-012 ADR-012 Scaffolding Debate Log | Wrong naming convention, replaced by DEBATE-ADR-012 |
+| fixed | 23 analysis notes (ANALYSIS-001 through 030) | Frontmatter titles fixed from kebab-case to Title Case |
+| renamed | DEBATE-ADR-012 | From CRIT-012 to DEBATE-ADR-012, then space-separated to kebab-case |
 
 ### Code Files
 
@@ -770,6 +836,10 @@ From /Users/peter.kloss/Downloads/agent-plugin-design-spec.md:
 - relates_to [[DEBATE-ADR-009-platform-detection-and-config-registry]]
 - relates_to [[DEBATE-ADR-010-installation-lifecycle-and-cli-generation]]
 - relates_to [[DEBATE-ADR-011-auto-generated-cli-from-mcp-tools]]
+- relates_to [[ANALYSIS-031-scaffolding-wizard-patterns]]
+- relates_to [[ANALYSIS-032-mcp-sdk-bun-runtime-compatibility]]
+- relates_to [[ADR-012-scaffolding-and-content-management]]
+- relates_to [[DEBATE-ADR-012-scaffolding-and-content-management]]
 
 ---
 
@@ -861,6 +931,30 @@ From /Users/peter.kloss/Downloads/agent-plugin-design-spec.md:
 - [x] [fact] ADR-009 status updated to Accepted #status
 - [x] [fact] ADR-010 status updated to Accepted #status
 - [x] [fact] ADR-011 status updated to Accepted #status
+
+### Group 6: Scaffolding Wizards Research and ADR-012
+
+- [x] [research] Scaffolding wizard patterns -- [[ANALYSIS-031-scaffolding-wizard-patterns]] COMPLETE #scaffolding #wizards
+- [x] [research] MCP SDK Bun runtime compatibility -- [[ANALYSIS-032-mcp-sdk-bun-runtime-compatibility]] COMPLETE #mcp-sdk #bun
+- [x] [research] Anthropic creator skills found: skill-creator (anthropics/skills), mcp-builder (anthropics/skills), agent-creator (anthropics/claude-code/plugins/plugin-dev) #creator-skills
+- [x] [fact] No Anthropic tool exists for CLAUDE.md/AGENTS.md evaluation -- opportunity for original instruction-evaluator #differentiator
+- [x] [decision] 16 decisions discussed one at a time with user across template rendering, schema-first, wizards, creator skills, eval/improve, instructions, trust model #group-6
+- [x] [adr] ADR-012 Scaffolding and Content Management created (11 decisions) #architecture
+- [x] [review] ADR-012 adr-review Round 1: unanimous NEEDS REVISION (0 Accept, 6 Needs Rev). 7 P0 issues consolidated. #review
+- [x] [fix] P0-1: MCP lifecycle commands removed from mcp group (consumer-only per ADR-011) #p0-resolution
+- [x] [fix] P0-2: content.* nesting replaced with flat array names matching ADR-001 #p0-resolution
+- [x] [fix] P0-3: Commands kept, IMP-005 tracks ADR-001 amendment (6th component type) #p0-resolution
+- [x] [fix] P0-4: IMP-006 added (creator skills independently shippable, phasing deferred to project plan) #p0-resolution
+- [x] [fix] P0-5: IMP-007 added (ANALYSIS-031 gray-matter cleanup) #p0-resolution
+- [x] [fix] P0-6: Decision 11 added (trust model, HTML viewer, faithfulness principle) #p0-resolution
+- [x] [fix] P0-7: Verified Zod v4 + MCP SDK compatible. Min versions added. ANALYSIS-032 created. #p0-resolution
+- [x] [review] ADR-012 adr-review Round 2: ACCEPTED (5 Accept, 1 D&C). All P0s resolved. #convergence
+- [x] [review] DEBATE-ADR-012 saved with Round 1 + Round 2 results #debate-log
+- [x] [fact] Independent Thinker D&C reservations: faithfulness subordination, IMP-007 scope, marker comment error handling #d&c
+- [x] [fix] 23 analysis note titles fixed from kebab-case to Title Case in frontmatter #naming
+- [x] [fix] Duplicate ANALYSIS-031 (space-separated filename) deleted #cleanup
+- [x] [fix] DEBATE-ADR-012 renamed from CRIT-012 to DEBATE-ADR-NNN convention, then from space-separated to kebab-case #naming
+- [x] [fact] ADR-012 status: ACCEPTED, COMPLETE #status
 
 ### Organization Rename and Path Migration
 

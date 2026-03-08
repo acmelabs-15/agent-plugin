@@ -1,5 +1,5 @@
 ---
-title: ANALYSIS-030-auto-generated-cli-from-mcp-tools
+title: ANALYSIS-030 Auto-Generated CLI from MCP Tools
 type: analysis
 permalink: analysis/analysis-030-auto-generated-cli-from-mcp-tools
 tags:

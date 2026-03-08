@@ -1,5 +1,5 @@
 ---
-title: ANALYSIS-019-mcp-framework-and-file-watching
+title: ANALYSIS-019 MCP Framework and File Watching
 type: note
 permalink: analysis/analysis-019-mcp-framework-and-file-watching
 tags:

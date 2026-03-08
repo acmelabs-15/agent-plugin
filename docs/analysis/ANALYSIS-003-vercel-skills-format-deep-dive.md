@@ -1,5 +1,5 @@
 ---
-title: ANALYSIS-003-vercel-skills-format-deep-dive
+title: ANALYSIS-003 Vercel Skills Format Deep Dive
 type: note
 permalink: analysis/analysis-003-vercel-skills-format-deep-dive
 tags:

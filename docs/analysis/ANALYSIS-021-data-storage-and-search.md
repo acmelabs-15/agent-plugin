@@ -1,5 +1,5 @@
 ---
-title: ANALYSIS-021-data-storage-and-search
+title: ANALYSIS-021 Data Storage and Search
 type: analysis
 permalink: analysis/analysis-021-data-storage-and-search
 tags:

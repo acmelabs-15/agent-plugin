@@ -1,5 +1,5 @@
 ---
-title: ANALYSIS-011-lockfile-management-patterns
+title: ANALYSIS-011 Lockfile Management Patterns
 type: note
 permalink: analysis/analysis-011-lockfile-management-patterns
 tags:

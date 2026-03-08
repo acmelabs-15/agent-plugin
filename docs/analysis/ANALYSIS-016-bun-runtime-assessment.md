@@ -1,5 +1,5 @@
 ---
-title: ANALYSIS-016-bun-runtime-assessment
+title: ANALYSIS-016 Bun Runtime Assessment
 type: note
 permalink: analysis/analysis-016-bun-runtime-assessment
 tags:

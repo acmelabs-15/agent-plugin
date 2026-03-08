@@ -1,5 +1,5 @@
 ---
-title: ANALYSIS-027-installation-mechanics
+title: ANALYSIS-027 Installation Mechanics
 type: analysis
 permalink: analysis/analysis-027-installation-mechanics
 tags:

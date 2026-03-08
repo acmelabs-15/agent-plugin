@@ -1,5 +1,5 @@
 ---
-title: ANALYSIS-004-tanstack-intent-deep-dive
+title: ANALYSIS-004 TanStack Intent Deep Dive
 type: analysis
 permalink: analysis/analysis-004-tanstack-intent-deep-dive
 tags:
