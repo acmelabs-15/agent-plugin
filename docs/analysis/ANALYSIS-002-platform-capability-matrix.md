@@ -381,22 +381,22 @@ The plugin packaging model (bundling skills + hooks + agents + MCP + commands in
 
 ### Sources Consulted
 
-- Claude Code Docs: https://code.claude.com/docs/en/sub-agents
-- Cursor Changelog: https://cursor.com/changelog
-- GitHub Copilot CLI GA: https://github.blog/changelog/2026-02-25-github-copilot-cli-is-now-generally-available/
-- Codex CLI Features: https://developers.openai.com/codex/cli/features/
-- Gemini CLI Docs: https://geminicli.com/docs/
-- Kiro Docs: https://kiro.dev/docs/skills/
-- Cline CLI 2.0: https://devops.com/cline-cli-2-0-turns-your-terminal-into-an-ai-agent-control-plane/
-- Roo Code Docs: https://docs.roocode.com/
-- OpenCode Docs: https://opencode.ai/docs/
-- Amp Manual: https://ampcode.com/manual
-- Windsurf Changelog: https://windsurf.com/changelog
-- Continue.dev Docs: https://docs.continue.dev/reference
-- Devin Docs: https://docs.devin.ai/
-- Morphllm Comparison: https://www.morphllm.com/ai-coding-agent
-- Lushbinary Comparison: https://www.lushbinary.com/blog/ai-coding-agents-comparison-cursor-windsurf-claude-copilot-kiro-2026/
-- Agentic Coding Guide: https://halallens.no/en/blog/agentic-coding-in-2026-the-complete-guide-to-plugins-multi-model-orchestration-and-ai-agent-teams
+- Claude Code Docs: <https://code.claude.com/docs/en/sub-agents>
+- Cursor Changelog: <https://cursor.com/changelog>
+- GitHub Copilot CLI GA: <https://github.blog/changelog/2026-02-25-github-copilot-cli-is-now-generally-available/>
+- Codex CLI Features: <https://developers.openai.com/codex/cli/features/>
+- Gemini CLI Docs: <https://geminicli.com/docs/>
+- Kiro Docs: <https://kiro.dev/docs/skills/>
+- Cline CLI 2.0: <https://devops.com/cline-cli-2-0-turns-your-terminal-into-an-ai-agent-control-plane/>
+- Roo Code Docs: <https://docs.roocode.com/>
+- OpenCode Docs: <https://opencode.ai/docs/>
+- Amp Manual: <https://ampcode.com/manual>
+- Windsurf Changelog: <https://windsurf.com/changelog>
+- Continue.dev Docs: <https://docs.continue.dev/reference>
+- Devin Docs: <https://docs.devin.ai/>
+- Morphllm Comparison: <https://www.morphllm.com/ai-coding-agent>
+- Lushbinary Comparison: <https://www.lushbinary.com/blog/ai-coding-agents-comparison-cursor-windsurf-claude-copilot-kiro-2026/>
+- Agentic Coding Guide: <https://halallens.no/en/blog/agentic-coding-in-2026-the-complete-guide-to-plugins-multi-model-orchestration-and-ai-agent-teams>
 
 ### Data Transparency
 

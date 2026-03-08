@@ -23,12 +23,14 @@ tags:
 ## 2. Context
 
 @acmelabs-15/agent-plugin needs a JSON lockfile (`plugin-lock.json`) to track:
+
 - Installed plugins and their versions
 - Component inventory per plugin (hooks, skills, MCPs, templates, etc.)
 - File modifications made during installation (for clean uninstall)
 - Hook provenance (which plugin contributed which hooks)
 
 Prior decisions established:
+
 - JSON lockfile format (like package-lock.json)
 - `lockfileVersion` field for schema evolution
 - Re-derive from disk on corruption (lockfile is cache, not source of truth)
@@ -96,6 +98,7 @@ The lockfile complements the overlay state directory. Overlays track individual 
 **Atomic Writes**: Uses `write-file-atomic` directly. The `writeLockfiles()` function in `@pnpm/lockfile.fs` writes both wanted and current lockfiles. When both are identical, YAML is stringified once for efficiency.
 
 **Two-Lockfile System**:
+
 - Wanted lockfile (`pnpm-lock.yaml`): desired dependency tree. Committed to git.
 - Current lockfile (`node_modules/.pnpm-lock.yaml`): actual installed tree. Gitignored.
 - Comparison detects when `node_modules` is out of sync with wanted state.
@@ -115,6 +118,7 @@ The lockfile complements the overlay state directory. Overlays track individual 
 **Concurrent Write Safety**: `write-file-atomic` serializes concurrent writes to the same file path via a Promise queue. Writes to different files remain parallel.
 
 **Schema Versioning**: Integer `lockfileVersion` field.
+
 - v1 (npm v5-v6): nested `dependencies` structure
 - v2 (npm v7+): `packages` field + `dependencies` for backward compatibility
 - v3 (npm v7+): `packages` only, no backward compat (used for hidden lockfile at `node_modules/.package-lock.json`)
@@ -193,6 +197,7 @@ The lockfile complements the overlay state directory. Overlays track individual 
 #### Atomic Write Pattern (Temp File + Rename)
 
 This is the universal standard. Every production lockfile implementation uses it:
+
 1. Write data to a temporary file (same directory as target)
 2. Call `fsync` to flush to disk
 3. Rename temp file to target path (atomic on POSIX)
@@ -217,11 +222,13 @@ Three strategies exist in the ecosystem:
 #### Corruption Detection and Recovery
 
 **Detection approaches**:
+
 - JSON.parse failure (syntax error = corruption)
 - Checksum mismatch (store hash of last-written content, compare on read)
 - Schema validation failure (valid JSON but wrong structure = version mismatch or corruption)
 
 **Recovery approaches**:
+
 - **Re-derive from disk** (our chosen approach): Scan installed plugins and reconstruct lockfile. Lockfile is cache, not source of truth.
 - **Backup restore**: Keep `plugin-lock.json.bak` from last successful write. Restore on corruption. Used by `conf`.
 - **Empty state**: Return empty/default state on corruption. User must reinstall. Last resort.
@@ -445,23 +452,23 @@ The lockfile tracks WHAT is installed. The overlays track HOW hooks are merged. 
 
 ### Sources Consulted
 
-- pnpm lockfile write source: https://raw.githubusercontent.com/pnpm/pnpm/main/lockfile/fs/src/write.ts
-- pnpm lockfile system: https://deepwiki.com/pnpm/pnpm/3.1-lockfile-system
-- pnpm git branch lockfiles: https://pnpm.io/git_branch_lockfiles
-- npm package-lock.json docs: https://docs.npmjs.com/cli/v11/configuring-npm/package-lock-json/
-- write-file-atomic: https://github.com/npm/write-file-atomic
-- atomically: https://github.com/fabiospampinato/atomically
-- steno: https://github.com/typicode/steno
-- proper-lockfile: https://github.com/moxystudio/node-proper-lockfile
-- conf: https://github.com/sindresorhus/conf
-- lowdb: https://github.com/typicode/lowdb
-- Lockfile Format Design and Tradeoffs: https://nesbitt.io/2026/01/17/lockfile-format-design-and-tradeoffs.html
-- Understanding Lockfiles: https://blog.shalvah.me/posts/understanding-lockfiles
-- The Design Space of Lockfiles (arxiv): https://arxiv.org/html/2505.04834v1
-- Yarn Berry checksums: https://github.com/yarnpkg/berry/issues/6068
-- npm lockfileVersion discussion: https://www.abrahamberg.com/blog/npm-package-json-lock-version-1-or-2/
-- Node.js file locking: https://blog.logrocket.com/understanding-node-js-file-locking/
-- safe-stable-stringify: https://github.com/BridgeAR/safe-stable-stringify
+- pnpm lockfile write source: <https://raw.githubusercontent.com/pnpm/pnpm/main/lockfile/fs/src/write.ts>
+- pnpm lockfile system: <https://deepwiki.com/pnpm/pnpm/3.1-lockfile-system>
+- pnpm git branch lockfiles: <https://pnpm.io/git_branch_lockfiles>
+- npm package-lock.json docs: <https://docs.npmjs.com/cli/v11/configuring-npm/package-lock-json/>
+- write-file-atomic: <https://github.com/npm/write-file-atomic>
+- atomically: <https://github.com/fabiospampinato/atomically>
+- steno: <https://github.com/typicode/steno>
+- proper-lockfile: <https://github.com/moxystudio/node-proper-lockfile>
+- conf: <https://github.com/sindresorhus/conf>
+- lowdb: <https://github.com/typicode/lowdb>
+- Lockfile Format Design and Tradeoffs: <https://nesbitt.io/2026/01/17/lockfile-format-design-and-tradeoffs.html>
+- Understanding Lockfiles: <https://blog.shalvah.me/posts/understanding-lockfiles>
+- The Design Space of Lockfiles (arxiv): <https://arxiv.org/html/2505.04834v1>
+- Yarn Berry checksums: <https://github.com/yarnpkg/berry/issues/6068>
+- npm lockfileVersion discussion: <https://www.abrahamberg.com/blog/npm-package-json-lock-version-1-or-2/>
+- Node.js file locking: <https://blog.logrocket.com/understanding-node-js-file-locking/>
+- safe-stable-stringify: <https://github.com/BridgeAR/safe-stable-stringify>
 
 ### Data Transparency
 

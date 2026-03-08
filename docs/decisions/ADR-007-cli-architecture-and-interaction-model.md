@@ -41,16 +41,19 @@ The core question: How should the CLI organize its command tree, handle global f
 ## Considered Options
 
 ### Command Tree Structure
+
 - Option A: Flat command list (all commands at root level)
 - Option B: Grouped tree with consumer, author, and scaffolding categories (chosen)
 - Option C: Deeply nested subcommand hierarchy (4+ levels)
 
 ### CI Detection
+
 - Option A: Manual --ci flag only
 - Option B: ci-info package with three-layer detection (chosen)
 - Option C: TTY detection only
 
 ### Missing Input Resolution
+
 - Option A: Always error on missing input
 - Option B: Three-tier resolution by execution mode (chosen)
 - Option C: Always prompt, hang in CI
@@ -94,7 +97,6 @@ agent-plugin
 
 Rejected: `publish` command (ADR-002: no hosted registry).
 
-
 ### Decision 2: Global Flags
 
 Five global flags inherited by all commands via gunshi plugin system:
@@ -108,6 +110,7 @@ Five global flags inherited by all commands via gunshi plugin system:
 | `--quiet` | `-q` | boolean | false | Errors only |
 
 Behavior rules:
+
 - `--ci` implies `--yes`
 - `--quiet` and `--verbose` are mutually exclusive (`--quiet` wins)
 - `--json` overrides output formatting
@@ -224,28 +227,28 @@ All prompts wrapped in isCI/isTTY guard per Decision 4.
 
 **Uniqueness within plugin project (3):**
 
-4. Agent name unique within this plugin
-5. MCP server name unique within this plugin
-6. Tool name unique within selected MCP server
+1. Agent name unique within this plugin
+2. MCP server name unique within this plugin
+3. Tool name unique within selected MCP server
 
 **Paths and patterns (3):**
 
-7. Dist dir must not equal content dir (prevent overwriting sources)
-8. Hook matcher must be valid glob pattern (eliminates ReDoS risk, CWE-1333)
-9. Env var name: `^[A-Z_][A-Z0-9_]*$` (UPPER_SNAKE_CASE)
+1. Dist dir must not equal content dir (prevent overwriting sources)
+2. Hook matcher must be valid glob pattern (eliminates ReDoS risk, CWE-1333)
+3. Env var name: `^[A-Z_][A-Z0-9_]*$` (UPPER_SNAKE_CASE)
 
 **Miscellaneous (3):**
 
-10. Tool parameters: `name:type` format
-11. Port: 1-65535
-12. Agent description: 10 or more characters (helps orchestrator delegation)
+1. Tool parameters: `name:type` format
+2. Port: 1-65535
+3. Agent description: 10 or more characters (helps orchestrator delegation)
 
 **Source validation (4):**
 
-13. npm package source: Must match `^@[a-z0-9-]+/[a-z0-9-]+(@\d+\.\d+\.\d+)?$`
-14. Git HTTPS source: URL scheme allowlist -- `https://` only. No `http://`, `file://`, `data://`, `git://`
-15. Git shorthand source: Prefix allowlist -- `github:`, `gitlab:`, `bitbucket:` only
-16. Local path source: Must resolve within workspace. No `..` escaping workspace root. Path containment enforced.
+1. npm package source: Must match `^@[a-z0-9-]+/[a-z0-9-]+(@\d+\.\d+\.\d+)?$`
+2. Git HTTPS source: URL scheme allowlist -- `https://` only. No `http://`, `file://`, `data://`, `git://`
+3. Git shorthand source: Prefix allowlist -- `github:`, `gitlab:`, `bitbucket:` only
+4. Local path source: Must resolve within workspace. No `..` escaping workspace root. Path containment enforced.
 
 **Source type detection order:** if starts with `@` then npm package. If starts with `https://` then git HTTPS. If starts with `github:`/`gitlab:`/`bitbucket:` then git shorthand. Otherwise local path.
 
@@ -292,6 +295,7 @@ const JsonErrorResponse = z.object({
 ### Consequences
 
 **Good:**
+
 - Three-tier input resolution guarantees correct behavior in all execution modes without code duplication
 - Grouped command tree scales to new content types without restructuring root commands
 - ci-info covers 50+ CI vendors with zero configuration
@@ -301,6 +305,7 @@ const JsonErrorResponse = z.object({
 - Context-aware interactive fallback reduces onboarding friction for new users
 
 **Bad:**
+
 - Every prompt site requires a three-branch guard (interactive/CI/MCP), increasing code volume
 - 18 @clack/prompts components create a large API surface to maintain across upgrades
 - ci-info adds an implicit behavior layer that may surprise users who expect explicit flag control
@@ -371,6 +376,7 @@ Exit codes: 0 = success, 1 = runtime error (operation failed), 2 = usage error (
 @clack/prompts provides the richest terminal UX of available options (18 components, spinner, progress, autocomplete). The three-tier guard pattern isolates prompt calls, making the library swappable without architectural change.
 
 ## Observations
+
 - [decision] Ten interconnected decisions govern command tree, flags, CI mode, input resolution, prompts, validation, MCP errors, and JSON envelope #cli #architecture
 - [decision] Three-tier input resolution (interactive/CI/MCP) is the core architectural pattern for all user input #interaction-model
 - [decision] --ci implies --yes but not vice versa, preserving UX richness for partial automation #ci-mode
@@ -387,6 +393,7 @@ Exit codes: 0 = success, 1 = runtime error (operation failed), 2 = usage error (
 - [fact] @clack/prompts v1.1.0 replaced picocolors with node:util styleText #dependency
 - [constraint] 16 Zod validation rules enforce input correctness at prompt time, not at manifest write #validation
 - [requirement] MCP error responses must include options lists enabling AI agent self-correction #mcp
+
 ## Relations
 
 - depends_on [[ADR-005 Runtime and Distribution Strategy]]

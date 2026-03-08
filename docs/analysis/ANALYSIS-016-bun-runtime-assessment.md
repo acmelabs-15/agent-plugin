@@ -142,12 +142,14 @@ The @clack/prompts compatibility is the highest-risk dependency. Multiple GitHub
 ### 4.9 Distribution Options
 
 **Option A: npm package with Bun shebang**
+
 - Users install via `npm install -g @acmelabs-15/agent-plugin`
 - Entry point uses `#!/usr/bin/env bun` shebang
 - Requires Bun installed on user's machine
 - Risk: forces users to install Bun
 
 **Option B: npm package with Node.js shebang (develop with Bun)**
+
 - Users install via `npm install -g @acmelabs-15/agent-plugin`
 - Entry point uses `#!/usr/bin/env node` shebang
 - Requires TypeScript compilation step for distribution
@@ -155,6 +157,7 @@ The @clack/prompts compatibility is the highest-risk dependency. Multiple GitHub
 - Risk: loses Bun-native API advantages, needs build step
 
 **Option C: Compiled standalone binary**
+
 - `bun build --compile` produces single executable
 - No runtime dependency (no Bun, no Node.js required)
 - Cross-compile targets: macOS (x64/arm64), Linux (x64/arm64), Windows (x64)
@@ -162,6 +165,7 @@ The @clack/prompts compatibility is the highest-risk dependency. Multiple GitHub
 - Risk: large binary size, no `npm install` workflow
 
 **Option D: Dual distribution (npm + binary)**
+
 - npm package for `npx`/`bunx` usage (Option B)
 - Compiled binaries for standalone installation (Option C)
 - Maximum reach, higher maintenance cost
@@ -266,6 +270,7 @@ This is the highest-risk finding. Multiple GitHub issues document problems with 
 ### Risk: Binary Size
 
 50-100 MB binaries are large for a CLI tool. This matters for:
+
 - Distribution bandwidth
 - Installation time
 - Disk space on CI runners
@@ -332,25 +337,25 @@ This hybrid approach maximizes reach while preserving Bun's development experien
 
 ### Sources Consulted
 
-- Anthropic acquires Bun announcement: https://www.anthropic.com/news/anthropic-acquires-bun-as-claude-code-reaches-usd1b-milestone
-- Bun joins Anthropic blog: https://bun.com/blog/bun-joins-anthropic
-- Bun Node.js compatibility docs: https://bun.com/docs/runtime/nodejs-compat
-- Bun single-file executable docs: https://bun.com/docs/bundler/executables
-- Bun Glob docs: https://bun.com/docs/runtime/glob
-- Tigris CLI Bun migration case study: https://www.tigrisdata.com/blog/using-bun-and-benchmark/
-- Bun production readiness 2026: https://dev.to/last9/is-bun-production-ready-in-2026-a-practical-assessment-181h
-- Bun vs Node.js 2026 switch analysis: https://dev.to/alexcloudstar/bun-vs-nodejs-is-it-time-to-switch-in-2026-5821
-- Bun vs Deno vs Node.js 2026 benchmarks: https://dev.to/jsgurujobs/bun-vs-deno-vs-nodejs-in-2026-benchmarks-code-and-real-numbers-2l9d
-- Runtime comparison guide 2026: https://dev.to/dataformathub/nodejs-vs-deno-vs-bun-the-ultimate-runtime-guide-for-2026-di
-- Bun performance benchmarks 2025: https://strapi.io/blog/bun-vs-nodejs-performance-comparison-guide
-- @clack/prompts Bun issues: https://github.com/oven-sh/bun/issues/4835, https://github.com/oven-sh/bun/issues/3099, https://github.com/oven-sh/bun/issues/7033
-- @clack/prompts with Bun demo: https://medium.com/@wangminder/a-simple-but-powerful-cli-demo-using-clack-with-ts-and-bun-cec91deeb95d
-- Gunshi documentation: https://gunshi.dev/
-- Gunshi npm: https://www.npmjs.com/package/gunshi
-- Windows ARM64 Bun issue: https://github.com/jdx/mise/discussions/7155
-- Bun cross-platform apps guide: https://blog.logrocket.com/developing-cross-platform-apps-bun/
-- Bun CLI applications guide: https://oneuptime.com/blog/post/2026-01-31-bun-cli-applications/view
-- Bun binary size reduction request: https://github.com/oven-sh/bun/issues/5854
+- Anthropic acquires Bun announcement: <https://www.anthropic.com/news/anthropic-acquires-bun-as-claude-code-reaches-usd1b-milestone>
+- Bun joins Anthropic blog: <https://bun.com/blog/bun-joins-anthropic>
+- Bun Node.js compatibility docs: <https://bun.com/docs/runtime/nodejs-compat>
+- Bun single-file executable docs: <https://bun.com/docs/bundler/executables>
+- Bun Glob docs: <https://bun.com/docs/runtime/glob>
+- Tigris CLI Bun migration case study: <https://www.tigrisdata.com/blog/using-bun-and-benchmark/>
+- Bun production readiness 2026: <https://dev.to/last9/is-bun-production-ready-in-2026-a-practical-assessment-181h>
+- Bun vs Node.js 2026 switch analysis: <https://dev.to/alexcloudstar/bun-vs-nodejs-is-it-time-to-switch-in-2026-5821>
+- Bun vs Deno vs Node.js 2026 benchmarks: <https://dev.to/jsgurujobs/bun-vs-deno-vs-nodejs-in-2026-benchmarks-code-and-real-numbers-2l9d>
+- Runtime comparison guide 2026: <https://dev.to/dataformathub/nodejs-vs-deno-vs-bun-the-ultimate-runtime-guide-for-2026-di>
+- Bun performance benchmarks 2025: <https://strapi.io/blog/bun-vs-nodejs-performance-comparison-guide>
+- @clack/prompts Bun issues: <https://github.com/oven-sh/bun/issues/4835>, <https://github.com/oven-sh/bun/issues/3099>, <https://github.com/oven-sh/bun/issues/7033>
+- @clack/prompts with Bun demo: <https://medium.com/@wangminder/a-simple-but-powerful-cli-demo-using-clack-with-ts-and-bun-cec91deeb95d>
+- Gunshi documentation: <https://gunshi.dev/>
+- Gunshi npm: <https://www.npmjs.com/package/gunshi>
+- Windows ARM64 Bun issue: <https://github.com/jdx/mise/discussions/7155>
+- Bun cross-platform apps guide: <https://blog.logrocket.com/developing-cross-platform-apps-bun/>
+- Bun CLI applications guide: <https://oneuptime.com/blog/post/2026-01-31-bun-cli-applications/view>
+- Bun binary size reduction request: <https://github.com/oven-sh/bun/issues/5854>
 
 ### Data Transparency
 

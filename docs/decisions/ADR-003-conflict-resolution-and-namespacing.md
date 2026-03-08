@@ -310,5 +310,3 @@ Implementation compliance will be confirmed via:
 - relates_to [[ANALYSIS-014-platform-config-patterns]]
 - relates_to [[DEBATE-ADR-003-conflict-resolution-and-namespacing]]
 - relates_to [[SESSION-2026-03-07_01-agent-plugin-spec-ideation]]
-
-

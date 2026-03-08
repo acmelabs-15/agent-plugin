@@ -29,6 +29,7 @@ We are building a cross-platform AI agent plugin manager. Our design decision is
 **Tools Used**: WebFetch on 6 documentation pages, git sparse-checkout of `anthropics/claude-code` repo for 4 real plugins.
 
 **Sources consulted**:
+
 - `https://code.claude.com/docs/en/plugins` (create plugins guide)
 - `https://code.claude.com/docs/en/plugins-reference` (full technical reference)
 - `https://code.claude.com/docs/en/discover-plugins` (install and lifecycle)

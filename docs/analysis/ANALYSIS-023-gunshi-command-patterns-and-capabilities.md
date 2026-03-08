@@ -25,6 +25,7 @@ tags:
 ## 2. Context
 
 ADR-006 selected gunshi v0.29.2 as the CLI framework. The design spec proposes approximately 20 commands organized as:
+
 - Consumer: add, remove, upgrade, update (alias), list
 - Author: init, validate, build, dev
 - Scaffolding: new agent, new skill, new command, new hook, new rule, new mcp init, new mcp add-tool (3 levels deep)

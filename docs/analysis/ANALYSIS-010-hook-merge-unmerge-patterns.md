@@ -23,6 +23,7 @@ tags:
 @acmelabs-15/agent-plugin is a cross-platform AI agent plugin manager targeting 7 platforms: Claude Code, Cursor, GitHub Copilot CLI, Kiro, OpenCode, Amp, and Windsurf. When a plugin is installed, its hooks must be merged with existing hooks. When uninstalled, its hooks must be cleanly removed without disturbing other plugins' hooks or user-owned hooks.
 
 Prior decisions established:
+
 - ADR-003: Hook event collisions are additive (both hooks run), not conflicting. Users can configure execution order.
 - ADR-003: Rename tracking via state store maps original-name to installed-name for correct update/removal.
 - ANALYSIS-009: Managed section markers (BEGIN/END) adopted for instruction files. Tool-owned templates for content generation. Hybrid strategy: managed sections for shared files, dedicated files for per-file platforms.
@@ -83,6 +84,7 @@ Three dominant patterns exist across the ecosystem:
 Multiple hook definitions for the same event are concatenated into an array. All hooks run (in parallel or sequence). No conflict resolution needed because hooks are additive. This is the cleanest model for hook-type configuration.
 
 Key properties:
+
 - Event-level arrays are concatenated, not replaced
 - Each hook handler retains identity through its command string or unique identifier
 - Deduplication prevents exact duplicate hooks from running twice
@@ -92,6 +94,7 @@ Key properties:
 Configuration from multiple sources is merged with a defined precedence. Later/more-specific sources override earlier/more-general ones. Some fields accumulate (arrays, lists) while others replace (scalars).
 
 Key properties:
+
 - Clear precedence hierarchy (system < user < project < override)
 - Per-field merge semantics (some fields accumulate, some replace)
 - systemd's "empty value reset" pattern: assign empty to clear inherited values before setting new ones
@@ -101,6 +104,7 @@ Key properties:
 Each contributor provides a partial configuration (patch/overlay). The system computes the final merged result from all layers. Layers are ordered; later layers can override or extend earlier ones.
 
 Key properties:
+
 - Base + overlay model: clean separation of concerns
 - Strategic merge (Kustomize): intelligent field-level merge using schema knowledge
 - Priority-based merge (NixOS): numeric priorities determine which value wins
@@ -146,6 +150,7 @@ Key properties:
 **Applicability**: Works well for text files (ANALYSIS-009 already adopted this for instruction files). Does NOT work for JSON configuration files because JSON does not support comments. Would require adding metadata fields to the JSON structure itself.
 
 **For Claude Code hooks, a marker-equivalent approach would be:**
+
 ```json
 {
   "hooks": {
@@ -181,12 +186,14 @@ Claude Code already does this. Plugin hooks live in `hooks/hooks.json` inside ea
 
 **B2: Static Overlay with Computed Merge**
 For platforms where we must write merged configuration to a single file:
+
 1. Each plugin's hook contribution is stored in our state directory as a separate JSON file: `~/.agent-plugin/state/hooks/{platform}/{plugin-name}.json`
 2. On install/update/uninstall, we recompute the merged hooks from ALL overlay files
 3. We write the merged result to the target platform's configuration file
 4. The state directory serves as both provenance tracking AND unmerge mechanism
 
 **Properties**:
+
 - Provenance is inherent (each file = one plugin's contribution)
 - Unmerge is clean: delete the plugin's overlay file, recompute merged result
 - Manual edits to the merged output are overwritten on next recompute (with backup)
@@ -200,6 +207,7 @@ For platforms where we must write merged configuration to a single file:
 **How it works**: Record the JSON Patch (RFC 6902) that each plugin applies. On uninstall, apply the inverse patch.
 
 **Properties**:
+
 - Clean conceptual model
 - RFC 6902 patches are well-standardized
 - Inverse patches can be computed for reversibility
@@ -234,6 +242,7 @@ For platforms where we must write merged configuration to a single file:
 ```
 
 **Properties**:
+
 - Clear provenance tracking
 - Can reconstruct what each plugin contributed
 - Removal is a lookup + delete from both lockfile and target config
@@ -255,10 +264,12 @@ For platforms where we must write merged configuration to a single file:
 **Problem**: User manually edits the merged configuration file. On next install/update/uninstall, the tool must decide what to do.
 
 **Solutions by pattern**:
+
 - Overlay (B2): User edits are overwritten on recompute. Mitigate with backup + warning. Users should edit their OWN settings file, not the plugin-managed sections. Clear documentation is required.
 - Lockfile (D): Can detect drift by comparing current file state to lockfile expectations. Can warn but not resolve automatically.
 
-**Recommended approach**: 
+**Recommended approach**:
+
 1. Compute hash of the merged section before writing
 2. On next operation, compare current file content's hook section against stored hash
 3. If mismatch, warn user: "Hook configuration was modified outside agent-plugin. Your changes will be preserved in a backup."
@@ -282,7 +293,8 @@ For platforms where we must write merged configuration to a single file:
 
 **Problem**: A crash during merge could leave configuration in a partially written state.
 
-**Solution**: 
+**Solution**:
+
 1. Read current configuration
 2. Compute new merged configuration in memory
 3. Write to a temporary file
@@ -296,6 +308,7 @@ On platforms where atomic rename is not possible (some Windows scenarios), use t
 **Problem**: A merge produces an invalid or undesirable configuration.
 
 **Solution**: The overlay approach inherently supports rollback:
+
 1. Delete the plugin's overlay file
 2. Recompute merged result from remaining overlays
 3. The pre-merge backup provides an additional safety net
@@ -352,6 +365,7 @@ Option B is the recommended approach. It mirrors how every robust configuration 
 ### The "Strictest Wins" Policy
 
 For platforms with blocking hook semantics (Claude Code PreToolUse can deny tool calls), the merge must respect a "strictest wins" policy:
+
 - If Plugin A's hook allows an action and Plugin B's hook blocks it, the action is blocked
 - This is inherent in Claude Code's design: all hooks run in parallel, and if any returns "deny", the action is denied
 - Our merge strategy does not need to implement this logic; the platform runtime handles it
@@ -468,23 +482,23 @@ Issue #29724 in anthropics/claude-code: When multiple plugins register hooks wit
 
 ### Sources Consulted
 
-- Claude Code hooks reference: https://code.claude.com/docs/en/hooks
-- Claude Code plugins reference: https://code.claude.com/docs/en/plugins-reference
-- Claude Code hook deduplication bug: https://github.com/anthropics/claude-code/issues/29724
-- Gemini CLI hooks docs: https://geminicli.com/docs/hooks/
-- Gemini CLI hook install/uninstall issue: https://github.com/google-gemini/gemini-cli/issues/9135
-- ESLint flat config: https://eslint.org/docs/latest/use/configure/combine-configs
-- webpack-merge: https://github.com/survivejs/webpack-merge
-- json-merger: https://github.com/boschni/json-merger
-- deepmerge: https://www.npmjs.com/package/deepmerge
-- Docker Compose merge: https://docs.docker.com/compose/how-tos/multiple-compose-files/merge/
-- Kubernetes Kustomize: https://kubernetes.io/docs/tasks/manage-kubernetes-objects/kustomization/
-- systemd drop-in overrides: https://dev.to/redrum_yot/understanding-drop-in-overrides-in-systemd-when-parameters-accumulate-vs-override-3noi
-- NixOS modules: https://wiki.nixos.org/wiki/NixOS_modules
-- Git config include: https://git-scm.com/docs/git-config
-- Terraform override files: https://developer.hashicorp.com/terraform/language/files/override
-- JSON Merge Patch RFC 7396: https://datatracker.ietf.org/doc/html/rfc7396
-- JSON Patch vs Merge Patch comparison: https://erosb.github.io/json-patch-vs-merge-patch/
+- Claude Code hooks reference: <https://code.claude.com/docs/en/hooks>
+- Claude Code plugins reference: <https://code.claude.com/docs/en/plugins-reference>
+- Claude Code hook deduplication bug: <https://github.com/anthropics/claude-code/issues/29724>
+- Gemini CLI hooks docs: <https://geminicli.com/docs/hooks/>
+- Gemini CLI hook install/uninstall issue: <https://github.com/google-gemini/gemini-cli/issues/9135>
+- ESLint flat config: <https://eslint.org/docs/latest/use/configure/combine-configs>
+- webpack-merge: <https://github.com/survivejs/webpack-merge>
+- json-merger: <https://github.com/boschni/json-merger>
+- deepmerge: <https://www.npmjs.com/package/deepmerge>
+- Docker Compose merge: <https://docs.docker.com/compose/how-tos/multiple-compose-files/merge/>
+- Kubernetes Kustomize: <https://kubernetes.io/docs/tasks/manage-kubernetes-objects/kustomization/>
+- systemd drop-in overrides: <https://dev.to/redrum_yot/understanding-drop-in-overrides-in-systemd-when-parameters-accumulate-vs-override-3noi>
+- NixOS modules: <https://wiki.nixos.org/wiki/NixOS_modules>
+- Git config include: <https://git-scm.com/docs/git-config>
+- Terraform override files: <https://developer.hashicorp.com/terraform/language/files/override>
+- JSON Merge Patch RFC 7396: <https://datatracker.ietf.org/doc/html/rfc7396>
+- JSON Patch vs Merge Patch comparison: <https://erosb.github.io/json-patch-vs-merge-patch/>
 
 ### Data Transparency
 

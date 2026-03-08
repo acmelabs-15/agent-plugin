@@ -159,6 +159,7 @@ Frontmatter parsing is simple. The algorithm is:
 4. Return parsed data + remaining content
 
 This is 5-10 lines of code. Using `yaml` 2.x (eemeli/yaml) as the YAML engine provides:
+
 - YAML 1.2 compliance (vs 1.1 for js-yaml 3.x)
 - ESM native (no CJS interop needed)
 - TypeScript types built in
@@ -230,23 +231,23 @@ function parseFrontmatter<T = Record<string, unknown>>(input: string): ParsedFro
 
 ### Sources Consulted
 
-- gray-matter GitHub: https://github.com/jonschlinkert/gray-matter
-- gray-matter package.json: https://raw.githubusercontent.com/jonschlinkert/gray-matter/master/package.json
-- gray-matter js-yaml update PR #137: https://github.com/jonschlinkert/gray-matter/pull/137
-- gray-matter js-yaml update issue #136: https://github.com/jonschlinkert/gray-matter/issues/136
-- front-matter GitHub: https://github.com/jxson/front-matter
-- front-matter package.json: https://raw.githubusercontent.com/jxson/front-matter/master/package.json
-- yaml (eemeli/yaml) docs: https://eemeli.org/yaml/
-- yaml npm: https://www.npmjs.com/package/yaml
-- js-yaml CVE: https://security.snyk.io/package/npm/js-yaml
-- micromark GitHub: https://github.com/micromark/micromark
-- remark GitHub: https://github.com/remarkjs/remark
-- marked npm: https://www.npmjs.com/package/marked
-- markdown-it GitHub: https://github.com/markdown-it/markdown-it
-- "Don't use marked" article: https://macwright.com/2024/01/28/dont-use-marked
-- npm-compare frontmatter: https://npm-compare.com/front-matter,gray-matter,yaml-front-matter
-- npm-compare markdown: https://npm-compare.com/markdown-it,marked,remark,remark-parse,unified
-- Bun CJS interop: https://bun.sh/blog/commonjs-is-not-going-away
+- gray-matter GitHub: <https://github.com/jonschlinkert/gray-matter>
+- gray-matter package.json: <https://raw.githubusercontent.com/jonschlinkert/gray-matter/master/package.json>
+- gray-matter js-yaml update PR #137: <https://github.com/jonschlinkert/gray-matter/pull/137>
+- gray-matter js-yaml update issue #136: <https://github.com/jonschlinkert/gray-matter/issues/136>
+- front-matter GitHub: <https://github.com/jxson/front-matter>
+- front-matter package.json: <https://raw.githubusercontent.com/jxson/front-matter/master/package.json>
+- yaml (eemeli/yaml) docs: <https://eemeli.org/yaml/>
+- yaml npm: <https://www.npmjs.com/package/yaml>
+- js-yaml CVE: <https://security.snyk.io/package/npm/js-yaml>
+- micromark GitHub: <https://github.com/micromark/micromark>
+- remark GitHub: <https://github.com/remarkjs/remark>
+- marked npm: <https://www.npmjs.com/package/marked>
+- markdown-it GitHub: <https://github.com/markdown-it/markdown-it>
+- "Don't use marked" article: <https://macwright.com/2024/01/28/dont-use-marked>
+- npm-compare frontmatter: <https://npm-compare.com/front-matter,gray-matter,yaml-front-matter>
+- npm-compare markdown: <https://npm-compare.com/markdown-it,marked,remark,remark-parse,unified>
+- Bun CJS interop: <https://bun.sh/blog/commonjs-is-not-going-away>
 - Vercel Skills source analysis: ANALYSIS-003
 
 ### Data Transparency

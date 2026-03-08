@@ -23,7 +23,7 @@ tags:
 
 Vercel's `npx skills` CLI is the most popular skills installer in the AI agent ecosystem (8,800 GitHub stars, 40+ agents supported). It defines the de facto SKILL.md format. We decided to create our own plugin format but borrow concepts from Vercel's standard where sensible, extending the pattern for agents, prompts, hooks, and MCP servers.
 
-Repository: https://github.com/vercel-labs/skills (MIT license)
+Repository: <https://github.com/vercel-labs/skills> (MIT license)
 Version analyzed: 1.4.4 (March 2026)
 Package: `skills` on npm (also aliased as `add-skill`)
 
@@ -277,6 +277,7 @@ Tracks all installed skills globally. NOT checked into version control.
 ```
 
 Key design choices:
+
 - Version field with backwards-incompatible wipe (v3 added `skillFolderHash`)
 - `skillFolderHash` uses GitHub Trees API SHA (changes when any file in folder changes)
 - `lastSelectedAgents` remembers user's agent selection for next install
@@ -300,6 +301,7 @@ Designed to be checked into version control. Intentionally minimal and timestamp
 ```
 
 Key design choices:
+
 - No timestamps (reduces merge conflicts)
 - Skills sorted alphabetically when written (deterministic output)
 - Hash computed from actual file contents on disk (not GitHub API)
@@ -449,6 +451,7 @@ Fields Vercel does not have but we need:
 ### 11.3 SQLite State Store
 
 Replace Vercel's JSON lock files with SQLite for:
+
 - Query installed plugins by type, platform, source
 - Track dependency graphs
 - Store configuration overrides
@@ -458,6 +461,7 @@ Replace Vercel's JSON lock files with SQLite for:
 ### 11.4 MCP Server Interface
 
 Vercel has no AI-operable interface. We add:
+
 - `plugin.list` tool -- query installed plugins
 - `plugin.search` tool -- search registry
 - `plugin.install` tool -- install via MCP
@@ -466,6 +470,7 @@ Vercel has no AI-operable interface. We add:
 ### 11.5 Platform-Aware Installation
 
 Vercel copies the same SKILL.md to every agent directory. We need:
+
 - Platform-specific configuration generation (e.g., MCP config for Cursor vs Claude Code)
 - Platform capability detection (does this platform support hooks? MCP? etc.)
 - Conditional content in plugin files based on target platform
@@ -514,9 +519,9 @@ Telemetry tracks installs, skill sources, and agent selections. The `skills.sh` 
 
 ### 13.1 Sources Consulted
 
-- Vercel Skills GitHub: https://github.com/vercel-labs/skills (src/ directory, all .ts files)
-- Vercel Agent Skills: https://github.com/vercel-labs/agent-skills (example SKILL.md files)
-- skills.sh: https://skills.sh (search API referenced in find.ts)
+- Vercel Skills GitHub: <https://github.com/vercel-labs/skills> (src/ directory, all .ts files)
+- Vercel Agent Skills: <https://github.com/vercel-labs/agent-skills> (example SKILL.md files)
+- skills.sh: <https://skills.sh> (search API referenced in find.ts)
 - agentskills.io: referenced in README as specification site
 
 ### 13.2 Data Transparency

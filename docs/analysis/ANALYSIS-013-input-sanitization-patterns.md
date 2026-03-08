@@ -28,6 +28,7 @@ ANALYSIS-009 established that instruction file content is a proven attack vector
 Our tool writes author-supplied content from plugin.json manifests into files that directly control AI agent behavior across 7 platforms. This creates 5 distinct injection surfaces: JSON config files, YAML frontmatter, markdown instruction content, shell command strings in hook arrays, and security-critical fields that control AI agent permissions.
 
 Prior decisions:
+
 - ADR-001: Plugin manifest (plugin.json) defines name, version, description, component paths
 - ADR-003: Cross-platform frontmatter with platformConfig overrides; platform adapters emit supported fields
 - ANALYSIS-009 RQ4: Identified sanitization layers needed (length limits, pattern detection, content fencing, schema validation)
@@ -62,7 +63,7 @@ Prior decisions:
 | GitHub Actions: Untrusted input must go through intermediate env vars; inline shell interpolation is the primary injection vector | GitHub Security Lab | High |
 | ESLint: Plugin rule options validated against JSON Schema (meta.schema); unrecognized options rejected by default | ESLint docs | High |
 | WordPress: Layered sanitization (sanitize_text_field strips HTML, wp_kses allows specific tags via allowlist, separate escaping on output) | WordPress docs | High |
-| Zod strips unrecognized keys by default during parsing; z.record() with __proto__ keys can cause prototype pollution | GitHub issue #2227 | High |
+| Zod strips unrecognized keys by default during parsing; z.record() with **proto** keys can cause prototype pollution | GitHub issue #2227 | High |
 | Zod v4 adds global schema registry, JSON Schema import, unified error API | Zod docs, InfoQ | High |
 | Prompt injection via AGENTS.MD hijacked VSCode Chat agent behavior | Prompt Security blog | High |
 
@@ -81,7 +82,7 @@ Prior decisions:
 
 ### Hypotheses (Unverified)
 
-- [hypothesis] Zod's .strip() behavior (removing unrecognized keys) combined with explicit __proto__/constructor/prototype key rejection may provide sufficient prototype pollution protection without a separate library
+- [hypothesis] Zod's .strip() behavior (removing unrecognized keys) combined with explicit **proto**/constructor/prototype key rejection may provide sufficient prototype pollution protection without a separate library
 - [hypothesis] For our use case (CLI tool, no browser rendering), HTML/XSS sanitization libraries (DOMPurify, sanitize-html) add unnecessary weight since our injection target is AI agents consuming markdown, not browsers rendering HTML
 - [hypothesis] A custom prompt injection pattern detector (regex-based) may be more effective than generic XSS sanitizers for our specific threat model (AI instruction hijacking vs browser XSS)
 
@@ -108,11 +109,12 @@ Prior decisions:
 
 #### Vector 1: JSON Injection (settings.json, opencode.json)
 
-**Attack**: Prototype pollution via __proto__, constructor, or prototype keys in plugin config objects.
+**Attack**: Prototype pollution via **proto**, constructor, or prototype keys in plugin config objects.
 
 **Mitigations**:
+
 1. Zod schema validation with .strict() rejects unexpected keys entirely
-2. Explicit denial of dangerous keys: z.object().refine(obj => !('__proto__' in obj))
+2. Explicit denial of dangerous keys: z.object().refine(obj => !('**proto**' in obj))
 3. Use Object.create(null) for merge targets
 4. Freeze merged objects with Object.freeze()
 
@@ -125,6 +127,7 @@ Prior decisions:
 **Attack C**: Multiline string injection breaking out of frontmatter into instruction content.
 
 **Mitigations**:
+
 1. js-yaml v4 load() is safe by default (no code execution via type tags)
 2. Set maxAliasCount option to limit alias expansion (prevents billion laughs)
 3. Validate parsed frontmatter against Zod schema (reject unexpected fields/types)
@@ -138,6 +141,7 @@ Prior decisions:
 **Attack**: Malicious plugin author provides hook commands containing command chaining (;, &&, ||), subshell execution ($(), backticks), or redirect operators (>, <).
 
 **Mitigations**:
+
 1. Allowlist approach: Define permitted command patterns (executable name + arguments only)
 2. Use shell-quote to parse hook commands and inspect the AST for operators
 3. Reject commands containing: pipes (|), redirects (>, <, >>), subshells ($(), backticks), command chains (;, &&, ||), environment variable references ($VAR), glob patterns (*, ?)
@@ -151,6 +155,7 @@ Prior decisions:
 **Attack**: Plugin description or instruction content contains hidden instructions that override user intent when consumed by AI agents.
 
 **Mitigations**:
+
 1. Length limits on all text fields (description: 500 chars, component description: 200 chars)
 2. Pattern detection for known prompt injection markers (regex-based):
    - "ignore previous instructions", "you are now", "IMPORTANT:", "CRITICAL:", "OVERRIDE:"
@@ -169,6 +174,7 @@ Prior decisions:
 **Attack**: Plugin manifest references files outside the plugin directory via ../../ sequences or absolute paths.
 
 **Mitigations**:
+
 1. Resolve all file paths with path.resolve() then verify they start with the plugin's root directory
 2. Reject absolute paths in plugin manifests (all paths must be relative)
 3. Reject paths containing .. segments
@@ -182,6 +188,7 @@ Prior decisions:
 **Attack**: Plugin manifest sets permissionMode, allowed-tools, or other permission-controlling fields to escalate AI agent capabilities.
 
 **Mitigations**:
+
 1. Security-critical fields must NEVER come from plugin manifests
 2. Zod schema for plugin.json must not include permission-related fields; any present are stripped
 3. Permission fields are user-controlled only (set via CLI flags or user config, never from plugin metadata)
@@ -192,6 +199,7 @@ Prior decisions:
 ### Community Best Practice Findings
 
 #### VSCode Extension Validation Model
+
 - Strict manifest schema with known fields
 - Trusted badge allowlist (only known badge services)
 - Workspace trust model separates trusted from untrusted extension capabilities
@@ -199,30 +207,35 @@ Prior decisions:
 - Semver validation for version fields
 
 #### npm Package.json Validation Model
+
 - Dedicated validators per field type (validate-npm-package-name, validate-npm-package-license)
 - Type checking per field (private must be boolean, os must be string array)
 - Name validation includes character restrictions and scope format
 - No content sanitization (npm trusts package authors; security comes from code review and npm audit)
 
 #### GitHub Actions Input Security Model
+
 - Untrusted input must go through intermediate environment variables
 - Never interpolate user-controlled values directly into shell commands
 - CodeQL queries detect unsafe interpolation patterns
 - Scorecards project audits action workflows for injection risks
 
 #### ESLint Plugin Config Validation Model
+
 - JSON Schema (meta.schema) defines allowed options per rule
 - Unrecognized options rejected automatically
 - Schema validation happens before any rule execution
 - This is the closest analog to our use case: plugin authors define config, framework validates it
 
 #### WordPress Content Sanitization Model
+
 - Three-layer approach: validate (type/format), sanitize (strip/encode), escape (output context)
 - sanitize_text_field(): strips HTML tags, extra whitespace, tabs, line breaks
 - wp_kses(): allowlist-based HTML filtering (specify exactly which tags/attributes permitted)
 - Context-specific escaping on output (esc_html, esc_attr, esc_url)
 
 #### OWASP Input Validation Guidelines
+
 - Allowlist ("what IS authorized") over denylist ("what is NOT authorized")
 - Schema-based validation explicitly recommended for JSON input
 - Constrain first, reject second, sanitize third (defense in depth)
@@ -291,7 +304,7 @@ This mirrors Claude Code's existing hook approval model (CVE-2025-59536 was abou
 
 When merging platformConfig overrides from plugins into platform settings, prototype pollution is the primary risk. Mitigations:
 
-1. Zod validates the override object shape before merging (no __proto__, constructor, prototype keys)
+1. Zod validates the override object shape before merging (no **proto**, constructor, prototype keys)
 2. Merge into Object.create(null) targets
 3. Use structuredClone() for deep copying (does not preserve prototype chain)
 4. Freeze the result after merging
@@ -437,7 +450,7 @@ Sanitized, Validated Plugin Data
 - [decision] Layered defense model adopted: constrain (schema), reject (value constraints), sanitize (transforms), escape (output context) following OWASP and WordPress patterns #security #architecture
 - [fact] No npm package exists for AI prompt injection detection; custom regex-based detection is necessary but not sufficient for sophisticated attacks #security #gap
 - [risk] Prompt injection detection has medium confidence; regex patterns catch obvious attacks but can be evaded by sophisticated adversaries #security #risk
-- [technique] Zod .strict() mode combined with explicit __proto__/constructor/prototype key rejection provides prototype pollution protection without a separate library #validation #technique
+- [technique] Zod .strict() mode combined with explicit **proto**/constructor/prototype key rejection provides prototype pollution protection without a separate library #validation #technique
 - [insight] The ESLint model (JSON Schema for plugin config, reject unrecognized options) is the closest community analog to our plugin manifest validation problem #patterns
 - [fact] js-yaml v4 made load() safe by default, eliminating the most dangerous YAML attack (code execution via type tags), but billion laughs prevention requires explicit maxAliasCount configuration #yaml #security
 

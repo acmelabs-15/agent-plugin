@@ -123,34 +123,40 @@ The 6 APIs added in v1.0.0 (autocomplete, autocompleteMultiselect, box, path, pr
 ### API Detail: Key v1.0.0 Additions
 
 **autocomplete(opts)**
+
 - Built on `AutocompletePrompt` from `@clack/core`
 - Options: message, options (static array or dynamic function), maxItems, placeholder, validate, filter, initialValue, initialUserInput
 - Default filter matches against label, hint, and value (case-insensitive substring)
 - Custom filter function supported for fuzzy search
 
 **autocompleteMultiselect(opts)**
+
 - Same base as autocomplete but returns array of selected values
 - Options: message, options, maxItems, placeholder, validate, filter, initialValues, required
 
 **path(opts)**
+
 - Built on top of `autocomplete()` internally
 - Options: root, directory (boolean), initialValue, message, validate
 - Dynamically reads filesystem to populate options
 - Auto-suggests directory contents based on user input
 
 **progress(opts)**
+
 - Extends `spinner()` with a visual progress bar
 - Options: style (light/heavy/block), max (default 100), size (default 40), plus all SpinnerOptions
 - Methods: start(msg), advance(step, msg), stop(msg), cancel(msg), error(msg), clear(), message(msg)
 - Returns `ProgressResult` interface
 
 **taskLog(opts)**
+
 - Renders scrolling log output that clears on success, remains on failure
 - Options: title, limit, spacing, retainLog
 - Supports grouped sub-logs via `group()` method
 - Methods: message(text), fail(text), success(text)
 
 **box(message, title, opts)**
+
 - Renders boxed text (similar to `note()` but with border customization)
 - Options: contentAlign, titleAlign, width, titlePadding, contentPadding, rounded, formatBorder
 - Supports rounded or square border styles

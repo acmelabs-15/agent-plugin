@@ -25,6 +25,7 @@ tags:
 ANALYSIS-010 established the overlay/recompute pattern: each plugin's hooks are stored as separate JSON overlay files, and on install/uninstall, ALL overlay files are read and merged into the platform's config. This analysis answers the implementation question: what library performs that merge, and what custom strategy handles our specific semantics?
 
 Our merge requirements:
+
 - Objects merge recursively (event groups contain matcher groups)
 - Arrays concatenate (hook command lists append, never replace)
 - Scalars use "strictest wins" for boolean blocking flags (if any plugin blocks, result blocks)
@@ -49,7 +50,7 @@ Our merge requirements:
 | lodash.merge | 71.2M | 4.6.2 | 7 years ago | @types/lodash | MIT | Via lodash.mergeWith callback | Recursive merge | Fixed in 4.17.12+ (CVE-2025-13465 for unset/omit) |
 | deepmerge | 64.1M | 4.3.1 | 3 years ago | Bundled | MIT | customMerge per key, arrayMerge, isMergeableObject | Concatenation (default) or custom | No known CVEs in current version |
 | webpack-merge | 19.7M | 6.0.1 | 2 years ago | Bundled | MIT | customizeArray, customizeObject, mergeWithRules, CustomizeRule enum | Append/Prepend/Replace per field | N/A (uses wildcard matching) |
-| defu | 16.9M | 6.1.4 | 2 years ago | Bundled | MIT | Custom merger via createDefu | Concatenation (default for defined arrays) | Skips __proto__ and constructor |
+| defu | 16.9M | 6.1.4 | 2 years ago | Bundled | MIT | Custom merger via createDefu | Concatenation (default for defined arrays) | Skips **proto** and constructor |
 | deepmerge-ts | 8.8M | 7.1.5 | 1 year ago | Native TS-first | BSD-3 | deepmergeCustom: mergeRecords, mergeArrays, mergeMaps, mergeSets, mergeOthers, filterValues | Concatenation (default) or custom | Fixed in post-CVE-2022-24802 |
 | fast-json-patch | 5.1M | 3.1.x | Recent | Bundled | MIT | RFC 6902 operations (add/remove/replace/move/copy) | Explicit operations | Built-in protection |
 | merge-deep | ~1.8M | 3.0.3 | 5 years ago | @types/merge-deep | MIT | None | Object merge only, no array handling | Fixed post-CVE-2021-26707 (CVSS 9.8) |
@@ -64,10 +65,10 @@ Our merge requirements:
 | deepmerge default behavior is array concatenation, matching our requirement | npm docs, GitHub README | High |
 | deepmerge-ts provides deepmergeCustom with per-type merge functions (mergeRecords, mergeArrays, etc.) and action system (skip, defaultMerge) | GitHub docs/deepmergeCustom.md | High |
 | webpack-merge CustomizeRule enum: Append, Prepend, Replace, Merge, Match | GitHub README, jsdocs.io | High |
-| defu skips __proto__ and constructor keys for prototype pollution protection, but cannot merge arrays recursively | npm docs, DEV Community comparison | High |
+| defu skips **proto** and constructor keys for prototype pollution protection, but cannot merge arrays recursively | npm docs, DEV Community comparison | High |
 | merge-deep had CVSS 9.8 prototype pollution (CVE-2021-26707) via constructor payload | Snyk, CVE database | High |
 | deepmerge-ts had prototype pollution (CVE-2022-24802) in defaultMergeRecords, fixed in subsequent release | GitHub security advisory | High |
-| lodash had CVE-2025-13465 affecting _.unset and _.omit, first security patch in 5 years | Snyk, Orbitant analysis | High |
+| lodash had CVE-2025-13465 affecting _.unset and_.omit, first security patch in 5 years | Snyk, Orbitant analysis | High |
 | @fastify/deepmerge benchmarks: 605,343 ops/sec vs deepmerge 20,312 ops/sec vs deepmerge-ts 174,973 ops/sec | @fastify/deepmerge README (self-reported) | Medium |
 | Docker Compose merge: single-values replace, maps merge recursively, arrays append, special keys merge by uniqueness | Docker docs | High |
 | ESLint flat config: sequential array of config objects, later overrides earlier, no recursive array merge | ESLint docs, blog | High |
@@ -170,13 +171,14 @@ const customMerge = deepmergeCustom({
 | merge-deep | CVE-2021-26707 (CVSS 9.8) | Patched (3.0.3) but unmaintained |
 | lodash | CVE-2025-13465 (unset/omit) | Safe for merge (4.17.21+) |
 | @75lb/deep-merge | CVE-2024-38986 | Vulnerable |
-| js-yaml | CVE-2025-64718 (__proto__ in YAML) | Patched (4.1.1) |
+| js-yaml | CVE-2025-64718 (**proto** in YAML) | Patched (4.1.1) |
 
 **Circular References**: deepmerge does not handle circular references (throws stack overflow). deepmerge-ts does not handle them either. For our use case, circular refs in JSON config files are impossible (JSON spec prohibits them).
 
 **Special Types**: Date, RegExp, Map, Set handling varies by library. Irrelevant for our use case: JSON configs contain only JSON-native types (string, number, boolean, null, object, array).
 
 **Merge Determinism**: JSON.stringify property ordering is specified since ES2015 (insertion order for string keys, ascending for integer keys). For deterministic output:
+
 1. Sort overlay files before processing (alphabetical or by priority)
 2. Use sorted-keys JSON serialization for output (json-stringify-deterministic or JSON.stringify with sorted replacer)
 3. Validate output against schema before writing
@@ -184,6 +186,7 @@ const customMerge = deepmergeCustom({
 **Schema Validation**: Zod is the standard choice for TypeScript config validation. Define the platform's hook schema, validate merged output with `safeParse()`, reject invalid merges before writing to disk. Zod provides static type inference from schemas, eliminating type duplication.
 
 **Testing Merge Correctness**:
+
 1. Property-based testing: generate random overlay combinations, verify merge properties (associativity, commutativity for our case)
 2. Snapshot testing: golden-file comparison for known overlay combinations
 3. Round-trip testing: merge N overlays, verify each overlay's hooks appear in output
@@ -208,6 +211,7 @@ Rationale:
 | Bundle size | ~1KB | ~3KB | ~1KB | ~5KB (merge only) |
 
 **deepmerge wins** because:
+
 1. Default array concatenation matches our primary requirement with zero configuration
 2. `customMerge(key)` provides per-key strategy, which is exactly what we need for "blocking" boolean fields
 3. Clean security record (no CVEs)
@@ -274,7 +278,8 @@ function validateAndWrite(merged: unknown, targetPath: string): void {
 ### Why Not Build It From Scratch?
 
 A custom deep merge function is 20-50 lines of code. However:
-- Prototype pollution prevention requires careful key filtering (__proto__, constructor, prototype)
+
+- Prototype pollution prevention requires careful key filtering (**proto**, constructor, prototype)
 - Edge cases around undefined, null, and missing keys add complexity
 - deepmerge has been hardened by 64.1M weekly downloads over 14 years
 - The security risk of a homegrown implementation outweighs the dependency cost
@@ -288,6 +293,7 @@ RFC 7396 (JSON Merge Patch) uses null for deletion, making it impossible to set 
 ### The "Strictest Wins" Custom Strategy
 
 Our merge has three semantic layers:
+
 1. **Object properties**: Recursive deep merge (standard)
 2. **Array values**: Concatenation (deepmerge default)
 3. **Boolean blocking flags**: Logical OR ("if any plugin blocks, result blocks")
@@ -297,6 +303,7 @@ deepmerge's `customMerge(key)` handles all three in a single, readable configura
 ### Determinism Guarantee
 
 For identical overlay sets to produce identical output:
+
 1. Sort overlay files by filename before processing (not insertion order)
 2. Use `deepmerge.all([sorted overlays])` for single-pass merge
 3. Serialize with sorted keys: `JSON.stringify(obj, sortedKeys, 2)`
@@ -339,29 +346,29 @@ defu's mental model is "fill defaults": it assigns values only where the target 
 
 ### Sources Consulted
 
-- npmtrends comparison: https://npmtrends.com/deepmerge-vs-deepmerge-ts-vs-defu-vs-lodash.merge-vs-webpack-merge
-- deepmerge npm: https://www.npmjs.com/package/deepmerge
-- deepmerge-ts GitHub: https://github.com/RebeccaStevens/deepmerge-ts
-- deepmerge-ts custom merge docs: https://github.com/RebeccaStevens/deepmerge-ts/blob/main/docs/deepmergeCustom.md
-- webpack-merge GitHub: https://github.com/survivejs/webpack-merge
-- defu GitHub: https://github.com/unjs/defu
-- @fastify/deepmerge GitHub: https://github.com/fastify/deepmerge
-- fast-json-patch npm: https://www.npmjs.com/package/fast-json-patch
-- ESLint flat config combine: https://eslint.org/docs/latest/use/configure/combine-configs
-- ESLint flat config evolution: https://eslint.org/blog/2025/03/flat-config-extends-define-config-global-ignores/
-- Vite config merging: https://vite.dev/config/
-- Docker Compose merge spec: https://docs.docker.com/reference/compose-file/merge/
-- json-merge-patch npm: https://www.npmjs.com/package/json-merge-patch
-- JSON Patch vs Merge Patch: https://erosb.github.io/json-patch-vs-merge-patch/
-- CVE-2021-26707 merge-deep: https://security.snyk.io/vuln/SNYK-JS-MERGEDEEP-1070277
-- CVE-2022-24802 deepmerge-ts: https://security.snyk.io/vuln/SNYK-JS-DEEPMERGETS-2438399
-- CVE-2025-13465 lodash: https://security.snyk.io/vuln/SNYK-JS-LODASH-15053838
-- CVE-2024-38986 @75lb/deep-merge: https://gist.github.com/mestrtee/b20c3aee8bea16e1863933778da6e4cb
-- Prototype pollution prevention: https://portswigger.net/web-security/prototype-pollution/preventing
-- json-stringify-deterministic: https://github.com/Kikobeats/json-stringify-deterministic
-- Zod: https://zod.dev/
-- npm-compare deepmerge: https://npm-compare.com/deepmerge,lodash.merge,merge-deep,merge-options
-- Microsoft Intune policy resolution: https://www.microsoftpressstore.com/articles/article.aspx?p=3129455
+- npmtrends comparison: <https://npmtrends.com/deepmerge-vs-deepmerge-ts-vs-defu-vs-lodash.merge-vs-webpack-merge>
+- deepmerge npm: <https://www.npmjs.com/package/deepmerge>
+- deepmerge-ts GitHub: <https://github.com/RebeccaStevens/deepmerge-ts>
+- deepmerge-ts custom merge docs: <https://github.com/RebeccaStevens/deepmerge-ts/blob/main/docs/deepmergeCustom.md>
+- webpack-merge GitHub: <https://github.com/survivejs/webpack-merge>
+- defu GitHub: <https://github.com/unjs/defu>
+- @fastify/deepmerge GitHub: <https://github.com/fastify/deepmerge>
+- fast-json-patch npm: <https://www.npmjs.com/package/fast-json-patch>
+- ESLint flat config combine: <https://eslint.org/docs/latest/use/configure/combine-configs>
+- ESLint flat config evolution: <https://eslint.org/blog/2025/03/flat-config-extends-define-config-global-ignores/>
+- Vite config merging: <https://vite.dev/config/>
+- Docker Compose merge spec: <https://docs.docker.com/reference/compose-file/merge/>
+- json-merge-patch npm: <https://www.npmjs.com/package/json-merge-patch>
+- JSON Patch vs Merge Patch: <https://erosb.github.io/json-patch-vs-merge-patch/>
+- CVE-2021-26707 merge-deep: <https://security.snyk.io/vuln/SNYK-JS-MERGEDEEP-1070277>
+- CVE-2022-24802 deepmerge-ts: <https://security.snyk.io/vuln/SNYK-JS-DEEPMERGETS-2438399>
+- CVE-2025-13465 lodash: <https://security.snyk.io/vuln/SNYK-JS-LODASH-15053838>
+- CVE-2024-38986 @75lb/deep-merge: <https://gist.github.com/mestrtee/b20c3aee8bea16e1863933778da6e4cb>
+- Prototype pollution prevention: <https://portswigger.net/web-security/prototype-pollution/preventing>
+- json-stringify-deterministic: <https://github.com/Kikobeats/json-stringify-deterministic>
+- Zod: <https://zod.dev/>
+- npm-compare deepmerge: <https://npm-compare.com/deepmerge,lodash.merge,merge-deep,merge-options>
+- Microsoft Intune policy resolution: <https://www.microsoftpressstore.com/articles/article.aspx?p=3129455>
 
 ### Data Transparency
 

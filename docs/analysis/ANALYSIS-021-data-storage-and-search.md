@@ -347,29 +347,29 @@ tx();
 
 ### Sources Consulted
 
-- Bun SQLite docs: https://bun.com/docs/runtime/sqlite
-- Bun SQLite API reference: https://bun.com/reference/bun/sqlite
-- Bun SQLite guide (2026): https://oneuptime.com/blog/post/2026-01-31-bun-sqlite/view
-- better-sqlite3 Bun compatibility: https://github.com/oven-sh/bun/issues/16050
-- better-sqlite3 Bun discussion: https://github.com/oven-sh/bun/discussions/16049
-- Drizzle ORM Bun SQLite: https://orm.drizzle.team/docs/connect-bun-sqlite
-- Drizzle ORM Bun guide: https://bun.com/docs/guides/ecosystem/drizzle
-- Drizzle ORM npm: https://www.npmjs.com/package/drizzle-orm
-- Drizzle vs Prisma 2026: https://www.bytebase.com/blog/drizzle-vs-prisma/
-- Orama GitHub: https://github.com/oramasearch/orama
-- Orama npm: https://www.npmjs.com/package/@orama/orama
-- Orama docs: https://docs.orama.com/docs/orama-js
-- Orama JSR (Bun compat): https://jsr.io/@orama/orama
-- @huggingface/transformers npm: https://www.npmjs.com/package/@huggingface/transformers
-- Transformers.js semantic search: https://deepwiki.com/huggingface/transformers.js-examples/3.3-semantic-search-and-embeddings
-- Transformers.js v4 preview: https://huggingface.co/blog/transformersjs-v4
-- SemanticFinder (transformers.js demo): https://github.com/do-me/SemanticFinder
-- FlexSearch GitHub: https://github.com/nextapps-de/flexsearch
-- MiniSearch npm: https://www.npmjs.com/package/minisearch
-- Search library comparison: https://npm-compare.com/elasticlunr,flexsearch,fuse.js,minisearch
-- npm trends (search libraries): https://npmtrends.com/flexsearch-vs-fuzzysearch-vs-minisearch
-- JSON vs SQLite performance: https://pl-rants.net/posts/when-not-json/
-- SQLite flat files forum: https://sqlite.org/forum/forumpost/3d7be1ad3d
+- Bun SQLite docs: <https://bun.com/docs/runtime/sqlite>
+- Bun SQLite API reference: <https://bun.com/reference/bun/sqlite>
+- Bun SQLite guide (2026): <https://oneuptime.com/blog/post/2026-01-31-bun-sqlite/view>
+- better-sqlite3 Bun compatibility: <https://github.com/oven-sh/bun/issues/16050>
+- better-sqlite3 Bun discussion: <https://github.com/oven-sh/bun/discussions/16049>
+- Drizzle ORM Bun SQLite: <https://orm.drizzle.team/docs/connect-bun-sqlite>
+- Drizzle ORM Bun guide: <https://bun.com/docs/guides/ecosystem/drizzle>
+- Drizzle ORM npm: <https://www.npmjs.com/package/drizzle-orm>
+- Drizzle vs Prisma 2026: <https://www.bytebase.com/blog/drizzle-vs-prisma/>
+- Orama GitHub: <https://github.com/oramasearch/orama>
+- Orama npm: <https://www.npmjs.com/package/@orama/orama>
+- Orama docs: <https://docs.orama.com/docs/orama-js>
+- Orama JSR (Bun compat): <https://jsr.io/@orama/orama>
+- @huggingface/transformers npm: <https://www.npmjs.com/package/@huggingface/transformers>
+- Transformers.js semantic search: <https://deepwiki.com/huggingface/transformers.js-examples/3.3-semantic-search-and-embeddings>
+- Transformers.js v4 preview: <https://huggingface.co/blog/transformersjs-v4>
+- SemanticFinder (transformers.js demo): <https://github.com/do-me/SemanticFinder>
+- FlexSearch GitHub: <https://github.com/nextapps-de/flexsearch>
+- MiniSearch npm: <https://www.npmjs.com/package/minisearch>
+- Search library comparison: <https://npm-compare.com/elasticlunr,flexsearch,fuse.js,minisearch>
+- npm trends (search libraries): <https://npmtrends.com/flexsearch-vs-fuzzysearch-vs-minisearch>
+- JSON vs SQLite performance: <https://pl-rants.net/posts/when-not-json/>
+- SQLite flat files forum: <https://sqlite.org/forum/forumpost/3d7be1ad3d>
 
 ### Data Transparency
 

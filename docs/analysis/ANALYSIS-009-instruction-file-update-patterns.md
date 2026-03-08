@@ -25,6 +25,7 @@ tags:
 When a plugin is installed via `agent-plugin install`, the tool must update platform instruction files (CLAUDE.md, AGENTS.md, .cursor/rules/*.mdc, .kiro/steering/*.md, .github/copilot-instructions.md, .windsurf/rules/*.md) to surface the plugin's components (skills, agents, prompts, hooks, MCP). The content written to these files controls AI agent behavior, creating both a usability concern (content must be accurate and useful) and a security concern (malicious content can hijack AI behavior).
 
 Prior analyses established:
+
 - ANALYSIS-008: Exact file paths per platform. AGENTS.md covers 6/7 platforms. CLAUDE.md covers 4/7. Platform-specific instruction paths are all different.
 - ADR-001: Plugin manifest (plugin.json) contains name, version, description, plus component path declarations.
 - ADR-003: Components use cross-platform frontmatter (name, description, type, requires, sources) with optional platformConfig overrides. Platform adapters emit only supported fields per target.
@@ -101,17 +102,20 @@ The WordPress approach adds an important detail: it includes a human-readable in
 The content written between markers should be deterministic and template-driven, not AI-generated. Three layers of data populate the template:
 
 **Layer 1: Plugin-level metadata (from plugin.json)**
+
 - Plugin name, description, version
 - Author information
 - Repository/homepage URLs
 
 **Layer 2: Component-level metadata (from component frontmatter)**
+
 - Component name, description, type
 - Invocation pattern (slash command, @mention, auto-trigger)
 - When to use (from the component's description field)
 - Required MCP servers or dependencies
 
 **Layer 3: Platform-specific formatting (from platform adapter)**
+
 - Frontmatter fields (alwaysApply, globs, inclusion mode, applyTo)
 - File extension (.mdc, .md, .instructions.md)
 - Section heading style
@@ -171,9 +175,11 @@ This description would be written into instruction files and consumed by AI agen
    - "system prompt" / "system message" references
 
 3. **Content fencing**: Wrap author-supplied content in clear data/instruction boundaries:
+
    ```markdown
    > **Plugin description** (author-provided): {{sanitized_description}}
    ```
+
    Use blockquotes or other markdown formatting to visually and semantically separate author content from tool-generated instructions.
 
 4. **Schema validation**: Validate all plugin.json fields against a strict JSON Schema. Reject manifests with unexpected fields or field types.
@@ -371,19 +377,19 @@ A hybrid strategy works: use managed sections for append-to-file platforms, use 
 
 ### Sources Consulted
 
-- Ansible blockinfile module docs: https://docs.ansible.com/projects/ansible/latest/collections/ansible/builtin/blockinfile_module.html
-- WordPress insert_with_markers() reference: https://developer.wordpress.org/reference/functions/insert_with_markers/
-- OWASP LLM Prompt Injection Prevention: https://cheatsheetseries.owasp.org/cheatsheets/LLM_Prompt_Injection_Prevention_Cheat_Sheet.html
-- OWASP LLM Top 10 2025 (LLM01 Prompt Injection): https://genai.owasp.org/llmrisk/llm01-prompt-injection/
-- arxiv 2509.22040v1 "Your AI, My Shell": https://arxiv.org/html/2509.22040v1
-- Lakera indirect prompt injection: https://www.lakera.ai/blog/indirect-prompt-injection
-- Cursor rules docs: https://cursor.com/docs/context/rules
-- Kiro steering docs: https://kiro.dev/docs/steering/
-- GitHub Copilot custom instructions: https://docs.github.com/copilot/customizing-copilot/adding-custom-instructions-for-github-copilot
-- Windsurf AGENTS.md docs: https://docs.windsurf.com/windsurf/cascade/agents-md
-- direnv hook setup: https://direnv.net/docs/hook.html
-- SDKMAN install docs: https://sdkman.io/install/
-- Claude Code plugin docs: https://code.claude.com/docs/en/plugins
+- Ansible blockinfile module docs: <https://docs.ansible.com/projects/ansible/latest/collections/ansible/builtin/blockinfile_module.html>
+- WordPress insert_with_markers() reference: <https://developer.wordpress.org/reference/functions/insert_with_markers/>
+- OWASP LLM Prompt Injection Prevention: <https://cheatsheetseries.owasp.org/cheatsheets/LLM_Prompt_Injection_Prevention_Cheat_Sheet.html>
+- OWASP LLM Top 10 2025 (LLM01 Prompt Injection): <https://genai.owasp.org/llmrisk/llm01-prompt-injection/>
+- arxiv 2509.22040v1 "Your AI, My Shell": <https://arxiv.org/html/2509.22040v1>
+- Lakera indirect prompt injection: <https://www.lakera.ai/blog/indirect-prompt-injection>
+- Cursor rules docs: <https://cursor.com/docs/context/rules>
+- Kiro steering docs: <https://kiro.dev/docs/steering/>
+- GitHub Copilot custom instructions: <https://docs.github.com/copilot/customizing-copilot/adding-custom-instructions-for-github-copilot>
+- Windsurf AGENTS.md docs: <https://docs.windsurf.com/windsurf/cascade/agents-md>
+- direnv hook setup: <https://direnv.net/docs/hook.html>
+- SDKMAN install docs: <https://sdkman.io/install/>
+- Claude Code plugin docs: <https://code.claude.com/docs/en/plugins>
 
 ### Data Transparency
 

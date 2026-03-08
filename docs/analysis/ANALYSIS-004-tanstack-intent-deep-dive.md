@@ -25,7 +25,7 @@ tags:
 
 TanStack Intent takes a fundamentally different approach from Vercel's `skills` CLI. Where Vercel is a "skill installer" (fetch skills from GitHub/GitLab/npm and place them in agent directories), TanStack Intent is a "skill authoring and distribution toolkit" for library maintainers. Skills ship inside npm packages alongside the library code itself.
 
-Repository: https://github.com/TanStack/intent (MIT license)
+Repository: <https://github.com/TanStack/intent> (MIT license)
 Version analyzed: 0.0.12 (March 2026, 130 commits)
 Package: `@tanstack/intent` on npm
 Single runtime dependency: `yaml` (^2.7.0)
@@ -123,6 +123,7 @@ metadata:
 | `metadata` | object | No | Yes | Extensible key-value pairs |
 
 Key differences from Vercel:
+
 1. Hierarchical naming: `library/domain/skill-name` vs flat `skill-name`
 2. Skill types: 6 types vs none
 3. Source tracking: explicit `sources` array linking to upstream docs/code
@@ -169,6 +170,7 @@ These artifacts are excluded from npm publish via `"!skills/_artifacts"` in `fil
 | `intent setup-github-actions` | Copy CI workflow templates | None |
 
 Two binaries are published:
+
 - `intent` -- full CLI (cli.ts)
 - `intent-library` -- lightweight CLI for libraries that bundle intent (intent-library.ts, only `list` and `install`)
 
@@ -177,6 +179,7 @@ Two binaries are published:
 TanStack Intent does NOT clone Git repositories. It scans `node_modules/` directly.
 
 Scanner flow (`scanner.ts`):
+
 1. Detect package manager (pnpm-lock.yaml, bun.lockb, yarn.lock, package-lock.json)
 2. Read all package.json files in `node_modules/`
 3. Check for `intent` field or derive from `repository`/`homepage` fields
@@ -192,6 +195,7 @@ Library scanner (`library-scanner.ts`) does the same but from the library's own 
 Staleness is tracked via source document changes, not content hashing.
 
 `staleness.ts` flow:
+
 1. Read `sync-state.json` from skills directory (stores source SHAs)
 2. Fetch current npm version via registry API
 3. Classify version drift: major, minor, patch, or null
@@ -199,6 +203,7 @@ Staleness is tracked via source document changes, not content hashing.
 5. Generate `StalenessReport` per package with per-skill `needsReview` flags
 
 The `skill-staleness-check` meta-skill classifies impact:
+
 - **No impact**: typo/comment/test changes -- skip
 - **Version bump only**: metadata change -- update frontmatter
 - **Content update**: API/behavior change -- surgical rewrite
@@ -301,6 +306,7 @@ Vercel and TanStack solve different halves of the skills ecosystem:
 - **TanStack**: "I want to ship skills alongside my npm library"
 
 Our plugin manager must support both models. A developer might:
+
 1. Install a standalone skill from GitHub (Vercel model)
 2. Get skills automatically from npm dependencies (TanStack model)
 3. Install an agent or MCP server from a registry (our extension)
@@ -314,6 +320,7 @@ Our format should adopt this pattern. It allows CI pipelines to automatically de
 ### 6.3 Skill Types Enable Smarter Validation
 
 TanStack's 6 skill types (core, sub-skill, framework, lifecycle, composition, security) allow type-specific validation rules:
+
 - Framework skills must have `requires` (dependency on core skill)
 - Security skills use checklist body format
 - Sub-skills must have at least one source
@@ -399,6 +406,7 @@ metadata:
 ```
 
 This format:
+
 - Keeps Vercel's `name`/`description` as required fields
 - Adds TanStack's `type`, `sources`, `framework`, `requires`
 - Adds our extensions: `platforms`, `dependencies`, `conflicts`, `config`
@@ -443,11 +451,11 @@ This format:
 
 ### 9.1 Sources Consulted
 
-- TanStack Intent GitHub: https://github.com/TanStack/intent (all source files in packages/intent/src/)
-- Package README: https://github.com/TanStack/intent/blob/main/packages/intent/README.md
-- Root README: https://github.com/TanStack/intent/blob/main/README.md
-- Documentation overview: https://github.com/TanStack/intent/blob/main/docs/overview.md
-- Contributing guide: https://github.com/TanStack/intent/blob/main/CONTRIBUTING.md
+- TanStack Intent GitHub: <https://github.com/TanStack/intent> (all source files in packages/intent/src/)
+- Package README: <https://github.com/TanStack/intent/blob/main/packages/intent/README.md>
+- Root README: <https://github.com/TanStack/intent/blob/main/README.md>
+- Documentation overview: <https://github.com/TanStack/intent/blob/main/docs/overview.md>
+- Contributing guide: <https://github.com/TanStack/intent/blob/main/CONTRIBUTING.md>
 - Meta-skills: 5 SKILL.md files in packages/intent/meta/
 - Workflow templates: 3 YAML files in packages/intent/meta/templates/workflows/
 - Validation script: scripts/validate-skills.ts

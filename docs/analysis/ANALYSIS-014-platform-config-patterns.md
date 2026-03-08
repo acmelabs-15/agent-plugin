@@ -55,6 +55,7 @@ Research reveals 4 distinct patterns for where platform-specific configuration l
 Each component file (SKILL.md, .mdc, steering file) contains its own configuration in YAML frontmatter. The platform-specific fields are embedded directly in the component.
 
 **Evidence**:
+
 - Agent Skills spec: `name`, `description`, `allowed-tools` in each SKILL.md
 - Claude Code: 10 frontmatter fields per SKILL.md; 13 frontmatter fields per agent .md file
 - Cursor: `alwaysApply`, `globs`, `description` in each .mdc file
@@ -72,6 +73,7 @@ Each component file (SKILL.md, .mdc, steering file) contains its own configurati
 One manifest file declares all configuration for all components. Components themselves have no metadata.
 
 **Evidence**:
+
 - VSCode: `contributes.configuration` in package.json declares all extension settings
 - JetBrains: plugin.xml declares all extensions, actions, listeners
 - Claude Code marketplace.json: can override plugin component paths and metadata
@@ -88,6 +90,7 @@ One manifest file declares all configuration for all components. Components them
 A manifest provides defaults that per-component files can override.
 
 **Evidence**:
+
 - Claude Code: plugin.json provides custom paths; SKILL.md frontmatter provides skill-specific config. Marketplace.json `strict` flag controls which is authority.
 - JetBrains: plugin.xml has main config; `<depends config-file="...">` loads additional IDE-specific config
 - Terraform: provider block sets defaults (region, credentials); resource blocks override per-resource
@@ -104,6 +107,7 @@ A manifest provides defaults that per-component files can override.
 Authors write platform-agnostic content. The installation tool translates to each platform's format.
 
 **Evidence**:
+
 - Vercel Skills: authors write standard SKILL.md; `npx skills add` places files in platform-specific directories (.claude/skills/, .cursor/skills/). No platform-specific frontmatter needed from authors.
 - Agent Skills spec: defines 6 platform-agnostic fields; platforms that need more (Claude Code's `allowed-tools`, `context: fork`) extend the spec with their own fields
 
@@ -253,6 +257,7 @@ Some fields map across platforms with different names or semantics:
 | Model override | `model: "opus"` | Not available | Not available | Not available | Not available |
 
 This reveals 3 cross-platform concepts that map to different fields:
+
 1. **Loading strategy**: always / conditional / manual / auto-detect
 2. **File matching**: glob patterns for conditional loading
 3. **Invocation control**: who can trigger the skill
@@ -262,6 +267,7 @@ This reveals 3 cross-platform concepts that map to different fields:
 #### create-next-app Pattern
 
 Sequential prompts with smart defaults:
+
 1. Project name (text input)
 2. TypeScript? (yes/no, default: yes)
 3. ESLint/Biome/None? (select)
@@ -271,6 +277,7 @@ Sequential prompts with smart defaults:
 7. Import alias? (text, default: @/*)
 
 Key UX patterns:
+
 - Sane defaults for every question (press Enter to accept)
 - Questions ordered from most common to least common
 - No platform-specific branching; one linear flow
@@ -279,6 +286,7 @@ Key UX patterns:
 #### Nx Generator Pattern
 
 Schema-driven prompts:
+
 - `schema.json` defines all options with types, defaults, descriptions
 - Nx Console renders a GUI from the schema
 - CLI prompts only for required fields without defaults
@@ -289,6 +297,7 @@ Key UX pattern: **Discriminated union types** enforce valid combinations. Choosi
 #### Yeoman Composability Pattern
 
 Sub-generators handle platform-specific scaffolding:
+
 - Base generator prompts for shared config
 - `composeWith('generator-mocha')` adds test framework config
 - Each sub-generator manages its own prompts
@@ -299,6 +308,7 @@ Key UX pattern: **Composable generators** where each platform is a sub-generator
 #### @clack/prompts Capabilities
 
 @clack/prompts provides:
+
 - `text()` -- free text with validation
 - `select()` -- single choice from options
 - `multiselect()` -- multiple choices with checkboxes
@@ -314,6 +324,7 @@ Key UX pattern: `group()` allows branching. After selecting platforms, show plat
 Based on research, the optimal wizard pattern for multi-platform config:
 
 **Phase 1: Core Config (shared)**
+
 ```
 ? Component name: [text]
 ? Description: [text]
@@ -322,6 +333,7 @@ Based on research, the optimal wizard pattern for multi-platform config:
 ```
 
 **Phase 2: Cross-Platform Concepts (mapped)**
+
 ```
 ? Loading strategy: [select: always | file-conditional | manual | auto-detect]
   (if file-conditional) ? File patterns: [text, e.g., "src/**/*.ts"]
@@ -329,6 +341,7 @@ Based on research, the optimal wizard pattern for multi-platform config:
 ```
 
 **Phase 3: Platform-Specific Overrides (per selected platform)**
+
 ```
 [Only shown if user selected specific platforms in Phase 1]
 ? Claude Code: Model override? [select: inherit | opus | sonnet | haiku]
@@ -338,6 +351,7 @@ Based on research, the optimal wizard pattern for multi-platform config:
 ```
 
 **Phase 4: Review and Confirm**
+
 ```
 [Show generated platformConfig with all values]
 ? Confirm and create? [confirm]
@@ -460,6 +474,7 @@ Centralized manifest works for VSCode because it targets one platform. Our plugi
 ### Why Layered (D+C) Wins
 
 The hybrid approach means:
+
 - **80% of plugins**: write standard SKILL.md, set `loadingStrategy` in plugin.json, done. Adapter handles the rest.
 - **15% of plugins**: add `platformConfig.claude-code.model` in plugin.json for platform-specific defaults.
 - **5% of plugins**: add `platforms` block in individual SKILL.md for per-component platform overrides.
@@ -469,6 +484,7 @@ This follows the progressive disclosure pattern that Agent Skills and TanStack I
 ### CLI Wizard Design Implications
 
 The wizard should:
+
 1. Ask cross-platform concepts first (loading strategy, file patterns, approved tools)
 2. Auto-map to platform fields internally
 3. Only show platform-specific prompts for fields that have no cross-platform concept
@@ -480,6 +496,7 @@ The `multiselect` from @clack/prompts is ideal for the tools selection. The `sel
 ### Precedent Validation
 
 This approach is validated by 3 systems:
+
 1. **JetBrains**: plugin.xml (shared) + optional per-IDE config files (overrides) = Pattern C
 2. **Terraform**: provider defaults + resource overrides = Pattern C
 3. **Vercel Skills**: adapter for directory placement + Agent Skills standard for content = Pattern D
@@ -540,38 +557,38 @@ Combining C and D is not novel; it follows the same principle as CSS cascading (
 
 ### Sources Consulted
 
-- Agent Skills Specification: https://agentskills.io/specification
-- Claude Code Plugin Reference: https://code.claude.com/docs/en/plugins-reference
-- Claude Code Skills Docs: https://code.claude.com/docs/en/skills
-- Cursor Rules Docs: https://cursor.com/docs/context/rules
-- Cursor Skills Docs: https://cursor.com/docs/context/skills
-- Kiro Steering Docs: https://kiro.dev/docs/steering/
-- OpenCode Skills Docs: https://opencode.ai/docs/skills/
-- Amp Manual: https://ampcode.com/manual
-- Amp MCP Skills Loading: https://ampcode.com/news/lazy-load-mcp-with-skills
-- Windsurf Rules: https://docs.windsurf.com/windsurf/cascade/workflows
-- GitHub Copilot CLI Skills: https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/create-skills
-- VS Code Agent Skills: https://code.visualstudio.com/docs/copilot/customization/agent-skills
-- Vercel Skills GitHub: https://github.com/vercel-labs/skills
-- Vercel Skills FAQ: https://vercel.com/blog/agent-skills-explained-an-faq
-- TanStack Intent Blog: https://tanstack.com/blog/from-docs-to-agents
-- TanStack Intent GitHub: https://github.com/TanStack/intent
-- TanStack CLI GitHub: https://github.com/TanStack/cli
-- VSCode Contribution Points: https://code.visualstudio.com/api/references/contribution-points
-- JetBrains Plugin Config: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html
-- JetBrains Plugin Compatibility: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html
-- Backstage Config Docs: https://backstage.io/docs/conf/defining/
-- Terraform Provider Config: https://developer.hashicorp.com/terraform/language/providers/configuration
-- Nx Generators: https://nx.dev/docs/reference/plugin/generators
-- Nx nx.json Reference: https://nx.dev/docs/reference/nx-json
-- Yeoman Composability: https://yeoman.io/authoring/composability.html
-- create-next-app Docs: https://nextjs.org/docs/app/api-reference/cli/create-next-app
-- @clack/prompts: https://www.blacksrc.com/blog/elevate-your-cli-tools-with-clack-prompts
-- CLI UX Patterns: https://lucasfcosta.com/2022/06/01/ux-patterns-cli-tools.html
-- CLIG.dev CLI Guidelines: https://clig.dev/
-- Cursor Rules Deep Dive: https://forum.cursor.com/t/a-deep-dive-into-cursor-rules-0-45/60721
-- Cursor MDC Best Practices: https://forum.cursor.com/t/my-best-practices-for-mdc-rules-and-troubleshooting/50526
-- Windsurf Rules Guide: https://localskills.sh/blog/windsurf-rules-guide
+- Agent Skills Specification: <https://agentskills.io/specification>
+- Claude Code Plugin Reference: <https://code.claude.com/docs/en/plugins-reference>
+- Claude Code Skills Docs: <https://code.claude.com/docs/en/skills>
+- Cursor Rules Docs: <https://cursor.com/docs/context/rules>
+- Cursor Skills Docs: <https://cursor.com/docs/context/skills>
+- Kiro Steering Docs: <https://kiro.dev/docs/steering/>
+- OpenCode Skills Docs: <https://opencode.ai/docs/skills/>
+- Amp Manual: <https://ampcode.com/manual>
+- Amp MCP Skills Loading: <https://ampcode.com/news/lazy-load-mcp-with-skills>
+- Windsurf Rules: <https://docs.windsurf.com/windsurf/cascade/workflows>
+- GitHub Copilot CLI Skills: <https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/create-skills>
+- VS Code Agent Skills: <https://code.visualstudio.com/docs/copilot/customization/agent-skills>
+- Vercel Skills GitHub: <https://github.com/vercel-labs/skills>
+- Vercel Skills FAQ: <https://vercel.com/blog/agent-skills-explained-an-faq>
+- TanStack Intent Blog: <https://tanstack.com/blog/from-docs-to-agents>
+- TanStack Intent GitHub: <https://github.com/TanStack/intent>
+- TanStack CLI GitHub: <https://github.com/TanStack/cli>
+- VSCode Contribution Points: <https://code.visualstudio.com/api/references/contribution-points>
+- JetBrains Plugin Config: <https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html>
+- JetBrains Plugin Compatibility: <https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html>
+- Backstage Config Docs: <https://backstage.io/docs/conf/defining/>
+- Terraform Provider Config: <https://developer.hashicorp.com/terraform/language/providers/configuration>
+- Nx Generators: <https://nx.dev/docs/reference/plugin/generators>
+- Nx nx.json Reference: <https://nx.dev/docs/reference/nx-json>
+- Yeoman Composability: <https://yeoman.io/authoring/composability.html>
+- create-next-app Docs: <https://nextjs.org/docs/app/api-reference/cli/create-next-app>
+- @clack/prompts: <https://www.blacksrc.com/blog/elevate-your-cli-tools-with-clack-prompts>
+- CLI UX Patterns: <https://lucasfcosta.com/2022/06/01/ux-patterns-cli-tools.html>
+- CLIG.dev CLI Guidelines: <https://clig.dev/>
+- Cursor Rules Deep Dive: <https://forum.cursor.com/t/a-deep-dive-into-cursor-rules-0-45/60721>
+- Cursor MDC Best Practices: <https://forum.cursor.com/t/my-best-practices-for-mdc-rules-and-troubleshooting/50526>
+- Windsurf Rules Guide: <https://localskills.sh/blog/windsurf-rules-guide>
 
 ### Data Transparency
 

@@ -386,6 +386,7 @@ commander lacks built-in lazy loading. Implementing custom lazy loading adds eng
 - **Risk if ignored**: Choosing commander or yargs without lazy loading adds custom infrastructure cost. Choosing oclif introduces Bun compatibility risk and dependency bloat. Choosing no framework and building from scratch is highest-cost.
 
 ## Observations
+
 - [fact] gunshi has 21,140 weekly npm downloads vs commander's 315,595,339, a 15,000x adoption gap #adoption #risk
 - [fact] gunshi maintainer kazupon is a Vue.js core team member who created vue-i18n (4,300 stars, 100k+ weekly downloads) #maintainer #credibility
 - [fact] gunshi provides built-in lazy() function for lazy command loading, separating metadata from implementation #lazy-loading #performance
@@ -399,6 +400,7 @@ commander lacks built-in lazy loading. Implementing custom lazy loading adds eng
 - [risk] gunshi's 382 GitHub stars and small adopter list (no major projects) means the team becomes an early adopter with limited community support #community-risk
 - [risk] Pre-1.0 semver allows breaking changes in minor versions; version pinning required to prevent surprise breaks #dependency-management
 - [decision] gunshi selected over citty due to explicit Bun support, better documentation, and shell completions plugin #framework-choice
+
 ## Relations
 
 - relates_to [[ANALYSIS-016-bun-runtime-assessment]]
@@ -411,36 +413,36 @@ commander lacks built-in lazy loading. Implementing custom lazy loading adds eng
 
 ### Sources Consulted
 
-- gunshi GitHub: https://github.com/kazupon/gunshi
-- gunshi documentation: https://gunshi.dev/
-- gunshi npm: https://www.npmjs.com/package/gunshi
-- gunshi lazy loading: https://gunshi.dev/guide/advanced/advanced-lazy-loading
-- gunshi type system: https://gunshi.dev/guide/advanced/type-system
-- kazupon GitHub profile: https://github.com/kazupon
-- npmtrends comparison: https://npmtrends.com/cac-vs-citty-vs-clipanion-vs-commander-vs-gunshi-vs-meow-vs-oclif-vs-yargs
-- commander GitHub: https://github.com/tj/commander.js
-- commander extra-typings: https://github.com/commander-js/extra-typings
-- yargs Bun issue: https://github.com/yargs/yargs/issues/2377
-- oclif Bun issue: https://github.com/oclif/core/issues/934
-- oclif features: https://oclif.io/docs/features/
-- citty GitHub: https://github.com/unjs/citty
-- citty documentation issue: https://github.com/unjs/citty/issues/46
-- citty plugin issue: https://github.com/unjs/citty/issues/130
-- clipanion GitHub: https://github.com/arcanis/clipanion
-- cac GitHub: https://github.com/cacjs/cac
-- meow GitHub: https://github.com/sindresorhus/meow
-- Nuxt 3.7 citty adoption: https://nuxt.com/blog/v3-7
-- Commander lazy loading workaround: https://alexramsdell.com/writing/lazy-loading-node-modules-with-commander/
-- Commander Bun issue: https://github.com/oven-sh/bun/issues/1369
-- Stricli lazy loading: https://bloomberg.github.io/stricli/blog/intro
+- gunshi GitHub: <https://github.com/kazupon/gunshi>
+- gunshi documentation: <https://gunshi.dev/>
+- gunshi npm: <https://www.npmjs.com/package/gunshi>
+- gunshi lazy loading: <https://gunshi.dev/guide/advanced/advanced-lazy-loading>
+- gunshi type system: <https://gunshi.dev/guide/advanced/type-system>
+- kazupon GitHub profile: <https://github.com/kazupon>
+- npmtrends comparison: <https://npmtrends.com/cac-vs-citty-vs-clipanion-vs-commander-vs-gunshi-vs-meow-vs-oclif-vs-yargs>
+- commander GitHub: <https://github.com/tj/commander.js>
+- commander extra-typings: <https://github.com/commander-js/extra-typings>
+- yargs Bun issue: <https://github.com/yargs/yargs/issues/2377>
+- oclif Bun issue: <https://github.com/oclif/core/issues/934>
+- oclif features: <https://oclif.io/docs/features/>
+- citty GitHub: <https://github.com/unjs/citty>
+- citty documentation issue: <https://github.com/unjs/citty/issues/46>
+- citty plugin issue: <https://github.com/unjs/citty/issues/130>
+- clipanion GitHub: <https://github.com/arcanis/clipanion>
+- cac GitHub: <https://github.com/cacjs/cac>
+- meow GitHub: <https://github.com/sindresorhus/meow>
+- Nuxt 3.7 citty adoption: <https://nuxt.com/blog/v3-7>
+- Commander lazy loading workaround: <https://alexramsdell.com/writing/lazy-loading-node-modules-with-commander/>
+- Commander Bun issue: <https://github.com/oven-sh/bun/issues/1369>
+- Stricli lazy loading: <https://bloomberg.github.io/stricli/blog/intro>
 
 ### Data Transparency
 
 - **Found**: Weekly download counts for all 8 frameworks. GitHub stars for all 8. Version numbers and last publish dates. gunshi feature documentation (lazy loading, plugins, type system). Maintainer backgrounds. Notable adopter lists. Bun compatibility status per framework.
 - **Not Found**: Exact bundle sizes for gunshi and citty (Bundlephobia blocked). gunshi roadmap to 1.0. citty roadmap for documentation site. Benchmark data comparing CLI startup time across frameworks. Whether gunshi's API has had breaking changes between minor versions.
 
-
 ## 4.1 Adoption and Community
+
 ### 4.1 Adoption and Community
 
 | Framework | Weekly Downloads | GitHub Stars | Version | Last Published | License | Open Issues |
@@ -461,6 +463,7 @@ gunshi downloads are 15,000x lower than commander and 830x lower than citty. Sta
 **Additional framework noted**: stricli (Bloomberg) has 12 weekly downloads. Zero dependencies, TypeScript-first, built-in lazy loading. Too low adoption to recommend but validates the design pattern gunshi uses.
 
 ## 4.12 Open Issues and Stability
+
 ### 4.12 Open Issues and Stability
 
 | Framework | Open Issues | Version Status | Stability Signal |
@@ -496,6 +499,7 @@ gunshi and citty are both pre-1.0. Breaking changes remain possible. commander a
 gunshi provides the broadest shell completion support via the tab library (4 shells). citty lacks shell completions entirely. This is a meaningful gap for a cross-platform CLI tool.
 
 ## Scoring Matrix (1-5 scale, weighted by project requirements)
+
 ### Scoring Matrix (1-5 scale, weighted by project requirements)
 
 | Criteria (Weight) | gunshi | commander | yargs | oclif | citty | clipanion | cac | meow |
@@ -517,6 +521,7 @@ gunshi provides the broadest shell completion support via the tab library (4 she
 gunshi's shell completions support (4 shells via @gunshi/plugin-completion) widens the gap over citty (no completions) and narrows it with oclif (2 shells).
 
 ## Top 3 Contenders
+
 ### Top 3 Contenders
 
 1. **gunshi (4.10)**: Highest weighted score. Top marks on lazy loading, TypeScript, Bun compatibility, shell completions, and plugin system. Lowest score on community adoption (1/5).
@@ -524,12 +529,14 @@ gunshi's shell completions support (4 shells via @gunshi/plugin-completion) wide
 3. **commander (3.75) / citty (3.75)**: Tied. Commander wins on stability and community; citty wins on TypeScript and lazy loading. Commander lacks built-in lazy loading. citty lacks shell completions and documentation site.
 
 ## Data Transparency
+
 ### Data Transparency
 
 - **Found**: Weekly download counts for all 8 frameworks (verified via npm API, Feb 28 - Mar 6 2026). GitHub stars for all 8 (verified Mar 7 2026). Version numbers and last publish dates. gunshi feature documentation (lazy loading, plugins, type system, completions). Maintainer backgrounds. Notable adopter lists. Bun compatibility status per framework. Shell completion support per framework. gunshi release cadence (9 releases in 3 months). Developer testimonial from ryoppippi (Aug 2025). Roadmap status (3 of 13 items remaining). @gunshi/plugin-completion uses bombshell-dev/tab (supports bash, zsh, fish, powershell). citty lacks shell completions (issue #168 open). stricli (Bloomberg) noted as validation of lazy loading pattern (12 weekly downloads).
 - **Not Found**: Exact bundle sizes for gunshi and citty (Bundlephobia blocked). gunshi roadmap to 1.0 (no timeline stated in issue #2). Benchmark data comparing CLI startup time across frameworks. Whether gunshi's API has had breaking changes between minor versions. citty roadmap for documentation site timeline.
 
 ## Why Not citty Instead
+
 ### Why Not citty Instead
 
 citty is the strongest alternative. Three factors tip the decision toward gunshi:

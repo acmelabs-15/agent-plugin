@@ -133,12 +133,14 @@ ESLint (eslintrc replaced by flat config)
 ### Pattern: When Format Version Fields Appear
 
 Format version fields appear when ALL of these conditions hold:
+
 1. The format is consumed by a platform/runtime (not just a build tool)
 2. Breaking changes to the format are anticipated or have occurred
 3. The platform must support multiple format versions simultaneously during transition
 4. The file is a manifest declaring capabilities to a host system
 
 Format version fields are absent when:
+
 1. The format is consumed by a single tool the user controls (Cargo, Composer, pip)
 2. Evolution happens through additive, backward-compatible changes only
 3. The file configures behavior rather than declaring capabilities

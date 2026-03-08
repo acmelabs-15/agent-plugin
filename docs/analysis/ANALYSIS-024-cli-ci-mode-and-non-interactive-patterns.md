@@ -180,6 +180,7 @@ The design spec conflates modes 2 and 3. They should be distinct: `--yes` is a s
 ### JSON Output is a Separate Concern
 
 `--json` controls output format, not interactivity. A command can be:
+
 - Interactive + JSON (unusual but valid)
 - Non-interactive + JSON (common in CI)
 - Non-interactive + human-readable (scripting)

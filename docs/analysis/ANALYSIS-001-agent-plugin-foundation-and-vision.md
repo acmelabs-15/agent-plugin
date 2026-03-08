@@ -46,7 +46,7 @@ Claude Code has a mature, first-party plugin system launched in public beta earl
 - [fact] CLI: `/plugin install`, `/plugin marketplace add`, `/plugin validate`, `/plugin enable/disable`
 - [fact] Namespacing: Plugin skills prefixed with plugin name (e.g., `/my-plugin:hello`)
 
-Source: https://code.claude.com/docs/en/plugins, https://code.claude.com/docs/en/discover-plugins, https://code.claude.com/docs/en/plugin-marketplaces
+Source: <https://code.claude.com/docs/en/plugins>, <https://code.claude.com/docs/en/discover-plugins>, <https://code.claude.com/docs/en/plugin-marketplaces>
 
 #### Vercel `npx skills` (Direct Competitor)
 
@@ -57,7 +57,7 @@ Source: https://code.claude.com/docs/en/plugins, https://code.claude.com/docs/en
 - [fact] CLI commands: `add`, `list`, `find`, `remove`, `check`, `update`, `init`
 - [fact] Zero dependencies. Lightweight. No build step.
 
-Source: https://github.com/vercel-labs/skills, npm registry
+Source: <https://github.com/vercel-labs/skills>, npm registry
 
 #### Alternative Installers
 
@@ -78,7 +78,7 @@ Source: npm registry, GitHub
 - [fact] Five-step workflow: analyze, recommend, estimate costs, generate IaC, deploy with confirmation.
 - [fact] Demonstrates enterprise-grade plugin authoring pattern.
 
-Source: https://github.com/awslabs/agent-plugins, https://aws.amazon.com/blogs/developer/introducing-agent-plugins-for-aws/
+Source: <https://github.com/awslabs/agent-plugins>, <https://aws.amazon.com/blogs/developer/introducing-agent-plugins-for-aws/>
 
 #### Platform Plugin Systems
 
@@ -108,14 +108,15 @@ Source: Platform documentation, multiple search results
 
 Ecosystem grew from ~100 servers (Nov 2024) to 16,670+ (Sep 2025). At least half of early registries have gone to dead domains or pivoted.
 
-Source: https://nordicapis.com/7-mcp-registries-worth-checking-out/
+Source: <https://nordicapis.com/7-mcp-registries-worth-checking-out/>
 
 ### 4.2 Three-Audience Model Validation
 
 **CLI + API + AI Interface Pattern**
 
 Evidence of precedent:
-- [fact] FastMCP (Python) explicitly supports CLI usage patterns alongside MCP server hosting. Documentation at https://gofastmcp.com/patterns/cli shows dual-interface patterns.
+
+- [fact] FastMCP (Python) explicitly supports CLI usage patterns alongside MCP server hosting. Documentation at <https://gofastmcp.com/patterns/cli> shows dual-interface patterns.
 - [fact] Codex runs as both a CLI tool and an MCP server, enabling orchestration via the Agents SDK.
 - [fact] `mcp-cli` tools (multiple implementations) serve both human operators (interactive shells) and AI systems (JSON-RPC protocols) simultaneously.
 - [fact] No tool found that combines all three audiences (Consumer CLI + Author CLI + AI MCP) in a single package for plugin management.
@@ -134,11 +135,13 @@ Evidence of precedent:
 | Industry terminology | "plugin" used by Claude Code and AWS. "skill" used by Vercel, Codex, Gemini CLI. "extension" used by Gemini CLI and Cursor. |
 
 **Naming risks**:
+
 - [risk] "agent-plugin" is generic. AWS already uses "agent-plugins" (awslabs/agent-plugins). Collision risk in search results and mindshare.
 - [risk] The term "plugin" aligns with Claude Code's ecosystem but not with Vercel/Codex/Gemini which use "skills" or "extensions".
 - [risk] The project aims to be cross-platform, but "plugin" is Claude Code-specific terminology. Other platforms call the same concept different things.
 
 **Naming alternatives worth considering**:
+
 - `agent-kit` -- toolbox framing, platform-neutral
 - `agent-craft` -- authoring-focused
 - `agentpkg` -- package manager framing (like `winget`, `pkg`)
@@ -150,12 +153,14 @@ Evidence of precedent:
 **Precedent in software**: Self-hosting compilers (Rust, Go, TypeScript, OCaml). The pattern dates to 1962 (LISP at MIT).
 
 **Benefits**:
+
 - [fact] Serves as a non-trivial integration test of the tool's own capabilities (dogfooding).
 - [fact] Forces the plugin manifest format to be expressive enough for real-world use from day 1.
 - [fact] Demonstrates credibility: "we trust our own tool."
 - [fact] Compiler bootstrapping proves: improvements to the tool automatically improve the tool's own development workflow.
 
 **Risks**:
+
 - [risk] Chicken-and-egg problem: the tool cannot manage its own plugins until it exists. Requires a bootstrap phase where initial content is manually created.
 - [risk] Circular dependency in CI/CD: building the tool requires the tool. Compiler ecosystems solve this with multi-stage bootstrapping (Rust has 4 bootstrap stages).
 - [risk] Trusting Trust attack vector: a compromised bootstrap could persist through self-hosted builds. Lower risk for a plugin manager than a compiler, but still a supply chain consideration.
@@ -163,6 +168,7 @@ Evidence of precedent:
 - [risk] Phase dependency: the spec lists self-bootstrapping as Phase 4 of 5. This means Phases 1-3 must ship without self-bootstrapping, then Phase 4 retrofits it. Retrofitting self-hosting is harder than designing for it from the start.
 
 **Mitigation strategies from compiler ecosystems**:
+
 - Stage 0 bootstrap with minimal manual setup
 - Automated reproducible builds that verify stage N output matches stage N-1
 - Clear separation between "bootstrap mode" and "self-hosted mode"
@@ -265,27 +271,27 @@ Viable but should be designed in from Phase 1, not retrofitted in Phase 4. The s
 
 ### Sources Consulted
 
-- Claude Code Plugin Docs: https://code.claude.com/docs/en/plugins
-- Claude Code Discover Plugins: https://code.claude.com/docs/en/discover-plugins
-- Claude Code Marketplace Guide: https://code.claude.com/docs/en/plugin-marketplaces
-- Vercel Skills GitHub: https://github.com/vercel-labs/skills
-- Vercel Skills npm: https://www.npmjs.com/package/skills
-- AWS Agent Plugins: https://github.com/awslabs/agent-plugins
-- AWS Blog Post: https://aws.amazon.com/blogs/developer/introducing-agent-plugins-for-aws/
-- Codex Skills Docs: https://developers.openai.com/codex/skills/
-- Codex MCP Docs: https://developers.openai.com/codex/mcp
-- Gemini CLI Extensions: https://geminicli.com/docs/extensions/
-- Gemini CLI Skills: https://geminicli.com/docs/cli/skills/
-- Nordic APIs MCP Registries: https://nordicapis.com/7-mcp-registries-worth-checking-out/
-- Glama MCP State 2025: https://glama.ai/blog/2025-12-07-the-state-of-mcp-in-2025
-- Awesome Claude Code Plugins: https://github.com/ccplugins/awesome-claude-code-plugins
-- Awesome Claude Code: https://github.com/hesreallyhim/awesome-claude-code
-- add-skill.org: https://add-skill.org/
-- npm-agentskills: https://github.com/onmax/npm-agentskills
-- Wikipedia Bootstrapping Compilers: https://en.wikipedia.org/wiki/Bootstrapping_(compilers)
-- FastMCP CLI Patterns: https://gofastmcp.com/patterns/cli
-- Cursor MCP Docs: https://cursor.com/docs/context/mcp
-- Codex Changelog: https://developers.openai.com/codex/changelog/
+- Claude Code Plugin Docs: <https://code.claude.com/docs/en/plugins>
+- Claude Code Discover Plugins: <https://code.claude.com/docs/en/discover-plugins>
+- Claude Code Marketplace Guide: <https://code.claude.com/docs/en/plugin-marketplaces>
+- Vercel Skills GitHub: <https://github.com/vercel-labs/skills>
+- Vercel Skills npm: <https://www.npmjs.com/package/skills>
+- AWS Agent Plugins: <https://github.com/awslabs/agent-plugins>
+- AWS Blog Post: <https://aws.amazon.com/blogs/developer/introducing-agent-plugins-for-aws/>
+- Codex Skills Docs: <https://developers.openai.com/codex/skills/>
+- Codex MCP Docs: <https://developers.openai.com/codex/mcp>
+- Gemini CLI Extensions: <https://geminicli.com/docs/extensions/>
+- Gemini CLI Skills: <https://geminicli.com/docs/cli/skills/>
+- Nordic APIs MCP Registries: <https://nordicapis.com/7-mcp-registries-worth-checking-out/>
+- Glama MCP State 2025: <https://glama.ai/blog/2025-12-07-the-state-of-mcp-in-2025>
+- Awesome Claude Code Plugins: <https://github.com/ccplugins/awesome-claude-code-plugins>
+- Awesome Claude Code: <https://github.com/hesreallyhim/awesome-claude-code>
+- add-skill.org: <https://add-skill.org/>
+- npm-agentskills: <https://github.com/onmax/npm-agentskills>
+- Wikipedia Bootstrapping Compilers: <https://en.wikipedia.org/wiki/Bootstrapping_(compilers)>
+- FastMCP CLI Patterns: <https://gofastmcp.com/patterns/cli>
+- Cursor MCP Docs: <https://cursor.com/docs/context/mcp>
+- Codex Changelog: <https://developers.openai.com/codex/changelog/>
 
 ### Data Transparency
 

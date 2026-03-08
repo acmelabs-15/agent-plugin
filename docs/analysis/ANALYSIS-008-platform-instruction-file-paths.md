@@ -461,25 +461,25 @@ MCP configuration paths are completely platform-specific with no cross-platform 
 
 ### Sources Consulted
 
-- Claude Code Docs: https://code.claude.com/docs/en/skills
-- Claude Code Showcase: https://github.com/ChrisWiles/claude-code-showcase
-- Cursor Rules Docs: https://cursor.com/docs/context/rules
-- Cursor Skills Docs: https://cursor.com/docs/context/skills
-- Cursor Subagents Docs: https://cursor.com/docs/context/subagents
-- Copilot CLI Custom Instructions: https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-custom-instructions
-- Copilot CLI Custom Agents: https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/create-custom-agents-for-cli
-- Copilot CLI Skills: https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/create-skills
-- Kiro Steering: https://kiro.dev/docs/steering/
-- Kiro Skills: https://kiro.dev/docs/skills/
-- Kiro Agent Config Reference: https://kiro.dev/docs/cli/custom-agents/configuration-reference/
-- OpenCode Config: https://opencode.ai/docs/config/
-- OpenCode Rules: https://opencode.ai/docs/rules/
-- OpenCode Skills: https://opencode.ai/docs/skills/
-- OpenCode Agents: https://opencode.ai/docs/agents/
-- Amp Manual: https://ampcode.com/manual
-- Windsurf AGENTS.md: https://docs.windsurf.com/windsurf/cascade/agents-md
-- Windsurf Skills: https://docs.windsurf.com/windsurf/cascade/skills
-- AGENTS.md Standard: https://agents.md/
+- Claude Code Docs: <https://code.claude.com/docs/en/skills>
+- Claude Code Showcase: <https://github.com/ChrisWiles/claude-code-showcase>
+- Cursor Rules Docs: <https://cursor.com/docs/context/rules>
+- Cursor Skills Docs: <https://cursor.com/docs/context/skills>
+- Cursor Subagents Docs: <https://cursor.com/docs/context/subagents>
+- Copilot CLI Custom Instructions: <https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-custom-instructions>
+- Copilot CLI Custom Agents: <https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/create-custom-agents-for-cli>
+- Copilot CLI Skills: <https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/create-skills>
+- Kiro Steering: <https://kiro.dev/docs/steering/>
+- Kiro Skills: <https://kiro.dev/docs/skills/>
+- Kiro Agent Config Reference: <https://kiro.dev/docs/cli/custom-agents/configuration-reference/>
+- OpenCode Config: <https://opencode.ai/docs/config/>
+- OpenCode Rules: <https://opencode.ai/docs/rules/>
+- OpenCode Skills: <https://opencode.ai/docs/skills/>
+- OpenCode Agents: <https://opencode.ai/docs/agents/>
+- Amp Manual: <https://ampcode.com/manual>
+- Windsurf AGENTS.md: <https://docs.windsurf.com/windsurf/cascade/agents-md>
+- Windsurf Skills: <https://docs.windsurf.com/windsurf/cascade/skills>
+- AGENTS.md Standard: <https://agents.md/>
 
 ### Data Transparency
 

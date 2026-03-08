@@ -246,6 +246,7 @@ Different strategies per component type rather than blanket blocking:
 - **Platform translation layer**: The platformConfig section (Section 8) and adapter layer handle translation to each platform's native format. See [[ANALYSIS-014-platform-config-patterns]] for the full cross-platform concept mapping and 4-level resolution order.
 
 ## Observations
+
 - [decision] Plugin = bundle model: one plugin contains many skills, agents, prompts, hooks, and typically one MCP server #plugin-format #architecture
 - [decision] plugin.json is mandatory at the plugin root directory, not nested #manifest #cross-platform
 - [decision] Minimum required fields: name, version, description — matching npm package.json conventions #manifest
@@ -276,6 +277,7 @@ Different strategies per component type rather than blanket blocking:
 - relates_to [[ADR-003-conflict-resolution-and-namespacing]]
 
 ## 9. Intelligent Conflict Resolution
+
 ### 9. Conflict Resolution
 
 > **Superseded by [[ADR-003 Conflict Resolution and Namespacing]]**
