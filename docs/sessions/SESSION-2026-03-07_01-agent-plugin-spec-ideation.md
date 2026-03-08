@@ -15,7 +15,7 @@ tags:
 **Status:** IN_PROGRESS
 **Branch:** ideation/agent-plugin-spec
 **Starting Commit:** 84f8511 first commit
-**Current Commit:** 6553ef5 feat: add ADR-012 scaffolding and content management with research and debate
+**Current Commit:** aff0c0f fix: restructure session note with correct group ordering and cleanup
 **Objective:** Work through the `@acmelabs-15/agent-plugin` comprehensive design specification using the ideation workflow, conducting web research, creating ADRs for architectural decisions, and producing feature specs in the features/ directory
 
 ---
@@ -153,6 +153,20 @@ tags:
 - [decision] Faithfulness principle: creator skills stay close to Anthropic originals. Exceptions: Python→Bun TS conversion, fastmcp→@modelcontextprotocol/sdk, minor verbiage alignment. #faithfulness #creator-skills
 - [decision] Commands restored as 6th content type (amending ADR-001). Commands are cross-platform, not Claude Code legacy. #commands #manifest
 - [decision] Zod v4 + MCP SDK verified compatible on Bun. Min versions: SDK >= 1.23.0, Zod >= 4.1.13. MCP SDK works 100% on Bun (zero Node.js dependency). #compatibility #bun
+- [decision] npm-package distribution model adopted (TanStack Intent style): plugins are npm packages installed via `bun add @scope/plugin`. Bun handles ALL package management (version resolution, lockfile bun.lockb, source resolution, integrity verification, upgrades). agent-plugin becomes purely a "wiring tool" bridging npm packages to AI platform configs. #distribution #architecture #major-pivot
+- [decision] Consumer commands eliminated: `add` REMOVED (use `bun add`), `remove` REMOVED (use `bun remove`), `upgrade` REMOVED (use `bun update`). Bun handles package management natively. #commands #simplification
+- [decision] `init` redesigned to Husky model: `agent-plugin init` wires lifecycle hooks into package.json (`"postinstall": "agent-plugin install"`). Smart merge with existing scripts. `agent-plugin deinit` reverses cleanly. postinstall covers add/remove/update since bun triggers it for all dependency changes. #init #lifecycle-hooks
+- [decision] `install` command is core wiring operation: scans node_modules for packages containing plugin.json, diffs discovered plugins vs currently wired platforms, reconciles (adds new, removes deleted, updates changed). #install #core-command
+- [decision] `create` command ADDED: scaffolds a new plugin project (like `bun create`). #create #scaffolding
+- [decision] `deinit` command ADDED: reverse of init, removes lifecycle hooks from package.json. #deinit #lifecycle-hooks
+- [decision] `dev` command REMOVED: not needed with lifecycle hook model. #dev #removed
+- [decision] `complete` command REMOVED: shell completions not needed. #completions #removed
+- [decision] `publish` command CONFIRMED REMOVED: no registry, no version command. Version management is author's responsibility using standard tools (bun, npm). validate can warn about plugin.json/package.json inconsistencies. #publish #removed
+- [decision] version field removed from plugin.json required fields: package.json version is authoritative (controlled by npm/bun). plugin.json minimum required fields reduced to just `name` and `description`. plugin.json becomes primarily a content declaration manifest (skills[], agents[], hooks[], instructions[], commands[], mcp[]). #manifest #simplification
+- [decision] ADR-008 (Source Resolution) FULLY SUPERSEDED: bun handles all source resolution natively. #adr-008 #superseded
+- [decision] ADR-010 (Installation Lifecycle) MOSTLY SUPERSEDED: 6-phase model replaced by `bun add` + `agent-plugin install` wiring. #adr-010 #superseded
+- [decision] ADR-003 Decision 3 (lockfile) SUPERSEDED: bun.lockb replaces plugin-lock.json. #adr-003 #lockfile #superseded
+- [decision] ADR-001 needs amendment: version removed from required fields, minimum fields now just name + description. #adr-001 #amendment
 
 ---
 
@@ -194,7 +208,7 @@ Template reference: /Users/peter.kloss/Documents/examples/docs/features/FEAT-003
 
 ## Ideation Workflow Status
 
-**Current Position:** Phase 1 > Group 6 COMPLETE. All ADRs (001-012) accepted. Groups 1-6 done. Ready for Group 7 (Commands).
+**Current Position:** Phase 1 > Group 7 IN PROGRESS. Decisions made, ADR creation pending.
 
 ### Phase 1: Research and Discovery
 
@@ -425,10 +439,31 @@ ADR status:
 - [x] DEBATE-ADR-012 saved with both rounds
 - [x] ADR-012 COMPLETE
 
-#### Group 7: Commands (Sections 13-14) -- NOT STARTED
+#### Group 7: Commands (Sections 13-14) -- DECISIONS MADE, ADR CREATION PENDING
 
-- [ ] Consumer commands (add, remove, upgrade, list)
-- [ ] Author commands (init, validate, build, dev)
+Research completed:
+
+- [x] [[ANALYSIS-033-consumer-and-author-commands]] -- Consumer/author command analysis, npm-package distribution model research
+- [x] [[ANALYSIS-034-skill-versioning-models-comparison]] -- TanStack Intent model, npm-package distribution patterns
+
+Major architectural pivot: npm-package distribution model adopted (TanStack Intent style)
+
+- [x] Consumer commands (add, remove, upgrade) ELIMINATED -- bun handles package management natively
+- [x] `init` redesigned to Husky model: lifecycle hooks in package.json (`"postinstall": "agent-plugin install"`)
+- [x] `install` is core wiring command: scan node_modules, diff plugins, reconcile platform configs
+- [x] `create` command ADDED: scaffold new plugin project (like `bun create`)
+- [x] `deinit` command ADDED: reverse of init, removes lifecycle hooks
+- [x] `dev` command REMOVED: not needed with lifecycle hook model
+- [x] `complete` command REMOVED: shell completions not needed
+- [x] `publish` command CONFIRMED REMOVED: no registry, no version command
+- [x] version field removed from plugin.json required fields (package.json is authoritative)
+- [x] plugin.json minimum required fields reduced to just `name` and `description`
+- [x] ADR-008 to be fully superseded (bun handles source resolution)
+- [x] ADR-010 to be mostly superseded (6-phase model replaced by bun add + install wiring)
+- [x] ADR-003 Decision 3 lockfile to be superseded (bun.lockb replaces plugin-lock.json)
+- [x] ADR-001 to be amended (version removed from required fields)
+- [ ] ADR creation for Group 7 decisions (pending)
+- [ ] ADR review and debate (pending)
 
 #### Group 8: MCP and Self-Bootstrap (Sections 15-18) -- NOT STARTED
 
@@ -691,6 +726,26 @@ ADR status:
 - [x] [decision] Dual-location manifest rejected: plugin.json only, no package.json embedded field #manifest #simplification
 - [x] [fact] Group 5 COMPLETE: all data storage decisions covered by existing ADRs #complete
 
+### Group 7: Commands Research and Decisions
+
+- [x] [research] Consumer and author commands -- [[ANALYSIS-033-consumer-and-author-commands]] COMPLETE #commands #distribution
+- [x] [research] Skill versioning models comparison -- [[ANALYSIS-034-skill-versioning-models-comparison]] COMPLETE #versioning #npm
+- [x] [decision] MAJOR ARCHITECTURAL PIVOT: npm-package distribution model adopted (TanStack Intent style). Plugins are npm packages installed via `bun add @scope/plugin`. Bun handles ALL package management. agent-plugin becomes purely a "wiring tool" bridging npm packages to AI platform configs. #distribution #architecture
+- [x] [decision] Consumer commands (add, remove, upgrade) ELIMINATED -- bun handles package management natively #commands #simplification
+- [x] [decision] `init` redesigned to Husky model: `agent-plugin init` wires lifecycle hooks into package.json (`"postinstall": "agent-plugin install"`). Smart merge with existing scripts. postinstall covers add/remove/update since bun triggers it for all dependency changes. #init #lifecycle-hooks
+- [x] [decision] `install` is core wiring command: scan node_modules for packages with plugin.json, diff vs currently wired platforms, reconcile (add new, remove deleted, update changed) #install #core-command
+- [x] [decision] `create` command ADDED: scaffolds new plugin project (like `bun create`) #create #scaffolding
+- [x] [decision] `deinit` command ADDED: reverse of init, removes lifecycle hooks from package.json #deinit #lifecycle-hooks
+- [x] [decision] `dev` command REMOVED: not needed with lifecycle hook model #dev #removed
+- [x] [decision] `complete` command REMOVED: shell completions not needed #completions #removed
+- [x] [decision] `publish` command CONFIRMED REMOVED: no registry. No version command either. Version management is author's responsibility using standard tools (bun, npm). validate can warn about inconsistencies. #publish #removed
+- [x] [decision] version field removed from plugin.json required fields: package.json version is authoritative. plugin.json minimum required fields reduced to `name` and `description`. plugin.json becomes content declaration manifest (skills[], agents[], hooks[], instructions[], commands[], mcp[]). #manifest #simplification
+- [x] [decision] ADR-008 (Source Resolution) to be FULLY SUPERSEDED: bun handles all source resolution #adr-impact
+- [x] [decision] ADR-010 (Installation Lifecycle) to be MOSTLY SUPERSEDED: 6-phase model replaced by bun add + agent-plugin install wiring #adr-impact
+- [x] [decision] ADR-003 Decision 3 (lockfile) to be SUPERSEDED: bun.lockb replaces plugin-lock.json #adr-impact
+- [x] [decision] ADR-001 to be amended: version removed from required fields #adr-impact
+- [x] [fix] ANALYSIS-033, ANALYSIS-034 renamed from space-separated to kebab-case file names #naming
+
 ### Organization Rename and Path Migration
 
 - [x] [fact] Organization renamed from acmelabz to acmelabs-15, npm scope @acmelabs-15
@@ -852,6 +907,9 @@ From /Users/peter.kloss/Downloads/agent-plugin-design-spec.md:
 | deleted | CRIT-012 ADR-012 Scaffolding Debate Log | Wrong naming convention, replaced by DEBATE-ADR-012 |
 | fixed | 23 analysis notes (ANALYSIS-001 through 030) | Frontmatter titles fixed from kebab-case to Title Case |
 | renamed | DEBATE-ADR-012 | From CRIT-012 to DEBATE-ADR-012, then space-separated to kebab-case |
+| created | [[ANALYSIS-033-consumer-and-author-commands]] | COMPLETE |
+| created | [[ANALYSIS-034-skill-versioning-models-comparison]] | COMPLETE |
+| renamed | ANALYSIS-033, ANALYSIS-034 | From space-separated to kebab-case file names |
 
 ### Code Files
 
@@ -935,6 +993,8 @@ From /Users/peter.kloss/Downloads/agent-plugin-design-spec.md:
 - relates_to [[ANALYSIS-032-mcp-sdk-bun-runtime-compatibility]]
 - relates_to [[ADR-012-scaffolding-and-content-management]]
 - relates_to [[DEBATE-ADR-012-scaffolding-and-content-management]]
+- relates_to [[ANALYSIS-033-consumer-and-author-commands]]
+- relates_to [[ANALYSIS-034-skill-versioning-models-comparison]]
 
 ---
 
