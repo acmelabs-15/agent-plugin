@@ -1,6 +1,6 @@
 ---
-title: DEBATE-ADR-002-target-platforms-and-audiences
-type: note
+title: DEBATE-ADR-002 Target Platforms and Audiences
+type: critique
 permalink: critique/debate-adr-002-target-platforms-and-audiences
 tags:
 - adr-review

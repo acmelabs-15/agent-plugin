@@ -1,7 +1,7 @@
 ---
 title: DEBATE-ADR-007 CLI Architecture and Interaction Model
-type: note
-permalink: critique/debate-adr-007-cli-architecture-and-interaction-model-1
+type: critique
+permalink: critique/debate-adr-007-cli-architecture-and-interaction-model
 tags:
 - debate
 - adr-007
@@ -132,6 +132,7 @@ tags:
 ## Strengths (Consensus)
 
 All 6 agents agreed on these strengths:
+
 1. Three-tier input resolution is architecturally sound (6/6)
 2. --ci vs --yes distinction is precise and correct (6/6)
 3. ci-info three-layer detection with correct precedence (5/6)
@@ -142,6 +143,7 @@ All 6 agents agreed on these strengths:
 8. Evidence-based: backed by ANALYSIS-022/023/024 (4/6)
 
 ## Observations
+
 - [fact] Round 1: unanimous ACCEPT_WITH_CONDITIONS (6/6) #adr-007 #debate
 - [fact] Round 2: unanimous ACCEPT (6/6) — all conditions resolved or D&C #adr-007 #debate
 - [fact] 4 consolidated P0 issues resolved: MCP error schema (D9), JSON envelope (D10), component count corrected, source validation (rules 13-16) #p0
@@ -156,7 +158,6 @@ All 6 agents agreed on these strengths:
 - depends_on [[ADR-006 CLI Dependency Stack]]
 - relates_to [[DEBATE-ADR-005 Runtime and Distribution Strategy]]
 - relates_to [[DEBATE-ADR-006 Core Dependency Stack]]
-
 
 ## Round 2 Convergence Results
 

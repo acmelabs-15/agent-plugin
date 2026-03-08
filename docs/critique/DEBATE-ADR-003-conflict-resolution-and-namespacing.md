@@ -1,6 +1,6 @@
 ---
-title: DEBATE-ADR-003-conflict-resolution-and-namespacing
-type: note
+title: DEBATE-ADR-003 Conflict Resolution and Namespacing
+type: critique
 permalink: critique/debate-adr-003-conflict-resolution-and-namespacing
 tags:
 - adr-review
@@ -18,6 +18,7 @@ tags:
 **Result**: CONSENSUS REACHED — 3 Accept, 3 Disagree-and-Commit (Round 2)
 
 ## Agent Verdicts
+
 ### Round 1
 
 | Agent | Verdict | Confidence |
@@ -47,6 +48,7 @@ tags:
 ### P0-1: ADR Is Overloaded — Split Into 2-3 ADRs (High-Level Advisor, Independent Thinker, Analyst)
 
 Decisions 1-3 (colon separator, conflict resolution, rename tracking) are tightly coupled. Decisions 4-5 (cross-platform frontmatter, platform-aware generation) are a separate concern with different stakeholders and change frequency. Recommend split:
+
 - ADR-003A: Namespacing and Conflict Resolution (decisions 1, 2, 3)
 - ADR-003B: Cross-Platform Component Format (decisions 4, 5)
 
@@ -116,6 +118,7 @@ Hooks "merge" but Claude Code has blocking hooks (PreToolUse can block tool exec
 - Cross-platform frontmatter layering (core + platformConfig + emission filtering) is correct abstraction (Architect, Critic)
 
 ## Resolution Recommendations
+
 ### All P0 Issues -- RESOLVED
 
 | P0 | Issue | Resolution |
@@ -151,6 +154,7 @@ Hooks "merge" but Claude Code has blocking hooks (PreToolUse can block tool exec
 ### ADR-003 Rewrite Required
 
 The ADR must be rewritten to incorporate:
+
 1. Always-namespace as the core decision (replaces user-choice conflict resolution)
 2. Remove decisions 2+3 (rename tracking, cross-reference updates) -- moot
 3. Colon-is-logical-only constraint + kebab-case name validation
@@ -161,23 +165,25 @@ The ADR must be rewritten to incorporate:
 8. Forward reference to ADR-004 for hook merge security
 9. Updated consequences and alternatives sections
 
-
 ### Structural
+
 1. Split ADR into ADR-003A (Namespacing + Conflict Resolution) and ADR-003B (Component Format)
 2. Fix duplicate frontmatter block
 
 ### Must Address (P0)
-3. Add non-interactive conflict resolution strategy with --strategy flag
-4. Define cross-reference scope explicitly (which formats, which fields)
-5. Specify installMode interaction for both bundle and collection modes
-6. State colon is logical-only, add kebab-case name validation constraint
-7. Define hook merge rules per event type (advisory vs blocking)
-8. Specify state store format, location, and failure modes
+
+1. Add non-interactive conflict resolution strategy with --strategy flag
+2. Define cross-reference scope explicitly (which formats, which fields)
+3. Specify installMode interaction for both bundle and collection modes
+4. State colon is logical-only, add kebab-case name validation constraint
+5. Define hook merge rules per event type (advisory vs blocking)
+6. Specify state store format, location, and failure modes
 
 ### Should Address (P1)
-9. Evaluate always-namespace as a serious alternative (may simplify dramatically)
-10. Add concrete platformConfig schema with example
-11. Add ADR-004 forward reference for security concerns
+
+1. Evaluate always-namespace as a serious alternative (may simplify dramatically)
+2. Add concrete platformConfig schema with example
+3. Add ADR-004 forward reference for security concerns
 
 ## Observations
 

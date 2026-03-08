@@ -1,6 +1,6 @@
 ---
-title: DEBATE-ADR-005-runtime-and-distribution-strategy
-type: note
+title: DEBATE-ADR-005 Runtime and Distribution Strategy
+type: critique
 permalink: critique/debate-adr-005-runtime-and-distribution-strategy
 tags:
 - critique
@@ -120,7 +120,6 @@ tags:
 - relates_to [[DEBATE-ADR-001-plugin-format-and-manifest]]
 - relates_to [[DEBATE-ADR-002-target-platforms-and-audiences]]
 - relates_to [[DEBATE-ADR-003-conflict-resolution-and-namespacing]]
-
 
 ## Round 2: Convergence Check
 

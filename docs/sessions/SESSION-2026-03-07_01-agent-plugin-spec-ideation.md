@@ -120,6 +120,26 @@ tags:
 - [decision] drizzle-orm + SQLite REMOVED -- JSON lockfile (ADR-003) sufficient for 5-20 plugins. bun:sqlite built-in if ever needed at scale. #database #removed
 - [decision] @orama/orama full-text search REMOVED permanently -- Array.filter() on name/description/tags sufficient. No plugin manager bundles search engines. #search #removed
 - [decision] @huggingface/transformers semantic search REMOVED permanently -- over-engineering for CLI plugin manager. AI assistants via MCP already have semantic understanding. #search #removed
+- [decision] plugin.json only for manifest discovery in sources -- no package.json field fallback (ADR-001 already mandates plugin.json at root) #manifest-discovery
+- [decision] Bare owner/repo ambiguity: smart detection (check filesystem first, fall back to GitHub). Matches Go's approach. #source-resolution #smart-detection
+- [decision] Bun.semver ADOPTED for semver comparison (production-ready since Nov 2023, passes node-semver test suite, satisfies+order cover our needs). node-semver NOT needed. #semver #bun
+- [decision] tar npm package ADOPTED for archive extraction (15+ years battle-tested, built-in strip:1, streaming, security hardened). Bun.Archive too young (2 months, no strip-components, memory-buffered). #extraction #tar
+- [decision] Bun.write with response.arrayBuffer() workaround for downloads (known hanging bug with Response streaming, PR in progress). Acceptable for <10MB plugins. #downloads #bun-workaround
+- [decision] Platform detection: dual strategy (binary check + config directory existence). Both signals required for high confidence. Binary-only fails for GUI editors without CLI. Directory-only false-positives from leftover configs. #platform-detection #dual-detection
+- [decision] Detection runs in parallel via Promise.allSettled with Bun.spawn({ timeout: 3000 }). Uses which on macOS/Linux, where on Windows. #platform-detection #parallel
+- [decision] MCP key namespacing: colon separator (`plugin-name:server-name`), matching Claude Code internal convention and ADR-003 component identifier pattern. Replaces slash and double-dash from earlier analysis. #mcp #namespacing
+- [decision] Install scope: project scope default. When no project detected and --global not passed, prompt user via @clack/prompts confirm. Error in non-interactive mode. #install-scope #ux
+- [decision] System/platform dependencies: agent-plugin CAN install platform CLIs and system deps with explicit user confirmation via @clack/prompts. All installed deps tracked in plugin-lock.json for uninstall. #dependencies #system-deps
+- [decision] Installation flow: 6-phase model (Detect, Select, Resolve, Confirm, Apply, Record). User selects which platforms to install to via @clack/prompts multiselect. Missing platforms treated as installable deps. #installation #6-phase
+- [decision] Upgrade strategy: interactive upgrade flow -- scan installed plugins, check latest versions, present @clack/prompts multiselect showing `plugin-name current -> latest`. User picks which to upgrade. Atomic replace with rollback on failure. #upgrade #interactive
+- [decision] Platform config mapping: all platform-specific mapping lives in `platforms.config.json` at project root. Plugin authors write platform-agnostic plugin.json. Agent-plugin reads both at install time. Pure data file, not code. #platform-config #registry
+- [decision] Optional CLI generation from MCP tools: plugin.json `cli` field ("auto" | path | omitted). v1 produces flat subcommands (no auto-grouping heuristic). Author `cli.groups` for explicit grouping. All-or-nothing install for v1. Built-in `mcp` command group (start/stop/restart/status) for daemon lifecycle. Daemon/stdio transport model: stdio for MCP clients (Claude Code), daemon for CLI. `mcp restart` never touches stdio instances. Binary name denylist (31 entries). Custom binary path containment via realpathSync(). Parameter type mapping (7 types). Trust model documented. Symlinked to ~/.local/bin, tracked in plugin-lock.json. #cli #mcp #auto-generation #daemon-lifecycle
+- [decision] MCP key separator: colon (`plugin-name:server-name`), matching Claude Code internal convention. Replaces slash from earlier analysis. #mcp #namespacing
+- [decision] platforms.config.json: bundled in npm package, updated via version bumps. Contains all platform-specific mapping. Pure data file. #platform-config
+- [decision] Dual platform detection kept for v1 with --platform flag override. Binary check + config directory check via Promise.allSettled with 3s timeout. #platform-detection
+- [decision] CLI generation extracted from ADR-010 into ADR-011 per debate consensus (5/6 reviewers agreed on split) #architecture #extraction
+- [decision] Dependency model: deps defined by agent-plugin package (platforms.config.json), not plugin authors. Multiselect prompt for missing deps including package managers. Tracked in lockfile for uninstall reverse multiselect. #dependencies
+- [decision] MCP daemon lifecycle commands: built-in start/stop/restart/status for every plugin with MCP server. Restart safety: never touches stdio instances managed by Claude Code. PID file tracking at ~/.local/share/agent-plugin/pids/. #mcp #daemon-lifecycle
 
 ---
 
@@ -161,7 +181,7 @@ Template reference: /Users/peter.kloss/Documents/examples/docs/features/FEAT-003
 
 ## Ideation Workflow Status
 
-**Current Position:** Phase 1 > Group 3 COMPLETE. All ADRs (001-007) accepted. Ready for Group 4 (Source and Platform).
+**Current Position:** Phase 1 > Group 4 COMPLETE. All ADRs (001-011) accepted. ADR-008 through ADR-011 created, debated (6-agent adr-review), P0s resolved, and accepted. Ready for Group 5.
 
 ### Phase 1: Research and Discovery
 
@@ -314,12 +334,36 @@ ADR status:
 - [x] ADR-007 Round 2: UNANIMOUS ACCEPT (6/6), 3 D&C from independent thinker
 - [x] ADR-007 COMPLETE
 
-#### Group 4: Source and Platform (Sections 7-9) -- NOT STARTED
+#### Group 4: Source and Platform (Sections 7-9) -- COMPLETE
 
-- [ ] Source resolution (npm, GitHub, local)
-- [ ] Platform support model and detection
-- [ ] Installation mechanics (scope, conflicts, hook merging, MCP merging)
-- [ ] Manifest format (acmelabs-15.json vs package.json field vs other approaches)
+Research completed:
+
+- [x] [[ANALYSIS-025-source-resolution-patterns]] -- npm/GitHub/local resolution, semver (Bun.semver), staging, manifest discovery
+- [x] [[ANALYSIS-026-platform-detection-and-mapping]] -- detection patterns, config dirs, content mapping for all 7 platforms
+- [x] [[ANALYSIS-027-installation-mechanics]] -- install scope, MCP merging, dependency management, uninstall/upgrade
+
+All 11 discussion topics decided:
+
+- [x] Manifest discovery: plugin.json only (no package.json fallback, per ADR-001)
+- [x] Bare `owner/repo` ambiguity: smart detection (check filesystem first, fall back to GitHub)
+- [x] Bun built-in API reliability: Bun.semver (use) + tar npm package (instead of Bun.Archive) + Bun.write arrayBuffer workaround
+- [x] Platform detection: dual (binary + config dir) in parallel via Promise.allSettled + Bun.spawn with 3s timeout
+- [x] MCP key namespacing: colon separator (`plugin-name:server-name`), matching Claude Code internal convention and ADR-003 component identifier pattern
+- [x] Install scope: project scope default. No project detected and no --global flag = prompt user via @clack/prompts confirm. Error in non-interactive mode.
+- [x] System/platform dependencies: agent-plugin CAN install platform CLIs and system deps with explicit user confirmation via @clack/prompts. Tracked in plugin-lock.json for uninstall.
+- [x] Installation flow: 6-phase model (Detect, Select, Resolve, Confirm, Apply, Record). User selects platforms via multiselect. Missing platforms treated as installable deps.
+- [x] Upgrade strategy: interactive -- scan installed, check versions, multiselect `plugin current -> latest`, atomic replace with rollback on failure.
+- [x] Platform config mapping: all platform-specific mapping in `platforms.config.json` at project root. Plugin authors write platform-agnostic plugin.json. Pure data file.
+- [x] Optional CLI generation from MCP tools: `cli` field in plugin.json ("auto" | path | omitted). v1: flat subcommands, author `cli.groups` for grouping, all-or-nothing install. Built-in `mcp` start/stop/restart/status commands. Daemon/stdio transport. Binary safety denylist. Parameter type mapping. Trust model.
+
+ADR status:
+
+- [x] ADR-008 Source Resolution and Package Validation: created, debated (Round 1: 3 Accept, 3 D&C), P0/P1 fixes applied, ACCEPTED
+- [x] ADR-009 Platform Detection and Config Registry: created, debated (Round 1: NEEDS REVISION), P0/P1 fixes applied, Round 2 (5 Accept, 1 D&C), ACCEPTED
+- [x] ADR-010 Installation Lifecycle: created, debated (Round 1: NEEDS REVISION with 1 BLOCK), P0/P1 fixes applied, CLI generation extracted to ADR-011, Round 2 (5 Accept, 1 D&C), ACCEPTED
+- [x] ADR-011 Auto-Generated CLI from MCP Tools: created (extracted from ADR-010 Decision 5), debated (Round 1: unanimous NEEDS REVISION), 7 P0s resolved (flat commands, MCP lifecycle, binary safety, trust model, path containment, prior art, type mapping), Round 2 (5 Accept, 1 D&C), ACCEPTED
+- [x] DEBATE-ADR-008, DEBATE-ADR-009, DEBATE-ADR-010, DEBATE-ADR-011 all saved to critique/
+- [x] Group 4 COMPLETE: All 4 ADRs accepted
 
 #### Group 5: Data and Storage (Sections 10-11) -- NOT STARTED
 
@@ -626,6 +670,27 @@ From /Users/peter.kloss/Downloads/agent-plugin-design-spec.md:
 | created | [[DEBATE-ADR-007-cli-architecture-and-interaction-model]] | COMPLETE |
 | updated | [[ADR-006-core-dependency-stack]] | Amended: picocolors removed, ci-info added, total deps updated to 13 |
 | deleted | 6x REVIEW-ADR-007-* individual notes | Consolidated into DEBATE-ADR-007 |
+| created | [[ANALYSIS-025-source-resolution-patterns]] | COMPLETE |
+| created | [[ANALYSIS-026-platform-detection-and-mapping]] | COMPLETE |
+| created | [[ANALYSIS-027-installation-mechanics]] | COMPLETE |
+| renamed | ANALYSIS-026 | From space-separated to kebab-case file name |
+| updated | [[ANALYSIS-027-installation-mechanics]] | Decisions revised: 6-phase install, slash MCP namespacing, interactive upgrade, system deps with confirmation |
+| created | [[ANALYSIS-029-platform-config-registry]] | COMPLETE |
+| created | [[ANALYSIS-030-auto-generated-cli-from-mcp-tools]] | COMPLETE |
+| created | [[ANALYSIS-028-bun-builtin-api-reliability]] | COMPLETE |
+| created | [[ADR-008-source-resolution-and-package-validation]] | ACCEPTED (Round 1: 3 Accept, 3 D&C) |
+| created | [[ADR-009-platform-detection-and-config-registry]] | ACCEPTED (Round 2: 5 Accept, 1 D&C) |
+| created | [[ADR-010-installation-lifecycle]] | ACCEPTED (Round 2: 5 Accept, 1 D&C) |
+| created | [[ADR-011-auto-generated-cli-from-mcp-tools]] | ACCEPTED (Round 2: 5 Accept, 1 D&C) |
+| created | [[DEBATE-ADR-008-source-resolution-and-package-validation]] | COMPLETE (Round 1: 3 Accept, 3 D&C) |
+| created | [[DEBATE-ADR-009-platform-detection-and-config-registry]] | COMPLETE (Round 1: Needs Revision; Round 2: 5 Accept, 1 D&C) |
+| created | [[DEBATE-ADR-010-installation-lifecycle-and-cli-generation]] | COMPLETE (Round 1: Needs Revision with 1 Block; Round 2: 5 Accept, 1 D&C) |
+| created | [[DEBATE-ADR-011-auto-generated-cli-from-mcp-tools]] | COMPLETE (Round 1: Needs Revision; Round 2: 5 Accept, 1 D&C) |
+| updated | [[ANALYSIS-027-installation-mechanics]] | Dependency policy revised |
+| updated | [[ANALYSIS-029-platform-config-registry]] | Separator changed to colon, maintenance strategy added |
+| updated | [[ANALYSIS-030-auto-generated-cli-from-mcp-tools]] | CLI decisions now in ADR-011 |
+| renamed | DEBATE-ADR-008, 009, 010 | From CRIT-NNN to DEBATE-ADR-NNN convention |
+| fixed | DEBATE-ADR-001 through 007 | Frontmatter: titles with spaces, type changed to critique, permalinks fixed |
 
 ### Code Files
 
@@ -691,6 +756,20 @@ From /Users/peter.kloss/Downloads/agent-plugin-design-spec.md:
 - relates_to [[DEBATE-ADR-005-runtime-and-distribution-strategy]]
 - relates_to [[DEBATE-ADR-006-core-dependency-stack]]
 - relates_to [[DEBATE-ADR-007-cli-architecture-and-interaction-model]]
+- relates_to [[ANALYSIS-025-source-resolution-patterns]]
+- relates_to [[ANALYSIS-026-platform-detection-and-mapping]]
+- relates_to [[ANALYSIS-027-installation-mechanics]]
+- relates_to [[ANALYSIS-029-platform-config-registry]]
+- relates_to [[ANALYSIS-030-auto-generated-cli-from-mcp-tools]]
+- relates_to [[ADR-011-auto-generated-cli-from-mcp-tools]]
+- relates_to [[ANALYSIS-028-bun-builtin-api-reliability]]
+- relates_to [[ADR-008-source-resolution-and-package-validation]]
+- relates_to [[ADR-009-platform-detection-and-config-registry]]
+- relates_to [[ADR-010-installation-lifecycle]]
+- relates_to [[DEBATE-ADR-008-source-resolution-and-package-validation]]
+- relates_to [[DEBATE-ADR-009-platform-detection-and-config-registry]]
+- relates_to [[DEBATE-ADR-010-installation-lifecycle-and-cli-generation]]
+- relates_to [[DEBATE-ADR-011-auto-generated-cli-from-mcp-tools]]
 
 ---
 
@@ -726,3 +805,69 @@ From /Users/peter.kloss/Downloads/agent-plugin-design-spec.md:
 - [fact] ADR-007 ACCEPTED: Round 2 unanimous Accept (6/6), 3 Disagree-and-Commit positions from independent thinker #adr-007 #accepted
 - [fact] ADR-007 now has 10 decisions: original 8 + Decision 9 (MCP error schema) + Decision 10 (JSON envelope) #adr-007
 - [decision] Group 3 (CLI Architecture) COMPLETE. Next: Group 4 (Source and Platform — Sections 7-9) #progress
+
+### Group 4: Source and Platform Research and Decisions
+
+- [x] [research] Source resolution patterns -- [[ANALYSIS-025-source-resolution-patterns]] COMPLETE #source-resolution
+- [x] [research] Platform detection and mapping -- [[ANALYSIS-026-platform-detection-and-mapping]] COMPLETE #platform-detection
+- [x] [research] Installation mechanics -- [[ANALYSIS-027-installation-mechanics]] COMPLETE #installation
+- [x] [decision] plugin.json only for manifest discovery (no package.json field fallback) #manifest-discovery
+- [x] [fix] ANALYSIS-026 renamed from space-separated to kebab-case #naming
+- [x] [decision] Bare owner/repo: smart detection (filesystem first, then GitHub) #source-resolution
+- [x] [decision] Bun.semver adopted, tar npm package for extraction, Bun.write arrayBuffer workaround for downloads #bun-apis
+- [x] [decision] Platform detection: dual (binary + config dir) via Promise.allSettled with 3s timeout #platform-detection
+- [x] [decision] MCP key namespacing: colon separator (`plugin-name:server-name`), matching Claude Code internal convention and ADR-003 component identifier pattern #mcp-namespacing
+- [x] [decision] Install scope: project default, prompt when no project detected, error in CI #install-scope
+- [x] [decision] System deps: agent-plugin CAN install with user confirmation, tracked in plugin-lock.json #system-deps
+- [x] [decision] Installation flow: 6-phase (Detect, Select, Resolve, Confirm, Apply, Record) with platform multiselect #installation
+- [x] [decision] Upgrade: interactive multiselect `plugin current -> latest`, atomic replace with rollback #upgrade
+- [x] [decision] Platform config mapping: platforms.config.json at project root, pure data file #platform-config
+- [x] [decision] Optional CLI generation from MCP tools: `cli` field in plugin.json ("auto" | path | omitted). Auto-generates CLI from MCP tool schemas with prefix-based command grouping. Install-time multiselect of command groups. Symlinked to ~/.local/bin, tracked in plugin-lock.json. #cli #mcp
+- [x] [decision] All 11 Group 4 discussion topics decided. Ready for ADR creation. #group-4-complete
+- [x] [decision] MCP key separator changed from slash to colon (`plugin-name:server-name`) based on debate P0: JSON Pointer RFC 6901 conflicts, Claude Code uses colon internally, ADR-003 precedent #mcp-namespacing #p0-resolution
+- [x] [decision] platforms.config.json maintenance: bundled in npm package, updated via normal version bumps. No remote fetching. #platform-config #p0-resolution
+- [x] [decision] Dual detection kept for v1 (low implementation cost, works for GUI editors from day one). Added --platform flag as override for CI and edge cases. Debate P0-7 simplification rejected. #platform-detection #p0-resolution
+- [x] [decision] CLI generation split from ADR-010 into ADR-011 per debate P0-1 consensus (5/6 reviewers). ADR-010 now covers install lifecycle only. #cli #architecture #p0-resolution
+- [x] [adr] ADR-011 Auto-Generated CLI from MCP Tools created (extracted from ADR-010 Decision 5) #architecture
+- [x] [decision] Dependency auto-install kept (not reverted to check-only). Revised: deps defined by agent-plugin package (platforms.config.json), not plugin authors. Multiselect prompt for missing deps. Package manager deps included in chain. Tracked for uninstall reverse multiselect. Debate P0-2 CVSS 9.1 mitigated by trusted source. #dependencies #p0-resolution
+- [x] [fix] ADR-008 P0 editorial fixes: dropped memory argument from Bun.Archive rejection (P0-1), added zip slip/path traversal prevention IMP note (P0-2), added package integrity verification IMP note (P0-3) #adr-008 #p0-resolution
+- [x] [fix] ADR-008 P1 fixes: go-getter citation corrected (P1-1), Bun.Archive pre-check clarified (P1-4), observation categories fixed (P1-12) #adr-008 #p1-resolution
+- [x] [fix] ADR-009 P0 editorial fixes: qualified "zero code changes" claim for non-standard formats (P0-2), added envOverrides field to schema (P0-3), added Claude Code user-scoped MCP config (P0-5), removed phantom "servers" root key (P0-6) #adr-009 #p0-resolution
+- [x] [fix] ADR-009 P1 fixes: Copilot CLI gh extension detection noted (P1-1), platforms.config.json schema example added (P1-3), observation categories fixed (P1-12) #adr-009 #p1-resolution
+- [x] [fix] ADR-010 P0 editorial fixes: dependency rollback honesty (P0-5), plugin source integrity verification (P0-6), MCP namespace explicitly codified as colon per ADR-009 (P0-7) #adr-010 #p0-resolution
+- [x] [fix] ADR-010 P1 fixes: upgrade order install-first (P1-2), uninstall flow specified (P1-10), phases 1-3 noted as read-only (P1-11), MADR frontmatter (P1-14), rollback backup timing (P1-16) #adr-010 #p1-resolution
+
+### Group 4: ADR Creation, Debate, and Acceptance
+
+- [x] [adr] ADR-008 Source Resolution and Package Validation created #architecture
+- [x] [review] ADR-008 adr-review Round 1: ACCEPTED (3 Accept, 3 D&C). 3 P0 issues. #review
+- [x] [fix] ADR-008 P0/P1 resolutions: memory argument contradiction dropped, zip slip IMP-007 added, integrity verification IMP-008 added, go-getter citation corrected, observation categories fixed #p0-resolution
+- [x] [adr] ADR-009 Platform Detection and Config Registry created #architecture
+- [x] [review] ADR-009 adr-review Round 1: NEEDS REVISION (0 Accept, 1 Needs Rev, 4 D&C). 7 P0 issues. #review
+- [x] [fix] ADR-009 P0 resolutions: colon separator (P0-1), qualified "zero code changes" (P0-2), envOverrides added (P0-3), maintenance strategy added (P0-4), Claude Code user-scoped MCP (P0-5), phantom "servers" key removed (P0-6), --platform flag added (P0-7) #p0-resolution
+- [x] [review] ADR-009 Round 2: ACCEPTED (5 Accept, 1 D&C). No remaining P0s. #convergence
+- [x] [adr] ADR-010 Installation Lifecycle created (originally included CLI generation) #architecture
+- [x] [review] ADR-010 adr-review Round 1: NEEDS REVISION with 1 BLOCK (0 Accept, 1 Block, 1 Needs Rev, 3 D&C). 7 P0 issues. #review
+- [x] [fix] ADR-010 P0 resolutions: CLI generation extracted to ADR-011 (P0-1), dependency policy revised to trusted source (P0-2), rollback documented as best-effort (P0-5), integrity verification added (P0-6), MCP namespace codified as colon (P0-7) #p0-resolution
+- [x] [review] ADR-010 Round 2: ACCEPTED (5 Accept, 1 D&C). Security D&C: 4 P1 reservations. #convergence
+- [x] [adr] ADR-011 Auto-Generated CLI from MCP Tools created (extracted from ADR-010 Decision 5) #architecture
+- [x] [review] ADR-011 adr-review Round 1: unanimous NEEDS REVISION (0 Accept, 6 Needs Rev). 7 P0 issues. #review
+- [x] [fix] ADR-011 P0 resolutions: flat subcommands for v1 (P0-1), MCP daemon lifecycle commands added (P0-2), binary name denylist (P0-3), trust model section (P0-4), path containment validation (P0-5), prior art section (P0-6), parameter type mapping (P0-7) #p0-resolution
+- [x] [decision] MCP daemon lifecycle: built-in start/stop/restart/status commands for every plugin with MCP server. Daemon/stdio transport model. Restart safety: never touches Claude Code stdio instances. #mcp #daemon-lifecycle
+- [x] [review] ADR-011 Round 2: ACCEPTED (5 Accept, 1 D&C). Independent Thinker D&C: daemon transport protocol must be specified before daemon ships. #convergence
+- [x] [fix] All debate log filenames aligned: CRIT-NNN renamed to DEBATE-ADR-NNN convention for ADR-008, 009, 010 #naming
+- [x] [fix] Debate log frontmatter fixed for ADR-001 through 007: titles using spaces, type changed to critique, permalinks corrected #naming
+- [x] [fact] All 4 Group 4 ADRs accepted: ADR-008, ADR-009, ADR-010, ADR-011 #complete
+- [x] [fact] ADR-009 status updated to Accepted #status
+- [x] [fact] ADR-010 status updated to Accepted #status
+- [x] [fact] ADR-011 status updated to Accepted #status
+
+### Organization Rename and Path Migration
+
+- [x] [fact] Organization renamed from acmelabz to acmelabs-15, npm scope @acmelabs-15
+- [x] [fact] Git remote updated to <https://github.com/acmelabs-15/agent-plugin>
+- [x] [fact] 26 docs files updated (66 replacements), committed as 7ccbbb1
+- [x] [fact] Local directory moved from /Users/peter.kloss/Dev/acmelabz/agent-plugin to /Users/peter.kloss/Dev/acmelabs-15/agent-plugin
+- [x] [fact] Brain MCP project config recreated: code_path and memories_path updated to new location (CODE mode, docs/)
+- [ ] [pending] Clean up old /Users/peter.kloss/Dev/acmelabz/ directory (may have hidden files)
+- [ ] [pending] Restart Claude Code from new working directory to resume work

@@ -1,5 +1,5 @@
 ---
-title: DEBATE-ADR-006-core-dependency-stack
+title: DEBATE-ADR-006 Core Dependency Stack
 type: critique
 permalink: critique/debate-adr-006-core-dependency-stack
 tags:
@@ -74,6 +74,7 @@ tags:
 **Resolution**: Add blocking gate with hard deadline: test @clack/prompts on Bun 1.3.x BEFORE any interactive flow implementation. Define pass/fail criteria. If it fails, switch to Inquirer.js before writing wizard code.
 
 ## P1 Issues
+
 ### P1-1: Pin ALL Dependencies to Exact Versions
 
 **Raised by**: Security (P1), Architect (P1)
@@ -189,6 +190,7 @@ tags:
 **Resolution**: Correct the download count.
 
 ## P2 Issues
+
 | # | Issue | Raised By |
 |---|-------|-----------|
 | P2-1 | Decisions 3/8 lack two genuine alternatives (MADR requires this) | Architect |
@@ -242,7 +244,6 @@ tags:
 - relates_to [[ANALYSIS-020-frontmatter-and-markdown-processing]]
 - relates_to [[ANALYSIS-021-data-storage-and-search]]
 
-
 ## @clack/prompts Bun Compatibility Test Results
 
 **Date**: 2026-03-07
@@ -264,7 +265,6 @@ tags:
 - [fact] setRawMode() EPERM regression from Bun 1.3.2 (issue #24615) is FIXED in Bun 1.3.8 #bun-compat #verified
 - [fact] All non-interactive @clack/prompts APIs work on Bun 1.3.8 #bun-compat #verified
 - [decision] P0-3 validation gate retained as safety net but immediate risk is lower than feared. Pin Bun >= 1.3.8 #risk-mitigation
-
 
 ## Round 2: Convergence Check
 

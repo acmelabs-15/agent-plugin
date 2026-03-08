@@ -1,6 +1,6 @@
 ---
-title: DEBATE-ADR-001-plugin-format-and-manifest
-type: note
+title: DEBATE-ADR-001 Plugin Format and Manifest
+type: critique
 permalink: critique/debate-adr-001-plugin-format-and-manifest
 tags:
 - adr-review
@@ -24,6 +24,7 @@ tags:
 
 Strengths: Evidence-based corrections (root-level manifest), installMode is clean, npm-convention fields.
 Issues:
+
 - P1-1: Component path declarations lack schema contract (string vs array ambiguity)
 - P1-2: `sources` and `dependencies` declared but undefined
 - P1-3: Conflict resolution TBD for 3 of 5 component types
@@ -36,6 +37,7 @@ Issues:
 
 Strengths: Root-level manifest, installMode concept, npm conventions.
 Blocking Issues:
+
 - P0-1: `platforms` field has no defined semantics (omission behavior, invalid platform handling, open vs closed enum)
 - P0-2: `dependencies` and `conflicts` fields declared with no schema
 Other Issues:
@@ -48,6 +50,7 @@ Other Issues:
 ### Independent Thinker — DISAGREE-AND-COMMIT
 
 Challenges:
+
 1. Mandatory manifest asserted not proven — convention-based discovery works (Claude Code, Vercel)
 2. Bundle model assumed correct without stress-testing flat-skill alternative
 3. JSON format unjustified — why not YAML (matches frontmatter) or package.json field?
@@ -59,6 +62,7 @@ Commits to direction but recommends: justify JSON, quantify bundle need, acknowl
 ### Security — DISAGREE-AND-COMMIT
 
 Critical Issues:
+
 - SEC-P0-001: Path traversal in component path declarations (CWE-22, 9/10)
 - SEC-P0-002: Hook merging combines untrusted output with trusted (CWE-94, 8/10)
 - SEC-P0-003: MCP server configuration injection — full code execution (CWE-94/78, 9/10)
@@ -73,15 +77,16 @@ Required mitigations: path canonicalization, hook isolation boundaries, MCP appr
 ### Analyst — DISAGREE-AND-COMMIT
 
 Evidence Gaps:
+
 1. Per-type conflict resolution is novel design, not borrowed from any reference system
 2. Nested path error-proneness argument slightly overstated (issue is component placement, not manifest path)
 3. `prompts/` directory has zero precedent in any analyzed system
 Feasibility:
-1. Hook merging across 17 event types is underspecified — recursive conflict problem
-2. Collection mode dependency solver not addressed
+4. Hook merging across 17 event types is underspecified — recursive conflict problem
+5. Collection mode dependency solver not addressed
 Fact-checks:
-1. 5-component model is deliberate subset of Claude Code's 7 types — not documented as such
-2. "Matches npm conventions" slightly inaccurate (npm requires only name+version)
+6. 5-component model is deliberate subset of Claude Code's 7 types — not documented as such
+7. "Matches npm conventions" slightly inaccurate (npm requires only name+version)
 
 ### High-Level Advisor — ACCEPT
 
@@ -94,12 +99,14 @@ Recommendation: Go. Ship this format. Open ADR for platform translation contract
 ## Phase 2: Consolidation
 
 ### Consensus Points (all 6 agree)
+
 - Bundle model is directionally correct
 - Root-level plugin.json is better than nested
 - installMode concept addresses a real need
 - npm-convention minimum fields reduce friction
 
 ### Contested Points
+
 1. **`platforms` semantics** — Critic blocks, Architect/Analyst flag as P1/P2
 2. **`dependencies`/`conflicts` schemas** — Critic blocks, Analyst flags
 3. **Security: path traversal, hook merging, MCP execution** — Security flags 3 P0s
@@ -109,6 +116,7 @@ Recommendation: Go. Ship this format. Open ADR for platform translation contract
 7. **Manifest schema versioning** — Architect, Critic, Security all flag
 
 ### Cross-Agent Agreement on Gaps
+
 - Need manifest schema version field (4/6 agents)
 - Need defined `platforms` semantics (3/6 agents)
 - Need path validation rules (3/6 agents)
