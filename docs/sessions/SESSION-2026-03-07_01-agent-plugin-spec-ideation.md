@@ -15,7 +15,7 @@ tags:
 **Status:** IN_PROGRESS
 **Branch:** ideation/agent-plugin-spec
 **Starting Commit:** 84f8511 first commit
-**Current Commit:** 709f39d style: apply markdownlint fixes to analysis and decision docs
+**Current Commit:** 6553ef5 feat: add ADR-012 scaffolding and content management with research and debate
 **Objective:** Work through the `@acmelabs-15/agent-plugin` comprehensive design specification using the ideation workflow, conducting web research, creating ADRs for architectural decisions, and producing feature specs in the features/ directory
 
 ---
@@ -198,7 +198,7 @@ Template reference: /Users/peter.kloss/Documents/examples/docs/features/FEAT-003
 
 ### Phase 1: Research and Discovery
 
-#### Group 1: Foundation and Vision (Sections 1-3) -- RESEARCH COMPLETE, ADRs IN REVIEW
+#### Group 1: Foundation and Vision (Sections 1-3) -- COMPLETE
 
 Research completed:
 
@@ -251,11 +251,9 @@ ADR status:
 - [x] ADR-002 P1-8 resolved: Not a real concern for CLI tools. gunshi lazy loading handles it.
 - [x] ADR-002 P1-9 skipped: Covered by NEG-006/NEG-007 (ADR-004 scope)
 - [x] ADR-002 P1-10 skipped: Covered by NEG-006/NEG-007 (ADR-004 scope)
-- [ ] ADR-002 P1-11: Instruction file update patterns -- ANALYSIS-009 research running in background
+- [x] ADR-002 P1-11: Instruction file update patterns -- ANALYSIS-009 COMPLETE
 - [x] ADR-002 P1-12 resolved: Bidirectional link added to ADR-002 Relations
 - [x] ADR-003 created
-- [x] ADR-003 adr-review debate COMPLETE: UNANIMOUS NEEDS REVISION (0 Accept, 0 D&C, 6 Needs Revision)
-- [x] DEBATE-ADR-003 saved (7 P0, 14 P1, 8 P2)
 - [x] ADR-003 adr-review debate: UNANIMOUS NEEDS REVISION (0 Accept, 0 D&C, 6 Needs Revision)
 - [x] DEBATE-ADR-003 saved (7 P0, 14 P1, 8 P2)
 - [x] ADR-003 P0 Core: Always-namespace adopted (Claude Code model)
@@ -542,7 +540,7 @@ ADR status:
 - [x] [fix] P1-8 resolved: Bloat not a real concern for CLI tools, gunshi lazy loading sufficient #accepted
 - [x] [fix] P1-9 skipped: Content hashing covered by NEG-006/NEG-007 (ADR-004 scope) #security
 - [x] [fix] P1-10 skipped: MCP access control covered by NEG-006/NEG-007 (ADR-004 scope) #security
-- [ ] P1-11: Instruction file update patterns -- ANALYSIS-009 research spawned #research
+- [x] [fix] P1-11: Instruction file update patterns -- ANALYSIS-009 COMPLETE #research
 - [x] [fix] P1-12 resolved: Bidirectional ADR-002/ADR-003 link added #cleanup
 
 ### ADR-003 Review and P0/P1 Resolution
@@ -597,6 +595,15 @@ ADR status:
 - [x] [research] CLI framework comparison -- [[ANALYSIS-017-cli-framework-comparison]] COMPLETE #cli-framework
 - [x] [research] MCP framework and file watching -- [[ANALYSIS-019-mcp-framework-and-file-watching]] COMPLETE #mcp #file-watching
 - [x] [research] Shell completions, frontmatter, markdown, data storage, search -- COMPLETE (ANALYSIS-020, 021) #remaining-deps
+- [x] [adr] ADR-005 Runtime and Distribution Strategy created #architecture
+- [x] [fix] ADR-005 updated for Bun-only distribution: removed npx/Node.js consumer support, IMP-005, IMP-010, NEG-004 per user instruction #bun-only
+- [x] [adr] ADR-006 Core Dependency Stack created #architecture
+- [x] [review] ADR-006 adr-review debate: 6 agents completed (3 P0, 11 P1, 13 P2). DEBATE-ADR-006 created. #review
+- [x] [fix] ADR-006 P0/P1 resolutions applied: validator CVE pin, supply chain controls, clack gate, version pinning, MADR frontmatter, cold start alignment, ADR-003 boundary, MCP SDK pin, Zod peer dep, governance policy, hook exec reference, gunshi estimate revised #adr-006-fixes
+- [x] [test] @clack/prompts Bun 1.3.8 compatibility test: ALL PASS -- setRawMode works, all APIs available, EPERM regression from 1.3.2 fixed. Pin Bun >= 1.3.8. #clack #bun-compat #verified
+- [x] [review] ADR-005 Round 2: UNANIMOUS ACCEPT (6/6). All P0/P1 resolved. #convergence #accepted
+- [x] [review] ADR-006 Round 2: UNANIMOUS ACCEPT (6/6). All P0/P1 resolved. @gunshi/plugin-completion "latest" vs pinning policy (P2) noted for implementation. #convergence #accepted
+- [x] [update] DEBATE-ADR-005 and DEBATE-ADR-006 updated with Round 2 verdicts and consensus status #debate-logs
 
 ### Group 3: CLI Architecture Research and ADR-007
 
@@ -618,12 +625,64 @@ ADR status:
 - [x] [review] ADR-007 Round 2: UNANIMOUS ACCEPT (6/6), 3 D&C from independent thinker #convergence
 - [x] [fix] 6x individual REVIEW-ADR-007-* notes deleted, all content in DEBATE-ADR-007 #cleanup
 - [x] [fix] DEBATE-ADR-007 renamed from space-separated to kebab-case #naming
+- [x] [decision] User prefers over-specification in ADRs to prevent implementation assumptions #user-preference #adr-style
+- [x] [constraint] ADR review agents must NOT create individual REVIEW notes. All agent responses go into the single DEBATE-ADR-NNN note only #adr-review #convention
+- [x] [fact] ADR-007 now has 10 decisions: original 8 + Decision 9 (MCP error schema) + Decision 10 (JSON envelope) #adr-007
 
 ### File Name Fixes
 
 - [x] [fix] Renamed ADR-001, ADR-002, ADR-003 from space-separated to kebab-case file names #naming
 - [x] [fix] Renamed ANALYSIS-008 from space-separated to kebab-case file name #naming
 - [x] [fix] Deleted premature ADR-001-target-platforms-and-selection-criteria #cleanup
+- [x] [fix] ADR-005 file renamed to kebab-case (ADR-005-runtime-and-distribution-strategy) #naming
+- [x] [fix] ADR-006 file renamed to kebab-case (ADR-006-core-dependency-stack) #naming
+- [x] [fix] ANALYSIS-020 file renamed to kebab-case (ANALYSIS-020-frontmatter-and-markdown-processing) #naming
+
+### Group 4: Source and Platform Research and Decisions
+
+- [x] [research] Source resolution patterns -- [[ANALYSIS-025-source-resolution-patterns]] COMPLETE #source-resolution
+- [x] [research] Platform detection and mapping -- [[ANALYSIS-026-platform-detection-and-mapping]] COMPLETE #platform-detection
+- [x] [research] Installation mechanics -- [[ANALYSIS-027-installation-mechanics]] COMPLETE #installation
+- [x] [decision] plugin.json only for manifest discovery (no package.json field fallback) #manifest-discovery
+- [x] [fix] ANALYSIS-026 renamed from space-separated to kebab-case #naming
+- [x] [decision] Bare owner/repo: smart detection (filesystem first, then GitHub) #source-resolution
+- [x] [decision] Bun.semver adopted, tar npm package for extraction, Bun.write arrayBuffer workaround for downloads #bun-apis
+- [x] [decision] Platform detection: dual (binary + config dir) via Promise.allSettled with 3s timeout #platform-detection
+- [x] [decision] MCP key namespacing: colon separator (`plugin-name:server-name`), matching Claude Code internal convention and ADR-003 component identifier pattern #mcp-namespacing
+- [x] [decision] Install scope: project default, prompt when no project detected, error in CI #install-scope
+- [x] [decision] System deps: agent-plugin CAN install with user confirmation, tracked in plugin-lock.json #system-deps
+- [x] [decision] Installation flow: 6-phase (Detect, Select, Resolve, Confirm, Apply, Record) with platform multiselect #installation
+- [x] [decision] Upgrade: interactive multiselect `plugin current -> latest`, atomic replace with rollback #upgrade
+- [x] [decision] Platform config mapping: platforms.config.json at project root, pure data file #platform-config
+- [x] [decision] Optional CLI generation from MCP tools: `cli` field in plugin.json ("auto" | path | omitted). v1: flat subcommands, author `cli.groups` for grouping. Built-in `mcp` start/stop/restart/status commands. Daemon/stdio transport. #cli #mcp
+- [x] [decision] All 11 Group 4 discussion topics decided #group-4-complete
+- [x] [decision] MCP key separator changed from slash to colon based on debate P0: JSON Pointer RFC 6901 conflicts, Claude Code internal convention, ADR-003 precedent #mcp-namespacing #p0-resolution
+- [x] [decision] platforms.config.json maintenance: bundled in npm package, updated via normal version bumps. No remote fetching. #platform-config #p0-resolution
+- [x] [decision] Dual detection kept for v1. Added --platform flag as override for CI and edge cases. #platform-detection #p0-resolution
+- [x] [decision] CLI generation split from ADR-010 into ADR-011 per debate P0-1 consensus (5/6 reviewers) #cli #architecture #p0-resolution
+- [x] [decision] Dependency auto-install kept. Deps defined by agent-plugin package (platforms.config.json), not plugin authors. Tracked for uninstall. #dependencies #p0-resolution
+
+### Group 4: ADR Creation, Debate, and Acceptance
+
+- [x] [adr] ADR-008 Source Resolution and Package Validation created #architecture
+- [x] [review] ADR-008 adr-review Round 1: ACCEPTED (3 Accept, 3 D&C). 3 P0 issues. #review
+- [x] [fix] ADR-008 P0/P1 resolutions: memory argument contradiction dropped, zip slip IMP-007 added, integrity verification IMP-008 added, go-getter citation corrected, observation categories fixed #p0-resolution
+- [x] [adr] ADR-009 Platform Detection and Config Registry created #architecture
+- [x] [review] ADR-009 adr-review Round 1: NEEDS REVISION (0 Accept, 1 Needs Rev, 4 D&C). 7 P0 issues. #review
+- [x] [fix] ADR-009 P0 resolutions: colon separator (P0-1), qualified "zero code changes" (P0-2), envOverrides added (P0-3), maintenance strategy added (P0-4), Claude Code user-scoped MCP (P0-5), phantom "servers" key removed (P0-6), --platform flag added (P0-7) #p0-resolution
+- [x] [review] ADR-009 Round 2: ACCEPTED (5 Accept, 1 D&C). No remaining P0s. #convergence
+- [x] [adr] ADR-010 Installation Lifecycle created (originally included CLI generation) #architecture
+- [x] [review] ADR-010 adr-review Round 1: NEEDS REVISION with 1 BLOCK (0 Accept, 1 Block, 1 Needs Rev, 3 D&C). 7 P0 issues. #review
+- [x] [fix] ADR-010 P0 resolutions: CLI generation extracted to ADR-011 (P0-1), dependency policy revised to trusted source (P0-2), rollback documented as best-effort (P0-5), integrity verification added (P0-6), MCP namespace codified as colon (P0-7) #p0-resolution
+- [x] [review] ADR-010 Round 2: ACCEPTED (5 Accept, 1 D&C). Security D&C: 4 P1 reservations. #convergence
+- [x] [adr] ADR-011 Auto-Generated CLI from MCP Tools created (extracted from ADR-010 Decision 5) #architecture
+- [x] [review] ADR-011 adr-review Round 1: unanimous NEEDS REVISION (0 Accept, 6 Needs Rev). 7 P0 issues. #review
+- [x] [fix] ADR-011 P0 resolutions: flat subcommands for v1 (P0-1), MCP daemon lifecycle commands added (P0-2), binary name denylist (P0-3), trust model section (P0-4), path containment validation (P0-5), prior art section (P0-6), parameter type mapping (P0-7) #p0-resolution
+- [x] [decision] MCP daemon lifecycle: built-in start/stop/restart/status commands for every plugin with MCP server. Daemon/stdio transport model. Restart safety: never touches Claude Code stdio instances. #mcp #daemon-lifecycle
+- [x] [review] ADR-011 Round 2: ACCEPTED (5 Accept, 1 D&C). Independent Thinker D&C: daemon transport protocol must be specified before daemon ships. #convergence
+- [x] [fix] All debate log filenames aligned: CRIT-NNN renamed to DEBATE-ADR-NNN convention for ADR-008, 009, 010 #naming
+- [x] [fix] Debate log frontmatter fixed for ADR-001 through 007: titles using spaces, type changed to critique, permalinks corrected #naming
+- [x] [fact] All 4 Group 4 ADRs accepted: ADR-008, ADR-009, ADR-010, ADR-011 #complete
 
 ### Group 5: Data and Storage Quick-Pass
 
@@ -631,6 +690,40 @@ ADR status:
 - [x] [decision] MCP tool registry: on-demand for v1, not persisted in lockfile. Avoids schema staleness. #mcp #data-storage
 - [x] [decision] Dual-location manifest rejected: plugin.json only, no package.json embedded field #manifest #simplification
 - [x] [fact] Group 5 COMPLETE: all data storage decisions covered by existing ADRs #complete
+
+### Organization Rename and Path Migration
+
+- [x] [fact] Organization renamed from acmelabz to acmelabs-15, npm scope @acmelabs-15
+- [x] [fact] Git remote updated to <https://github.com/acmelabs-15/agent-plugin>
+- [x] [fact] 26 docs files updated (66 replacements), committed as 7ccbbb1
+- [x] [fact] Local directory moved from /Users/peter.kloss/Dev/acmelabz/agent-plugin to /Users/peter.kloss/Dev/acmelabs-15/agent-plugin
+- [x] [fact] Brain MCP project config recreated: code_path and memories_path updated to new location (CODE mode, docs/)
+- [ ] [pending] Clean up old /Users/peter.kloss/Dev/acmelabz/ directory (may have hidden files)
+- [x] [done] Restart Claude Code from new working directory #resolved
+
+### Group 6: Scaffolding Wizards Research and ADR-012
+
+- [x] [research] Scaffolding wizard patterns -- [[ANALYSIS-031-scaffolding-wizard-patterns]] COMPLETE #scaffolding #wizards
+- [x] [research] MCP SDK Bun runtime compatibility -- [[ANALYSIS-032-mcp-sdk-bun-runtime-compatibility]] COMPLETE #mcp-sdk #bun
+- [x] [research] Anthropic creator skills found: skill-creator (anthropics/skills), mcp-builder (anthropics/skills), agent-creator (anthropics/claude-code/plugins/plugin-dev) #creator-skills
+- [x] [fact] No Anthropic tool exists for CLAUDE.md/AGENTS.md evaluation -- opportunity for original instruction-evaluator #differentiator
+- [x] [decision] 16 decisions discussed one at a time with user across template rendering, schema-first, wizards, creator skills, eval/improve, instructions, trust model #group-6
+- [x] [adr] ADR-012 Scaffolding and Content Management created (11 decisions) #architecture
+- [x] [review] ADR-012 adr-review Round 1: unanimous NEEDS REVISION (0 Accept, 6 Needs Rev). 7 P0 issues consolidated. #review
+- [x] [fix] P0-1: MCP lifecycle commands removed from mcp group (consumer-only per ADR-011) #p0-resolution
+- [x] [fix] P0-2: content.* nesting replaced with flat array names matching ADR-001 #p0-resolution
+- [x] [fix] P0-3: Commands kept, IMP-005 tracks ADR-001 amendment (6th component type) #p0-resolution
+- [x] [fix] P0-4: IMP-006 added (creator skills independently shippable, phasing deferred to project plan) #p0-resolution
+- [x] [fix] P0-5: IMP-007 added (ANALYSIS-031 gray-matter cleanup) #p0-resolution
+- [x] [fix] P0-6: Decision 11 added (trust model, HTML viewer, faithfulness principle) #p0-resolution
+- [x] [fix] P0-7: Verified Zod v4 + MCP SDK compatible. Min versions added. ANALYSIS-032 created. #p0-resolution
+- [x] [review] ADR-012 adr-review Round 2: ACCEPTED (5 Accept, 1 D&C). All P0s resolved. #convergence
+- [x] [review] DEBATE-ADR-012 saved with Round 1 + Round 2 results #debate-log
+- [x] [fact] Independent Thinker D&C reservations: faithfulness subordination, IMP-007 scope, marker comment error handling #d&c
+- [x] [fix] 23 analysis note titles fixed from kebab-case to Title Case in frontmatter #naming
+- [x] [fix] Duplicate ANALYSIS-031 (space-separated filename) deleted #cleanup
+- [x] [fix] DEBATE-ADR-012 renamed from CRIT-012 to DEBATE-ADR-NNN convention, then from space-separated to kebab-case #naming
+- [x] [fact] ADR-012 status: ACCEPTED, COMPLETE #status
 
 ---
 
@@ -749,6 +842,8 @@ From /Users/peter.kloss/Downloads/agent-plugin-design-spec.md:
 | updated | [[ANALYSIS-030-auto-generated-cli-from-mcp-tools]] | CLI decisions now in ADR-011 |
 | renamed | DEBATE-ADR-008, 009, 010 | From CRIT-NNN to DEBATE-ADR-NNN convention |
 | fixed | DEBATE-ADR-001 through 007 | Frontmatter: titles with spaces, type changed to critique, permalinks fixed |
+| renamed | ADR-005, ADR-006 | From space-separated to kebab-case file names |
+| renamed | ANALYSIS-020 | From space-separated to kebab-case file name |
 | created | [[ANALYSIS-031-scaffolding-wizard-patterns]] | COMPLETE |
 | created | [[ANALYSIS-032-mcp-sdk-bun-runtime-compatibility]] | COMPLETE |
 | created | [[ADR-012-scaffolding-and-content-management]] | ACCEPTED (Round 2: 5 Accept, 1 D&C) |
@@ -851,117 +946,3 @@ From /Users/peter.kloss/Downloads/agent-plugin-design-spec.md:
 | MUST | Update Brain memory with learnings | [ ] | |
 | MUST | Run markdownlint | [ ] | |
 | MUST | Commit all changes | [ ] | |
-
-- [x] [fix] ADR-005 updated for Bun-only distribution: removed npx/Node.js consumer support, IMP-005, IMP-010, NEG-004 per user instruction #bun-only
-- [x] [fix] ADR-006 P0/P1 resolutions applied: validator CVE pin, supply chain controls, clack gate, version pinning, MADR frontmatter, cold start alignment, ADR-003 boundary, MCP SDK pin, Zod peer dep, governance policy, hook exec reference, gunshi estimate revised #adr-006-fixes
-
-- [x] [test] @clack/prompts Bun 1.3.8 compatibility test: ALL PASS — setRawMode works, all APIs available, EPERM regression from 1.3.2 fixed. Pin Bun >= 1.3.8. #clack #bun-compat #verified
-- [x] [fix] ADR-005 file renamed to kebab-case (ADR-005-runtime-and-distribution-strategy) #naming
-- [x] [fix] ADR-006 file renamed to kebab-case (ADR-006-core-dependency-stack) #naming
-- [x] [fix] ANALYSIS-020 file renamed to kebab-case (ANALYSIS-020-frontmatter-and-markdown-processing) #naming
-- [x] [fix] ADR-005 updated for Bun-only distribution: removed npx/Node.js consumer support, IMP-005, IMP-010, NEG-004 per user instruction #bun-only
-- [x] [review] ADR-006 adr-review debate: 6 agents completed (3 P0, 11 P1, 13 P2). DEBATE-ADR-006 created. #review
-- [x] [fix] ADR-006 all P0/P1 resolutions applied: validator CVE pin, supply chain controls, @clack gate, version pinning, MADR frontmatter, cold start alignment, ADR-003 boundary, MCP SDK pin, governance policy, hook exec reference, gunshi estimate revised #adr-006-fixes
-- [x] [review] ADR-005 Round 2 convergence check: UNANIMOUS ACCEPT (6/6). All P0/P1 resolved. Cosmetic numbering gaps only remaining note. #convergence #accepted
-- [x] [review] ADR-006 Round 2 convergence check: UNANIMOUS ACCEPT (6/6). All P0/P1 resolved. @gunshi/plugin-completion "latest" vs pinning policy (P2) noted for implementation. #convergence #accepted
-- [x] [update] DEBATE-ADR-005 and DEBATE-ADR-006 updated with Round 2 verdicts and consensus status #debate-logs
-
-- [decision] User prefers over-specification in ADRs to prevent implementation assumptions. Keep all detail (component mapping, validation rules, three-tier pattern) to constrain implementation. #user-preference #adr-style
-- [decision] ADR-007 P0 resolutions: add MCP error schema, add JSON envelope, correct 12/12 count, add source format taxonomy (4 types: npm, git HTTPS, git shorthand, local path) #adr-007 #p0
-- [decision] ADR-007 P1 resolutions: add flag interaction matrix, keep D7/D8 detail as-is, keep three-tier #adr-007 #p1
-
-- [constraint] ADR review agents must NOT create individual REVIEW notes. All agent responses go into the single DEBATE-ADR-NNN note only. No separate critique/ notes per agent. #adr-review #convention
-
-- [fact] ADR-007 ACCEPTED: Round 2 unanimous Accept (6/6), 3 Disagree-and-Commit positions from independent thinker #adr-007 #accepted
-- [fact] ADR-007 now has 10 decisions: original 8 + Decision 9 (MCP error schema) + Decision 10 (JSON envelope) #adr-007
-- [decision] Group 3 (CLI Architecture) COMPLETE. Next: Group 4 (Source and Platform — Sections 7-9) #progress
-
-### Group 4: Source and Platform Research and Decisions
-
-- [x] [research] Source resolution patterns -- [[ANALYSIS-025-source-resolution-patterns]] COMPLETE #source-resolution
-- [x] [research] Platform detection and mapping -- [[ANALYSIS-026-platform-detection-and-mapping]] COMPLETE #platform-detection
-- [x] [research] Installation mechanics -- [[ANALYSIS-027-installation-mechanics]] COMPLETE #installation
-- [x] [decision] plugin.json only for manifest discovery (no package.json field fallback) #manifest-discovery
-- [x] [fix] ANALYSIS-026 renamed from space-separated to kebab-case #naming
-- [x] [decision] Bare owner/repo: smart detection (filesystem first, then GitHub) #source-resolution
-- [x] [decision] Bun.semver adopted, tar npm package for extraction, Bun.write arrayBuffer workaround for downloads #bun-apis
-- [x] [decision] Platform detection: dual (binary + config dir) via Promise.allSettled with 3s timeout #platform-detection
-- [x] [decision] MCP key namespacing: colon separator (`plugin-name:server-name`), matching Claude Code internal convention and ADR-003 component identifier pattern #mcp-namespacing
-- [x] [decision] Install scope: project default, prompt when no project detected, error in CI #install-scope
-- [x] [decision] System deps: agent-plugin CAN install with user confirmation, tracked in plugin-lock.json #system-deps
-- [x] [decision] Installation flow: 6-phase (Detect, Select, Resolve, Confirm, Apply, Record) with platform multiselect #installation
-- [x] [decision] Upgrade: interactive multiselect `plugin current -> latest`, atomic replace with rollback #upgrade
-- [x] [decision] Platform config mapping: platforms.config.json at project root, pure data file #platform-config
-- [x] [decision] Optional CLI generation from MCP tools: `cli` field in plugin.json ("auto" | path | omitted). Auto-generates CLI from MCP tool schemas with prefix-based command grouping. Install-time multiselect of command groups. Symlinked to ~/.local/bin, tracked in plugin-lock.json. #cli #mcp
-- [x] [decision] All 11 Group 4 discussion topics decided. Ready for ADR creation. #group-4-complete
-- [x] [decision] MCP key separator changed from slash to colon (`plugin-name:server-name`) based on debate P0: JSON Pointer RFC 6901 conflicts, Claude Code uses colon internally, ADR-003 precedent #mcp-namespacing #p0-resolution
-- [x] [decision] platforms.config.json maintenance: bundled in npm package, updated via normal version bumps. No remote fetching. #platform-config #p0-resolution
-- [x] [decision] Dual detection kept for v1 (low implementation cost, works for GUI editors from day one). Added --platform flag as override for CI and edge cases. Debate P0-7 simplification rejected. #platform-detection #p0-resolution
-- [x] [decision] CLI generation split from ADR-010 into ADR-011 per debate P0-1 consensus (5/6 reviewers). ADR-010 now covers install lifecycle only. #cli #architecture #p0-resolution
-- [x] [adr] ADR-011 Auto-Generated CLI from MCP Tools created (extracted from ADR-010 Decision 5) #architecture
-- [x] [decision] Dependency auto-install kept (not reverted to check-only). Revised: deps defined by agent-plugin package (platforms.config.json), not plugin authors. Multiselect prompt for missing deps. Package manager deps included in chain. Tracked for uninstall reverse multiselect. Debate P0-2 CVSS 9.1 mitigated by trusted source. #dependencies #p0-resolution
-- [x] [fix] ADR-008 P0 editorial fixes: dropped memory argument from Bun.Archive rejection (P0-1), added zip slip/path traversal prevention IMP note (P0-2), added package integrity verification IMP note (P0-3) #adr-008 #p0-resolution
-- [x] [fix] ADR-008 P1 fixes: go-getter citation corrected (P1-1), Bun.Archive pre-check clarified (P1-4), observation categories fixed (P1-12) #adr-008 #p1-resolution
-- [x] [fix] ADR-009 P0 editorial fixes: qualified "zero code changes" claim for non-standard formats (P0-2), added envOverrides field to schema (P0-3), added Claude Code user-scoped MCP config (P0-5), removed phantom "servers" root key (P0-6) #adr-009 #p0-resolution
-- [x] [fix] ADR-009 P1 fixes: Copilot CLI gh extension detection noted (P1-1), platforms.config.json schema example added (P1-3), observation categories fixed (P1-12) #adr-009 #p1-resolution
-- [x] [fix] ADR-010 P0 editorial fixes: dependency rollback honesty (P0-5), plugin source integrity verification (P0-6), MCP namespace explicitly codified as colon per ADR-009 (P0-7) #adr-010 #p0-resolution
-- [x] [fix] ADR-010 P1 fixes: upgrade order install-first (P1-2), uninstall flow specified (P1-10), phases 1-3 noted as read-only (P1-11), MADR frontmatter (P1-14), rollback backup timing (P1-16) #adr-010 #p1-resolution
-
-### Group 4: ADR Creation, Debate, and Acceptance
-
-- [x] [adr] ADR-008 Source Resolution and Package Validation created #architecture
-- [x] [review] ADR-008 adr-review Round 1: ACCEPTED (3 Accept, 3 D&C). 3 P0 issues. #review
-- [x] [fix] ADR-008 P0/P1 resolutions: memory argument contradiction dropped, zip slip IMP-007 added, integrity verification IMP-008 added, go-getter citation corrected, observation categories fixed #p0-resolution
-- [x] [adr] ADR-009 Platform Detection and Config Registry created #architecture
-- [x] [review] ADR-009 adr-review Round 1: NEEDS REVISION (0 Accept, 1 Needs Rev, 4 D&C). 7 P0 issues. #review
-- [x] [fix] ADR-009 P0 resolutions: colon separator (P0-1), qualified "zero code changes" (P0-2), envOverrides added (P0-3), maintenance strategy added (P0-4), Claude Code user-scoped MCP (P0-5), phantom "servers" key removed (P0-6), --platform flag added (P0-7) #p0-resolution
-- [x] [review] ADR-009 Round 2: ACCEPTED (5 Accept, 1 D&C). No remaining P0s. #convergence
-- [x] [adr] ADR-010 Installation Lifecycle created (originally included CLI generation) #architecture
-- [x] [review] ADR-010 adr-review Round 1: NEEDS REVISION with 1 BLOCK (0 Accept, 1 Block, 1 Needs Rev, 3 D&C). 7 P0 issues. #review
-- [x] [fix] ADR-010 P0 resolutions: CLI generation extracted to ADR-011 (P0-1), dependency policy revised to trusted source (P0-2), rollback documented as best-effort (P0-5), integrity verification added (P0-6), MCP namespace codified as colon (P0-7) #p0-resolution
-- [x] [review] ADR-010 Round 2: ACCEPTED (5 Accept, 1 D&C). Security D&C: 4 P1 reservations. #convergence
-- [x] [adr] ADR-011 Auto-Generated CLI from MCP Tools created (extracted from ADR-010 Decision 5) #architecture
-- [x] [review] ADR-011 adr-review Round 1: unanimous NEEDS REVISION (0 Accept, 6 Needs Rev). 7 P0 issues. #review
-- [x] [fix] ADR-011 P0 resolutions: flat subcommands for v1 (P0-1), MCP daemon lifecycle commands added (P0-2), binary name denylist (P0-3), trust model section (P0-4), path containment validation (P0-5), prior art section (P0-6), parameter type mapping (P0-7) #p0-resolution
-- [x] [decision] MCP daemon lifecycle: built-in start/stop/restart/status commands for every plugin with MCP server. Daemon/stdio transport model. Restart safety: never touches Claude Code stdio instances. #mcp #daemon-lifecycle
-- [x] [review] ADR-011 Round 2: ACCEPTED (5 Accept, 1 D&C). Independent Thinker D&C: daemon transport protocol must be specified before daemon ships. #convergence
-- [x] [fix] All debate log filenames aligned: CRIT-NNN renamed to DEBATE-ADR-NNN convention for ADR-008, 009, 010 #naming
-- [x] [fix] Debate log frontmatter fixed for ADR-001 through 007: titles using spaces, type changed to critique, permalinks corrected #naming
-- [x] [fact] All 4 Group 4 ADRs accepted: ADR-008, ADR-009, ADR-010, ADR-011 #complete
-- [x] [fact] ADR-009 status updated to Accepted #status
-- [x] [fact] ADR-010 status updated to Accepted #status
-- [x] [fact] ADR-011 status updated to Accepted #status
-
-### Group 6: Scaffolding Wizards Research and ADR-012
-
-- [x] [research] Scaffolding wizard patterns -- [[ANALYSIS-031-scaffolding-wizard-patterns]] COMPLETE #scaffolding #wizards
-- [x] [research] MCP SDK Bun runtime compatibility -- [[ANALYSIS-032-mcp-sdk-bun-runtime-compatibility]] COMPLETE #mcp-sdk #bun
-- [x] [research] Anthropic creator skills found: skill-creator (anthropics/skills), mcp-builder (anthropics/skills), agent-creator (anthropics/claude-code/plugins/plugin-dev) #creator-skills
-- [x] [fact] No Anthropic tool exists for CLAUDE.md/AGENTS.md evaluation -- opportunity for original instruction-evaluator #differentiator
-- [x] [decision] 16 decisions discussed one at a time with user across template rendering, schema-first, wizards, creator skills, eval/improve, instructions, trust model #group-6
-- [x] [adr] ADR-012 Scaffolding and Content Management created (11 decisions) #architecture
-- [x] [review] ADR-012 adr-review Round 1: unanimous NEEDS REVISION (0 Accept, 6 Needs Rev). 7 P0 issues consolidated. #review
-- [x] [fix] P0-1: MCP lifecycle commands removed from mcp group (consumer-only per ADR-011) #p0-resolution
-- [x] [fix] P0-2: content.* nesting replaced with flat array names matching ADR-001 #p0-resolution
-- [x] [fix] P0-3: Commands kept, IMP-005 tracks ADR-001 amendment (6th component type) #p0-resolution
-- [x] [fix] P0-4: IMP-006 added (creator skills independently shippable, phasing deferred to project plan) #p0-resolution
-- [x] [fix] P0-5: IMP-007 added (ANALYSIS-031 gray-matter cleanup) #p0-resolution
-- [x] [fix] P0-6: Decision 11 added (trust model, HTML viewer, faithfulness principle) #p0-resolution
-- [x] [fix] P0-7: Verified Zod v4 + MCP SDK compatible. Min versions added. ANALYSIS-032 created. #p0-resolution
-- [x] [review] ADR-012 adr-review Round 2: ACCEPTED (5 Accept, 1 D&C). All P0s resolved. #convergence
-- [x] [review] DEBATE-ADR-012 saved with Round 1 + Round 2 results #debate-log
-- [x] [fact] Independent Thinker D&C reservations: faithfulness subordination, IMP-007 scope, marker comment error handling #d&c
-- [x] [fix] 23 analysis note titles fixed from kebab-case to Title Case in frontmatter #naming
-- [x] [fix] Duplicate ANALYSIS-031 (space-separated filename) deleted #cleanup
-- [x] [fix] DEBATE-ADR-012 renamed from CRIT-012 to DEBATE-ADR-NNN convention, then from space-separated to kebab-case #naming
-- [x] [fact] ADR-012 status: ACCEPTED, COMPLETE #status
-
-### Organization Rename and Path Migration
-
-- [x] [fact] Organization renamed from acmelabz to acmelabs-15, npm scope @acmelabs-15
-- [x] [fact] Git remote updated to <https://github.com/acmelabs-15/agent-plugin>
-- [x] [fact] 26 docs files updated (66 replacements), committed as 7ccbbb1
-- [x] [fact] Local directory moved from /Users/peter.kloss/Dev/acmelabz/agent-plugin to /Users/peter.kloss/Dev/acmelabs-15/agent-plugin
-- [x] [fact] Brain MCP project config recreated: code_path and memories_path updated to new location (CODE mode, docs/)
-- [ ] [pending] Clean up old /Users/peter.kloss/Dev/acmelabz/ directory (may have hidden files)
-- [ ] [pending] Restart Claude Code from new working directory to resume work
