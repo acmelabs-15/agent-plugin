@@ -169,6 +169,8 @@ Boilerplate savings from fastmcp: approximately 30 lines across 14 tools. Not wo
 
 ### Decision 7: File Watching -- chokidar v5
 
+> **Superseded (2026-03-09):** The `dev` command was eliminated by ADR-014. chokidar has no remaining use case. Remove from dependency stack. Can be re-added if a new file watching need emerges.
+
 **Chosen**: chokidar v5 (primary), watcher as fallback
 **Scope**: Only used for the author `dev` command (live reload during plugin development)
 
@@ -188,6 +190,8 @@ Rejected alternatives:
 
 ### Decision 8: Shell Completions -- @gunshi/plugin-completion
 
+> **Superseded (2026-03-09):** The `complete` command was eliminated by ADR-014. @gunshi/plugin-completion has no remaining use case. Remove from dependency stack. Shell completions deferred to post-MVP.
+
 **Chosen**: @gunshi/plugin-completion (part of gunshi ecosystem)
 
 Why: Comes with the adopted CLI framework. Uses bombshell-dev/tab internally. Supports bash, zsh, fish, powershell. No separate shell completion library needed.
@@ -202,7 +206,7 @@ Six dependencies proposed in the design specification were evaluated and removed
 | @orama/orama | Array.filter() sufficient for plugin search at expected scale. No plugin manager bundles a search engine. |
 | @huggingface/transformers | Over-engineering. 25-118 MB model download. AI assistants via MCP already have semantic understanding. |
 | gray-matter | CVE-2025-64718 in js-yaml@^3.13.1. Replaced by yaml 2.x + manual parser. |
-| micromark / remark / markdown-it | No markdown-to-HTML rendering needed. Tool extracts frontmatter and passes body as-is to platform adapters. |
+| micromark / remark / markdown-it | No markdown-to-HTML rendering needed. Tool extracts frontmatter and passes body as-is to platform adapters. **Amendment (2026-03-09):** ADR-014 D5 features model requires section-based markdown extraction. Add back: `remark`, `unified`, `mdast-util-heading-range`. Original removal was correct (no rendering needed) but new requirement (section extraction for feature cherry-picking) reinstates need for markdown AST parsing. |
 | fastmcp | Wraps official SDK (double the size), Bun compatibility unknown, value-adds irrelevant for stdio server. |
 
 **Upgrade paths**: If scale demands grow beyond current design:
@@ -387,3 +391,8 @@ Implementation compliance will be confirmed via:
 - relates_to [[ANALYSIS-013-input-sanitization-patterns]]
 - relates_to [[ADR-002 Target Platforms and Audiences]]
 - relates_to [[ADR-007 CLI Architecture and Interaction Model]]
+
+- [decision] Decision 7 (chokidar v5) superseded: dev command eliminated by ADR-014, no remaining file watching use case #chokidar #superseded #adr-014
+- [decision] Decision 8 (@gunshi/plugin-completion) superseded: complete command eliminated by ADR-014, shell completions deferred to post-MVP #gunshi #superseded #adr-014
+- [decision] Decision 9 amended: remark, unified, mdast-util-heading-range reinstated for ADR-014 D5 section-based feature cherry-picking; original removal (no rendering) was correct but new section extraction requirement adds markdown AST parsing need #remark #markdown #adr-014
+- relates_to [[ADR-014 CLI Command Restructuring]]

@@ -67,6 +67,8 @@ Every installed component is named `plugin-name:component-name`, following the C
 
 ### Decision 2: Hook Merge via Overlay/Recompute Pattern
 
+> **Partial supersession (2026-03-09):** The overlay/recompute pattern with `deepmerge` is superseded by a platform-aware hook model. **Array-based platforms** (e.g., Claude Code): natural stacking via array append/remove, no merging needed. **Single-hook platforms** (one command slot per event): wrapper script at `.agent-plugin/hooks/{platform}/{event}.sh` that calls the user's original hook (recorded as baseline in lockfile `platformHookBaselines`) plus all plugin hooks. Strictest-wins preserved (any non-zero exit = fail, but all hooks fire for side effects). Wrapper is a derived artifact regenerated from lockfile on every add/remove. On last plugin removal for an event, wrapper deleted and original hook restored from baseline. No `deepmerge` library needed.
+
 Hook merging uses the overlay/recompute pattern (ANALYSIS-010). Each plugin's hook contributions are stored as a dedicated section within the lockfile (`plugin-lock.json`). On install, update, or uninstall, ALL plugin hook sections are read and merged into the platform's configuration using `deepmerge` (ANALYSIS-012).
 
 **Merge semantics**:
@@ -299,6 +301,7 @@ Implementation compliance will be confirmed via:
 - [constraint] Colon forbidden in filenames (NTFS, Finder); plugin/component names validated as kebab-case to prevent namespace spoofing #cross-platform #filesystem
 - [fact] Overlay/recompute is the dominant pattern across 12 production systems: systemd, Kustomize, Docker Compose, NixOS, Terraform, Git config #prior-art
 - [risk] deepmerge v4.3.1 unchanged for 3 years; deepmerge-ts is the actively maintained alternative if migration needed #maintenance #dependency
+- [decision] Decision 2 overlay/recompute with deepmerge superseded (2026-03-09): array-based platforms use natural stacking; single-hook platforms use wrapper scripts with baseline recording in lockfile; deepmerge no longer needed #hooks #supersession
 - [insight] Always-namespace eliminates 3 subsystems (conflict resolution UI, rename tracking, cross-reference updates) that the original ADR-003 required #simplification
 
 ## Relations

@@ -16,16 +16,17 @@ tags:
 **Branch:** ideation/agent-plugin-spec
 **Starting Commit:** 84f8511 first commit
 **Current Commit:** 79b429d feat: add ADR-014 (accepted) and complete decision audit reconciliation
+**Pending Changes (not yet committed):** ADR-003, ADR-006, ADR-007, ADR-014 updated for Block A contradiction resolutions (C-1 through C-6)
 **Objective:** Work through the `@acmelabs-15/agent-plugin` comprehensive design specification using the ideation workflow, conducting web research, creating ADRs for architectural decisions, and producing feature specs in the features/ directory
 
 ---
 
 ## Acceptance Criteria
-- [~] Complete research on all major spec areas (CLI framework, dependencies, platform support, data storage, MCP server, scaffolding wizards) -- Coverage ~92% (decisions exist for almost all areas). Depth ~43% (31 of 72 decisions spec-ready). Groups 1-7 done. Group 8 mostly complete. Group 9 has 1 gap remaining (GAP-9).
-- [~] Create ADRs for key architectural decisions identified in the spec -- 10 active ADRs created (ADR-001 through ADR-014, excluding ADR-004). ADR-004 (security) still needed (P0-1). 3 ADRs superseded (008, 010, 013). ADR-014 has 4 amendments. Decision Completeness Audit identified 41 of 72 decisions NEED MORE DETAIL before feature specs can be written.
-- [ ] Create feature specs in features/ directory following FEAT-NNN template structure -- Phase 3 (not started). Blocked by completing Phase 1 depth gaps.
+- [~] Complete research on all major spec areas (CLI framework, dependencies, platform support, data storage, MCP server, scaffolding wizards) -- Coverage ~92% (decisions exist for almost all areas). Depth ~43% (31 of 72 decisions spec-ready). Groups 1-7 done. Group 8 mostly complete. Group 9 has 1 gap remaining (GAP-9). Block A (6 cross-ADR contradictions) RESOLVED (2026-03-09).
+- [~] Create ADRs for key architectural decisions identified in the spec -- 10 active ADRs created (ADR-001 through ADR-014, excluding ADR-004). ADR-004 (security) still needed (P0-1). 3 ADRs superseded (008, 010, 013). ADR-014 has 5 amendments (#1-#4 prior, #5 Block A resolutions). ADR-003, ADR-006, ADR-007 also amended for contradiction resolutions. Decision Completeness Audit identified 41 of 72 decisions NEED MORE DETAIL before feature specs can be written. 6 cross-ADR contradictions ALL RESOLVED.
+- [ ] Create feature specs in features/ directory following FEAT-NNN template structure -- Phase 3 (not started). Blocked by completing Phase 1 depth gaps (Blocks B and C).
 - [x] All research findings saved as Brain memory notes -- 47 analysis notes created (ANALYSIS-001 through 047)
-- [x] Session note kept current with all touched files, commits, memory notes, work log -- Updated with completeness audit findings (2026-03-09)
+- [x] Session note kept current with all touched files, commits, memory notes, work log -- Updated with Block A contradiction resolutions (2026-03-09)
 ## Session Start Protocol (BLOCKING)
 
 | Req Level | Step | Status | Evidence |
@@ -214,7 +215,10 @@ tags:
 - [decision] Configless sources get lockfile entries same as config-based sources. Removal uses plugin.config if present, otherwise re-scans directories to determine what to remove. #lockfile #removal
 - [decision] For configless monorepo sources, scan through ALL packages for well-known directories, not just root. #monorepo #discovery
 - [decision] Cross-ecosystem compatibility is BIDIRECTIONAL: our codebases consumable by Vercel/TanStack, AND sources created by Vercel/TanStack consumable by agent-plugin. Configless directory scan is the mechanism. #compatibility #ecosystem
-- [decision] agent-plugin must detect and install Claude plugins (`.claude-plugin/plugin.json` format). Source resolution checks three manifest formats in priority order: our format → Claude format → directory scan fallback. #claude-plugin #compatibility #critical-gap
+- [decision] agent-plugin must detect and install Claude plugins (`.claude-plugin/plugin.json` format). Source resolution checks three manifest formats in priority order: our format → Claude format → directory scan fallback. #claude-plugin #compatibility
+- [decision] C-1 RESOLVED: Hook model is two-tier. Array-based platforms (Claude Code) use natural stacking. Single-hook platforms use wrapper scripts at `.agent-plugin/hooks/{platform}/{event}.sh` with user baseline recorded in lockfile `platformHookBaselines`. Strictest-wins (any non-zero = fail) but all hooks fire. Wrapper regenerated from lockfile on every add/remove. Supersedes ADR-003 D2 overlay/recompute. #hooks #architecture
+- [decision] C-5 RESOLVED: Lockfile robustness carry-forward from ADR-003 D3: atomic writes (atomically), .bak backup, _integrity hash (SHA-256). Dropped: file permissions mode 600 (no secrets), re-derive from disk (lockfile is single source of truth, not cache). #lockfile #robustness
+- [decision] C-6 RESOLVED: plugin.json OPTIONAL (reverses "always required"). Three-tier manifest detection: (1) .agent-plugin/plugin.json (full features), (2) .claude-plugin/plugin.json (mapped), (3) directory scan fallback (no cherry-picking). #manifest #optional #critical-gap
 - [fact] Creator skills (skill-creator, agent-creator, mcp-builder, instruction-evaluator) are declared but zero-specified. No evaluation criteria, report formats, or Anthropic source analysis exists. Blocks all `analyze`/`analyze --fix` commands. #critical-gap
 - [fact] Only 2 of 7 platforms have config registry entries. No content directory mappings for `rules/` or `AGENTS.md`. Cannot implement platform writing without completing platforms.config.json. #critical-gap
 - [fact] 5 cross-ADR contradictions create ambiguity: hook model (ADR-003 vs ADR-014), remark deps (ADR-006 vs ADR-014), command tree (ADR-007 vs ADR-014), dependency necessity (chokidar/plugin-completion), lockfile robustness (ADR-003 vs ADR-014). #cross-adr-conflicts
@@ -274,8 +278,8 @@ ADR-014 ACCEPTED (Round 2: 5 Accept + 1 D&C) with 4 amendments, superseding ADR-
 
 **Remaining Phase 1 Work (Summary):**
 
-- 6 cross-ADR contradictions to resolve (hook model, remark deps, command tree, dep necessity, lockfile robustness, plugin.config required vs optional)
-- 6 NEW decision items: configless source discovery, monorepo scanning, per-item validation, configless removal flow, cross-ecosystem compatibility (bidirectional), Claude plugin format compatibility
+- 6 cross-ADR contradictions: ALL RESOLVED (C-1 hook model, C-2 remark deps, C-3 command tree, C-4 dep necessity, C-5 lockfile robustness, C-6 plugin.config optional). Block A COMPLETE.
+- 6 NEW decision items (unblocked by C-6): configless source discovery, monorepo scanning, per-item validation, configless removal flow, cross-ecosystem compatibility (bidirectional), Claude plugin format compatibility. Pending detailed specification as ADR-014 amendments.
 - 5 P0 gaps: ADR-004 security (11 items), creator skills (4 skills zero-specified), hook model contradiction, remark dep contradiction, platform adapter paths (7 platforms x 8 content types)
 - 15 P1 gaps: consumer command flows, features edge cases, content directory conventions, MCP template, Zod schemas, wizard reconciliation, validate/build definitions, command flags, lockfile robustness, daemon transport, managed sections, platformConfig overlap, plugin deps, JSON payloads, dep necessity
 - GAP-9 implementation phasing (LOW, deferrable to Phase 4)
@@ -892,6 +896,21 @@ All of the above resolved → Phase 1 COMPLETE. Ready for Phase 2.
 ---
 
 ## Work Log
+
+### Block A Contradiction Resolution (2026-03-09)
+
+**Status**: COMPLETE — all 6 contradictions resolved
+
+1. **C-1 Hook model**: New two-tier model: array-based platforms (natural stacking) + single-hook platforms (wrapper scripts with platformHookBaselines in lockfile, strictest-wins, all hooks fire). deepmerge no longer needed for hooks. Supersedes ADR-003 D2.
+2. **C-2 remark/unified deps**: ADR-006 D9 removal correct at the time; ADR-014 D5 reinstates need. Amendment to add remark, unified, mdast-util-heading-range back.
+3. **C-3 Command tree**: ADR-007 D1 superseded by ADR-014 D6. Other ADR-007 decisions remain active.
+4. **C-4 chokidar/completion**: dev command eliminated (no chokidar), complete command eliminated (no @gunshi/plugin-completion). Both removed from dep stack.
+5. **C-5 Lockfile robustness**: Carry forward atomic writes, .bak backup, integrity hash. Drop mode 600 and re-derive.
+6. **C-6 plugin.config optional**: Three-tier manifest detection. Unblocks Block A2 (NEW-1 through NEW-6).
+
+**ADR files updated**: ADR-003 (D2 supersession), ADR-006 (D7/D8 supersession, D9 amendment), ADR-007 (D1 supersession), ADR-014 (Amendment #5).
+
+**New decision items added**: 6 items (NEW-1 through NEW-6) for configless discovery, monorepo scanning, per-item validation, configless removal, cross-ecosystem compatibility, Claude plugin format. Plus contradiction C-6 added to Block A.
 
 ### Session Initialization
 
@@ -1590,12 +1609,12 @@ Phase 1 completion requires resolving both coverage gaps (GAP-1 through GAP-9) a
 
 These create ambiguity that blocks deepening work. MUST resolve first.
 
-- [ ] **C-1: Hook model** (ADR-003 D2 vs ADR-014 D7) -- ADR-003 says overlay/recompute with deepmerge. ADR-014 says no cross-plugin merging, separate entries per plugin. Decide which model is correct, update the contradicting ADR, document resolution.
-- [ ] **C-2: remark/unified deps** (ADR-006 D9 vs ADR-014 D5) -- ADR-006 explicitly removed markdown processing libs. ADR-014 requires remark/unified/mdast-util-heading-range for features. Add missing deps to ADR-006 via amendment OR explain why ADR-014 doesn't actually need them.
-- [ ] **C-3: Command tree staleness** (ADR-007 D1 vs ADR-014 D6) -- ADR-007 has init/upgrade/new. ADR-014 has update/content-type groups/no init. Mark ADR-007 D1 as superseded by ADR-014 D6.
-- [ ] **C-4: chokidar necessity** (ADR-006 D7 vs ADR-014 D6) -- chokidar was for `dev` command. `dev` command eliminated. Remove chokidar from dep stack OR identify new use case.
-- [ ] **C-5: Lockfile robustness** (ADR-003 D3 vs ADR-014 D2) -- ADR-003 specified corruption recovery, integrity hash, backup, atomic writes. ADR-014 has none. Decide: carry forward to `.agent-lock.json` OR explicitly drop with rationale.
-- [ ] **C-6: plugin.config required vs optional** (ADR-014 D3 vs NEW-1) -- ADR-014 D3 says "plugin.json is ALWAYS required (not optional like Claude Code)." NEW-1 says plugin.config is OPTIONAL with directory-scan fallback. Resolve: amend ADR-014 D3 to make plugin.config optional, document configless discovery flow.
+- [x] **C-1: Hook model** (ADR-003 D2 vs ADR-014 D7) -- RESOLVED: Neither model fully correct. New model: (1) Array-based platforms (Claude Code): natural stacking, append plugin matchers to array, remove on uninstall, no merging needed. (2) Single-hook platforms: wrapper script approach — record user's original hook value in lockfile `platformHookBaselines`, generate wrapper script at `.agent-plugin/hooks/{platform}/{event}.sh` that calls user's original + all plugin hooks, strictest-wins (any non-zero = fail) but all hooks fire (side effects like metrics preserved). Wrapper is derived artifact regenerated from lockfile on every add/remove. On last plugin removal for an event, wrapper deleted and original hook value restored from baseline. ADR-003 D2 overlay/recompute superseded. ADR-014 D7 "independent entries" partially correct for array platforms but needs wrapper mechanism for single-hook platforms.
+- [x] **C-2: remark/unified deps** (ADR-006 D9 vs ADR-014 D5) -- RESOLVED: ADR-006 D9 removal was correct at the time (no markdown processing needed). ADR-014 D5 features model introduced section-based cherry-picking requiring markdown AST parsing. Resolution: amend ADR-006 to add remark, unified, mdast-util-heading-range back to dependency stack with rationale that ADR-014 D5 requires them. Tracked in Block E for ADR-006 amendment.
+- [x] **C-3: Command tree staleness** (ADR-007 D1 vs ADR-014 D6) -- RESOLVED: ADR-007 D1 command tree superseded by ADR-014 D6. ADR-007's other decisions (interaction model D2-D4, flags D5, CI mode, exit codes D10, etc.) remain active. ADR-007 D1 needs supersession note added. Tracked in Block E for stale body text update.
+- [x] **C-4: chokidar necessity** (ADR-006 D7 vs ADR-014 D6) -- RESOLVED: `dev` command eliminated, chokidar has no remaining use case. Remove chokidar from dependency stack. Also remove `@gunshi/plugin-completion` (`complete` command also eliminated). Both can be re-added if new use cases emerge. ADR-006 amendment needed to mark D7 as superseded and remove both from dep summary table.
+- [x] **C-5: Lockfile robustness** (ADR-003 D3 vs ADR-014 D2) -- RESOLVED: Carry forward from ADR-003: atomic writes (via `atomically`), .bak backup file, `_integrity` hash (SHA-256), lockfileVersion (already present as `version: 1`). Drop: file permissions mode 600 (no secrets in lockfile, 644 fine), re-derive from disk (no longer possible — lockfile is single source of truth, not a re-derivable cache; content goes directly to platform configs with no intermediate store). ADR-014 D2 needs amendment adding these robustness fields.
+- [x] **C-6: plugin.config required vs optional** (ADR-014 D3 vs NEW-1) -- RESOLVED: Amend ADR-014 D3. plugin.json is OPTIONAL (reverses "always required"). Three-tier manifest detection: (1) `.agent-plugin/plugin.json` (our format, full feature cherry-picking), (2) `.claude-plugin/plugin.json` (Claude format, mapped installation), (3) no manifest (directory scan fallback — check skills/, agents/, commands/, AGENTS.md, rules/, hooks/, mcp/; validate each item; install all valid content, no cherry-picking; monorepos scan all packages). All three tiers: tracked in lockfile, removal works via lockfile + re-checking source. Unblocks Block A2 items (NEW-1 through NEW-6).
 
 ---
 

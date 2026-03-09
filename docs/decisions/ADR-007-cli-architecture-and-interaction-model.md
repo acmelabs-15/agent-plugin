@@ -64,6 +64,8 @@ Ten interconnected decisions govern CLI architecture and interaction. Each is do
 
 ### Decision 1: Command Tree Structure
 
+> **Superseded (2026-03-09):** This command tree is superseded by ADR-014 Decision 6 (Revised Command Tree). ADR-014 replaces init/upgrade/new/dev/complete with add/remove/update/install/list (consumer) + create/validate/build (author) + content-type CRUD/analyze groups + mcp serve. This Decision 1 is retained for historical reference. All other ADR-007 decisions (D2-D10) remain active.
+
 Chosen option: Grouped tree with consumer, author, and scaffolding categories.
 
 ```text
@@ -404,3 +406,4 @@ Exit codes: 0 = success, 1 = runtime error (operation failed), 2 = usage error (
 - relates_to [[ANALYSIS-022 clack prompts API Surface and Gaps]]
 - relates_to [[ANALYSIS-023 gunshi Command Patterns and Capabilities]]
 - relates_to [[ANALYSIS-024 CLI CI Mode and Non-Interactive Patterns]]
+- [decision] Decision 1 command tree superseded by ADR-014 Decision 6 (Revised Command Tree) as of 2026-03-09; D2-D10 remain active #command-tree #superseded

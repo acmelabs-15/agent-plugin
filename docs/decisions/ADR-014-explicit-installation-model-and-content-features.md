@@ -469,7 +469,7 @@ For each detected platform, use the platform adapter (ADR-009) to write compiled
 
 Platform adapters read the base content and merge platform-specific metadata from the `platforms` field in plugin.json (Decision 8).
 
-**Hook merge semantics**: Hooks from multiple plugins are installed as independent entries. Each plugin's hooks are written to separate files or separate config entries namespaced by plugin name (e.g., `hooks/plugin-name--pre-commit.js`). No cross-plugin hook merging is performed. This differs from ADR-003 Decision 2's overlay/recompute model and ADR-013's full-recompute model, both of which merged hooks from multiple sources into a single entry. The explicit model avoids merge conflicts by keeping hooks isolated per plugin. Platform adapters that require a single hook entry point (e.g., Claude Code's `hooks` array in `settings.json`) add one entry per plugin hook.
+**Hook merge semantics**: See Amendment #5 (C-1 Resolution) for the authoritative hook model. Two-tier approach: array-based platforms use natural stacking (append/remove entries); single-hook platforms use generated wrapper scripts with user baseline preservation. Strictest-wins for blocking decisions. All hooks fire regardless. Supersedes ADR-003 D2 overlay/recompute.
 
 **Step 8: Update lockfile**
 
@@ -851,6 +851,56 @@ Resolves GAP-6/7 from the comprehensive gap analysis. Spec Section 17 described 
 The `@acmelabs-15/config` package has no knowledge of agent-plugin concepts. The boundary is clean: config handles everything about "how a project is set up," agent-plugin handles everything about "what makes a project a plugin."
 
 `@acmelabs-15/config` is a separate codebase with its own spec and decision process. The spec brief is captured externally. Decisions about monorepo tooling, testing framework, release automation, Biome configuration, and other DX infrastructure are made in that package's context, not here.
+
+### Amendment #5: Hook Model, Lockfile Robustness, and Optional Manifest (2026-03-09)
+
+Resolves contradictions C-1, C-5, and C-6 from the Decision Completeness Audit.
+
+**C-1 Resolution — Hook Model (amends D7 Step 7):**
+
+The hook merge semantics in D7 Step 7 are replaced by a two-tier model:
+
+1. **Array-based platforms** (e.g., Claude Code): Natural stacking. Plugin hooks are appended as additional entries in the platform's hook array. On removal, entries are removed. No cross-plugin merging needed.
+
+2. **Single-hook platforms** (one command slot per event): Wrapper script approach.
+   - On first plugin install touching an event, record the user's existing hook value in the lockfile under `platformHookBaselines.{platform}.{event}`.
+   - Generate a wrapper script at `.agent-plugin/hooks/{platform}/{event}.sh` that calls the user's original command + all plugin hook commands sequentially.
+   - **Strictest-wins**: Any non-zero exit code from any hook = overall failure. But ALL hooks fire regardless (side effects like metrics posting are preserved).
+   - Wrapper is a **derived artifact** regenerated from the lockfile on every `add` or `remove`.
+   - On last plugin removal for an event, the wrapper is deleted and the original hook value is restored from `platformHookBaselines`.
+
+This supersedes ADR-003 D2's overlay/recompute pattern. `deepmerge` is no longer needed for hook merging.
+
+**C-5 Resolution — Lockfile Robustness (amends D2):**
+
+The following robustness features from ADR-003 D3 carry forward to `.agent-lock.json`:
+
+| Feature | Status | Rationale |
+|---|---|---|
+| Atomic writes (via `atomically`) | Carry forward | Prevents corruption from crashes/power loss |
+| `.bak` backup file | Carry forward | Low-cost safety net for recovery |
+| `_integrity` hash (SHA-256) | Carry forward | Detects manual edits or corruption |
+| `lockfileVersion` | Already present | Schema evolution via `version: 1` field |
+| File permissions (mode 600) | Drop | Lockfile contains no secrets, 644 is fine |
+| Re-derive from disk scan | Drop | Lockfile is now single source of truth, not a re-derivable cache. Content goes directly to platform configs with no intermediate store. |
+
+Updated `.agent-lock.json` schema adds `_integrity` field (SHA-256 hash of the file's own content, self-excluded during computation) and requires atomic writes via `atomically` package.
+
+**C-6 Resolution — Optional Manifest with Three-Tier Detection (amends D3):**
+
+Decision 3 stated `.agent-plugin/plugin.json` is "ALWAYS required." This is amended: the manifest is OPTIONAL.
+
+Source resolution uses three-tier manifest detection in priority order:
+
+1. **`.agent-plugin/plugin.json`** (our format): Full feature support including cherry-picking via features model (D5). This is the richest installation path.
+
+2. **`.claude-plugin/plugin.json`** (Claude plugin format): Mapped installation. Content types are translated to our model. Feature cherry-picking not available (Claude format has no features concept). Enables agent-plugin to install and manage Claude plugins directly.
+
+3. **No manifest found** (directory scan fallback): Check source root for well-known directories: `skills/`, `agents/`, `commands/`, `AGENTS.md`, `rules/`, `hooks/`, `mcp/`. For monorepo sources, scan all packages. Each discovered item is validated individually per content type. All valid content is installed (no cherry-picking — no features definition exists). This enables consuming sources created by Vercel `npx skills`, TanStack intent, or any tool that produces well-known directory layouts.
+
+**Cross-ecosystem compatibility is bidirectional**: (A) Our generated plugin codebases produce well-known directory layouts consumable by Vercel/TanStack. (B) Sources created by those tools are consumable by `agent-plugin add`.
+
+In all three tiers: sources are tracked in the lockfile. Removal works by consulting lockfile then re-checking the source (via manifest or directory scan) to determine what to remove from all scopes.
 
 ## Observations
 
