@@ -15,18 +15,18 @@ tags:
 **Status:** IN_PROGRESS
 **Branch:** ideation/agent-plugin-spec
 **Starting Commit:** 84f8511 first commit
-**Current Commit:** f4e5d37 docs: update session note with Group 7 npm-package distribution decisions
+**Current Commit:** 79b429d feat: add ADR-014 (accepted) and complete decision audit reconciliation
 **Objective:** Work through the `@acmelabs-15/agent-plugin` comprehensive design specification using the ideation workflow, conducting web research, creating ADRs for architectural decisions, and producing feature specs in the features/ directory
 
 ---
 
 ## Acceptance Criteria
 
-- [ ] Complete research on all major spec areas (CLI framework, dependencies, platform support, data storage, MCP server, scaffolding wizards)
-- [ ] Create ADRs for key architectural decisions identified in the spec
-- [ ] Create feature specs in features/ directory following FEAT-NNN template structure
-- [ ] All research findings saved as Brain memory notes
-- [ ] Session note kept current with all touched files, commits, memory notes, work log
+- [~] Complete research on all major spec areas (CLI framework, dependencies, platform support, data storage, MCP server, scaffolding wizards) -- ~85% complete. Groups 1-7 done. Groups 8-9 partially remaining (4 gaps open).
+- [~] Create ADRs for key architectural decisions identified in the spec -- 10 active ADRs created (ADR-001 through ADR-014, excluding ADR-004). ADR-004 (security) still needed. 3 ADRs superseded (008, 010, 013).
+- [ ] Create feature specs in features/ directory following FEAT-NNN template structure -- Phase 3 (not started)
+- [x] All research findings saved as Brain memory notes -- 47 analysis notes created (ANALYSIS-001 through 047)
+- [x] Session note kept current with all touched files, commits, memory notes, work log
 
 ---
 
@@ -238,7 +238,16 @@ Template reference: /Users/peter.kloss/Documents/examples/docs/features/FEAT-003
 
 ## Ideation Workflow Status
 
-**Current Position:** Phase 1 > Group 7 COMPLETE. ADR-013 ACCEPTED (Round 2: 5 Accept + 1 D&C). Major design pivot: moved AWAY from ADR-013's npm-dependency + postinstall model toward explicit `agent-plugin add/remove/update` command model (Vercel Skills style). ADR-014 to be created to supersede ADR-013. Features model, `.agent-plugin/plugin.json` manifest, `.agent-lock.json` lockfile, revised command tree, content type taxonomy, section-based feature mechanism all settled. Groups 8-9, Phases 2-5 NOT STARTED.
+**Current Position:** Phase 1 ~85% COMPLETE. Groups 1-7 COMPLETE. ADR-014 ACCEPTED (Round 2: 5 Accept + 1 D&C), superseding ADR-013. Decision Audit Reconciliation COMPLETE. Gap Analysis COMPLETE (9 gaps identified, 4 already resolved via existing ADRs, 5 require action). Group 8 IN PROGRESS (3 items narrower than originally scoped). Group 9 MOSTLY DECIDED (3/4 items already covered by existing ADRs/decisions). Phases 2-5 NOT STARTED.
+
+**Remaining Phase 1 Work:**
+
+- Group 8: 3 items need action (MCP tool catalog spec, author project config details, project context system)
+- Group 9: 1 item needs action (implementation phasing)
+- 9 identified gaps to resolve (5 actionable, 4 pre-resolved)
+- ADR-004 Plugin Security Model creation (CRITICAL: 11 items blocked across 4 active ADRs)
+- Stale ADR body text updates (9 instances across active ADRs)
+- ADR-006 amendment needed (remark/unified deps from ADR-014 D5)
 
 ### Phase 1: Research and Discovery
 
@@ -588,22 +597,180 @@ Source: `docs/analysis/RECONCILIATION-2026-03-09-decision-audit.md`
 
 **P2 Tasks (Housekeeping)**:
 
-- [ ] P2-1: Update session note with reconciliation results and completion status
-- [ ] P2-2: Commit all changes
-- [ ] P2-3: ADR-008/010 supersession chain update (when ADR-014 supersedes ADR-013)
+- [x] P2-1: Update session note with reconciliation results and completion status (this update)
+- [x] P2-2: Commit all changes (committed as 7ccbbb1 and subsequent commits)
+- [x] P2-3: ADR-008/010 supersession chain update -- ADR-008 SUPERSEDED by ADR-014 (via ADR-013), ADR-010 SUPERSEDED by ADR-014 (via ADR-013), ADR-013 SUPERSEDED by ADR-014. Chain: ADR-008/010 → ADR-013 → ADR-014.
 
-#### Group 8: MCP and Self-Bootstrap (Sections 15-18) -- NOT STARTED
+#### Comprehensive Gap Analysis -- COMPLETE (2026-03-09)
 
-- [ ] Embedded MCP server architecture
-- [ ] Self-bootstrapping approach
-- [ ] Project context system
+Source: 3 parallel 🧠:analyst agents performed exhaustive cross-reference:
 
-#### Group 9: Polish (Sections 19-22) -- NOT STARTED
+1. **Spec Inventory Agent**: Read all 22 sections of design spec, produced 594 decision points with S{N}-{M} identifiers
+2. **ADR Audit Agent**: Read all 13 ADRs exhaustively (every decision, deferral, forward reference, amendment, supersession)
+3. **Cross-Reference Agent**: Section-by-section verdicts + 9 specific gaps identified
 
-- [ ] Shell completions
-- [ ] Bun-native APIs
-- [ ] Markdown processing pipeline
-- [ ] Implementation phasing
+**ADR Status Summary (13 ADRs):**
+
+| ADR | Status | Notes |
+|-----|--------|-------|
+| ADR-001 | ACCEPTED | 8 amendments applied. Body text stale (still references root manifest, installMode). |
+| ADR-002 | ACCEPTED | npm org registration still open (IMP-003). |
+| ADR-003 | ACCEPTED (partially superseded) | D2/D3 superseded by ADR-014. Body text references plugin-lock.json (now .agent-lock.json). |
+| ADR-004 | **DOES NOT EXIST** | Forward-referenced by ADR-002, ADR-003, ADR-006, ADR-014. **11 security items blocked.** |
+| ADR-005 | ACCEPTED | @clack/prompts blocking gate partially resolved. |
+| ADR-006 | ACCEPTED | **Needs amendment**: remark/unified/mdast-util-heading-range deps from ADR-014 D5 not listed. |
+| ADR-007 | ACCEPTED | Command tree body stale (references pre-pivot commands). |
+| ADR-008 | **SUPERSEDED** | By ADR-014 via ADR-013. Bun handles source resolution. |
+| ADR-009 | ACCEPTED | References unspecified lockfile format. |
+| ADR-010 | **SUPERSEDED** | By ADR-014 via ADR-013. 6-phase model replaced. |
+| ADR-011 | ACCEPTED | Depends on superseded ADR-010 for installation context. |
+| ADR-012 | ACCEPTED | References instructions/ (now rules/ per ADR-014). |
+| ADR-013 | **SUPERSEDED** | By ADR-014. Historical record. |
+| ADR-014 | ACCEPTED | Round 2: 5 Accept + 1 D&C. Current authoritative design. |
+
+**Supersession Chains:**
+
+- ADR-008 → ADR-013 → ADR-014
+- ADR-010 → ADR-013 → ADR-014
+- ADR-001 D5 (installMode) → ADR-014 D5 (features)
+- ADR-003 D2/D3 (lockfile) → ADR-014 D2/D7 (.agent-lock.json)
+
+**9 Identified Gaps:**
+
+| Gap ID | Severity | Description | Status |
+|--------|----------|-------------|--------|
+| GAP-1 | LOW | Install scope (project vs global) -- spec S9 default scope unclear | PRE-RESOLVED: Decided in Group 4 discussions (project default, prompt when no project, error in CI). Tracked in ADR-010/ANALYSIS-027. |
+| GAP-2 | MEDIUM | MCP tool catalog -- spec S15 lists 14 tools, no ADR specifies which tools | OPEN: Needs tool inventory review against revised command tree |
+| GAP-3 | LOW | MCP naming prefix -- spec says `ap:` prefix for tool names | PRE-RESOLVED: Colon separator adopted (ADR-003, ADR-009) with `plugin-name:server-name` pattern |
+| GAP-4 | **CRITICAL** | ADR-004 Plugin Security Model -- 11 items blocked across 4 ADRs | OPEN: Hook execution blocked, instruction file injection deferred, consent model missing |
+| GAP-5 | LOW | Hook event types -- spec S9 lists specific events | PRE-RESOLVED: ANALYSIS-037 identified 6 universal hook events across platforms |
+| GAP-6/7 | MEDIUM | Author project config -- spec S17 Biome, testing, monorepo layout | OPEN: ANALYSIS-047 created but not started. Biome, testing, monorepo decisions pending. |
+| GAP-8 | MEDIUM | Project context system -- spec S18 state detection, config resolution | OPEN: No ADR covers project context detection and workspace awareness |
+| GAP-9 | LOW | Implementation phasing -- spec S22 proposes 5 phases | OPEN: Naturally deferred to Phase 4 (Epic/PRD). ADR-002 P1-2/P1-3 also deferred. |
+
+**GAP-4 Detail: ADR-004 Plugin Security Model (CRITICAL)**
+
+ADR-004 is forward-referenced by 4 active ADRs but does not exist:
+
+- **ADR-002**: NEG-006 (instruction file injection attack vector), NEG-007 (no centralized vetting in multi-source model)
+- **ADR-003**: NEG-007 (strictest-wins composability constraint), P1-14 (hook security forward reference), Decision 2 (hook execution BLOCKED until ADR-004 consent model)
+- **ADR-006**: Deferred security items referencing ADR-004
+- **ADR-014**: D6 (security and trust model forward references)
+
+Items blocked until ADR-004 exists:
+
+1. Hook execution (stored but NOT executable)
+2. Instruction file injection mitigation
+3. Multi-source vetting model
+4. Content hashing/integrity
+5. MCP access control
+6. Consent model for plugin permissions
+7. Strictest-wins composability resolution
+8. Shell-quote sanitization enforcement
+9. Trust boundaries between plugins
+10. Privilege escalation prevention
+11. Supply chain verification beyond direct deps
+
+**Stale ADR Body Text (9 instances):**
+
+These ADRs have correct amendments/status but body text not updated to reflect changes:
+
+| ADR | Stale Content | Correct Source |
+|-----|---------------|----------------|
+| ADR-001 | References `plugin.json` at root (not `.agent-plugin/plugin.json`) | ADR-014 D3, Amendment #6 |
+| ADR-001 | References `installMode` field | ADR-014 D5, Amendment #8 |
+| ADR-001 | Lists 6 content types (not 8) | ADR-014 D4, Amendment #7 |
+| ADR-003 | References `plugin-lock.json` | ADR-014 D2 (.agent-lock.json) |
+| ADR-007 | Command tree includes pre-pivot commands (add/remove/upgrade) | ADR-014 D1 (revised command tree) |
+| ADR-009 | References unspecified lockfile | ADR-014 D2 (.agent-lock.json) |
+| ADR-011 | References ADR-010 installation context | ADR-010 superseded by ADR-014 |
+| ADR-012 | References `instructions/` directory | ADR-014 D4 (rules/ + AGENTS.md) |
+| ADR-006 | Missing remark/unified/mdast-util-heading-range | ADR-014 D5 section-based parsing |
+
+**Pending ADR Amendment:**
+
+- [ ] ADR-006 needs amendment to add remark/unified/mdast-util-heading-range as dependencies (required by ADR-014 D5 section-based feature parsing)
+
+**Open IMP-NNN Items (~60 across active ADRs):**
+
+Implementation notes tracked within ADRs. Not blocking Phase 1 ideation but must be resolved before implementation. Key examples:
+
+- IMP-003 (ADR-002): Register `acmelabs-15` npm org at npmjs.com
+- IMP-005 (ADR-012): ADR-001 amendment to add commands as content type (DONE via Amendment #7)
+- IMP-006 (ADR-012): Creator skills independently shippable, phasing deferred
+- IMP-007 (ADR-008/012): Various cleanup items (gray-matter refs, zip slip, integrity verification)
+
+#### Group 8: MCP and Self-Bootstrap (Sections 15-18) -- IN PROGRESS (~60% decided)
+
+Spec sections 15-18 cover embedded MCP server, self-bootstrapping, author project layout, and project context system. Gap analysis shows most architectural decisions already made via ADR-014 and earlier ADRs; remaining items are narrower than originally scoped.
+
+Already decided (covered by existing ADRs/decisions):
+
+- [x] MCP server framework: @modelcontextprotocol/sdk adopted (ADR-006, ANALYSIS-019). Skip fastmcp. Direct Bun support verified (ANALYSIS-032).
+- [x] MCP server transport: stdio for AI platform clients, daemon for CLI (ADR-011)
+- [x] MCP tool naming: colon separator `plugin-name:server-name` (ADR-003, ADR-009)
+- [x] MCP daemon lifecycle: built-in start/stop/restart/status commands (ADR-011)
+- [x] Self-bootstrapping strategy: design manifest Phase 1, ship runtime Phase 4. Self-install + dogfood (ADR-002 acceptance criteria).
+- [x] Plugin manifest location: `.agent-plugin/plugin.json` (ADR-014 D3)
+- [x] Content types: Skills, Agents, Hooks, Commands, Rules, MCP, AGENTS.md, CLI (ADR-014 D4)
+- [x] Author project layout: `.agent-plugin/plugin.json` at root, content in skills/, agents/, hooks/, commands/, cli/, mcp/, AGENTS.md, rules/ (ADR-014 D3/D4)
+
+Remaining items needing research/decisions:
+
+- [ ] **GAP-2**: MCP tool catalog -- spec Section 15 lists 14 specific tools. ADR-014 references "MCP server" but no ADR specifies the tool catalog, schemas, or which tools to include. Needs: tool inventory review against revised command tree.
+- [ ] **GAP-6/7**: Author project config details -- spec Section 17 describes Biome config, testing setup, monorepo layout. No ADR covers this. ANALYSIS-047 created as pending workstream but not started. Needs: research + decisions on project scaffolding details.
+- [ ] **GAP-8**: Project context system -- spec Section 18 describes project state detection, config resolution, workspace awareness. No ADR covers this. Needs: research on how agent-plugin detects project context (plugin.json presence, platform detection scope, workspace root finding).
+
+#### Group 9: Polish (Sections 19-22) -- MOSTLY DECIDED (~75% decided)
+
+Spec sections 19-22 cover shell completions, Bun-native APIs, markdown processing, and implementation phasing. Gap analysis shows 3/4 items already decided.
+
+Already decided (covered by existing ADRs/decisions):
+
+- [x] Shell completions: @gunshi/plugin-completion adopted for bash/zsh/fish/powershell (ADR-006, ADR-007). @bomb.sh/tab from spec replaced.
+- [x] Bun-native APIs: Bun.semver adopted, Bun.write for downloads (with arrayBuffer workaround), tar npm package for extraction (Bun.Archive too young). Platform detection via Bun.spawn. (ADR-005, ADR-008, ANALYSIS-028)
+- [x] Markdown processing: REMOVED from MVP. No markdown-to-HTML rendering needed. Frontmatter: yaml 2.x + Zod v4 validation. Body passed as-is. gray-matter disqualified (CVE). (ADR-006, ANALYSIS-020). NOTE: ADR-014 D5 introduces remark/unified/mdast-util-heading-range for section-based feature parsing -- this is NOT the same as the spec's markdown processing pipeline (which was about rendering).
+
+Remaining items needing research/decisions:
+
+- [ ] **GAP-9**: Implementation phasing -- spec Section 22 proposes 5 phases. No ADR covers phasing. Deferred ADR-002 items P1-2 (audience priority) and P1-3 (phased delivery) are relevant. Needs: phasing plan aligned with revised architecture (ADR-014 model vs spec's original model). This is also a natural Phase 4 (Epic/PRD) deliverable.
+
+### Remaining Phase 1 Work (Sequenced)
+
+**Step 1: Resolve open gaps (Groups 8 + 9 remaining items)**
+
+These are the specific items that need research and/or decisions before Phase 1 is complete:
+
+1. [ ] **GAP-2** (MEDIUM): MCP tool catalog -- review spec S15's 14 tools against revised command tree (ADR-014). Decide which tools to include, define schemas. May need new ADR or ADR-014 amendment.
+2. [ ] **GAP-8** (MEDIUM): Project context system -- research spec S18 (state detection, config resolution, workspace awareness). Decide how agent-plugin detects project context. May need analysis note + ADR decisions.
+3. [ ] **GAP-6/7** (MEDIUM): Author project config -- advance ANALYSIS-047 workstream (Biome, testing, monorepo layout, CI/CD). Research + decisions needed.
+4. [ ] **GAP-9** (LOW): Implementation phasing -- can be partially deferred to Phase 4 (Epic/PRD), but high-level phasing alignment with ADR-014 architecture should be confirmed.
+
+**Step 2: Create ADR-004 Plugin Security Model (CRITICAL)**
+
+5. [ ] **GAP-4** (CRITICAL): Research security model requirements. 11 items blocked across 4 active ADRs. Must cover:
+   - Hook execution consent model (currently BLOCKED)
+   - Instruction file injection mitigation (NEG-006 from ADR-002)
+   - Multi-source vetting model (NEG-007 from ADR-002)
+   - Content hashing and integrity verification
+   - MCP access control
+   - Plugin permission boundaries
+   - Trust model for third-party plugins
+   - Supply chain verification
+   - Shell-quote sanitization enforcement
+   - Privilege escalation prevention
+   - Strictest-wins composability resolution
+
+**Step 3: ADR housekeeping (non-blocking but important)**
+
+6. [ ] ADR-006 amendment: add remark, unified, mdast-util-heading-range as dependencies (required by ADR-014 D5)
+7. [ ] Stale ADR body text updates (9 instances -- see gap analysis table above)
+8. [ ] IMP-007 (ADR-012): Update ANALYSIS-031 to remove stale gray-matter references
+9. [ ] P1-6 (Reconciliation): Vercel Skills CLI research note (nice to have)
+
+**Step 4: Phase 1 completion criteria**
+
+All of the above resolved → Phase 1 COMPLETE. Ready for Phase 2.
 
 ### Phase 2: Validation and Consensus -- NOT STARTED
 
@@ -905,9 +1072,9 @@ Source: `docs/analysis/RECONCILIATION-2026-03-09-decision-audit.md`
 - [x] [resolved] Native platform plugin installation: deferred to v2 (explicit add/remove/update model first) #architecture
 - [x] [resolved] installMode replaced by features model: plugin-level and component-level features with section-based cherry-picking #architecture
 - [x] [resolved] Rules vs AGENTS.md: rules are file-based (per feature), AGENTS.md is section-based. instructions/ renamed to AGENTS.md content type #content-types
-- [ ] [pending] ADR amendments: ADR-001 (version removed, mcp->mcpServers, string|string[] paths), ADR-003 (lockfile superseded) #amendments
-- [ ] [pending] ADR supersessions: Mark ADR-008 and ADR-010 as superseded by ADR-013, then ADR-013 superseded by ADR-014 #supersessions
-- [ ] [pending] Create ADR-014: explicit add/remove/update model superseding ADR-013's postinstall model #adr-014
+- [x] [done] ADR amendments: ADR-001 updated with amendments #6 (manifest location), #7 (content types 6→8), #8 (installMode→features). ADR-003 D2/D3 supersession noted. #amendments
+- [x] [done] ADR supersessions: ADR-008 SUPERSEDED → ADR-013 → ADR-014. ADR-010 SUPERSEDED → ADR-013 → ADR-014. ADR-013 SUPERSEDED by ADR-014. #supersessions
+- [x] [done] ADR-014 created: explicit add/remove/update model, 8 decisions, accepted Round 2 (5 Accept + 1 D&C) #adr-014
 
 ### Group 7 (cont'd): ADR-013 Round 2 and Design Pivot
 
@@ -935,6 +1102,30 @@ Source: `docs/analysis/RECONCILIATION-2026-03-09-decision-audit.md`
 - [x] [decision] Plugin package structure settled: .agent-plugin/plugin.json, skills/, agents/, hooks/, commands/, cli/, mcp/, AGENTS.md, rules/, package.json #structure
 - [x] [workstream] ANALYSIS-047 created: project bootstrapping and DX infrastructure (Biome, Bun, Turbo, releases, CI/CD, GitHub config, testing) #pending
 - [ ] [pending] IMP-007 (from ADR-012): Update ANALYSIS-031 to remove stale gray-matter references #cleanup
+
+### Decision Audit Reconciliation
+
+- [x] [analysis] 6 parallel extraction agents read 22,969 lines of conversation log #reconciliation
+- [x] [adr] ADR-014 Explicit Installation Model and Content Features created (8 decisions, 785 lines) #architecture
+- [x] [review] ADR-014 adr-review Round 1: NEEDS REVISION. Round 2: ACCEPTED (5 Accept + 1 D&C). #review
+- [x] [review] DEBATE-ADR-014 saved with both rounds #debate-log
+- [x] [fix] ADR-001 updated with amendments #6 (manifest location), #7 (content types), #8 (installMode→features) #amendments
+- [x] [fix] ADR-013 status changed to "superseded" with ADR-014 explanation #supersession
+- [x] [fix] ADR-008, ADR-010 supersession chain: → ADR-013 → ADR-014 #supersession
+- [x] [fix] ANALYSIS-043 updated with ADR-014 adoption status #analysis-update
+- [x] [fix] ANALYSIS-044 updated with ADR-014 adoption status #analysis-update
+- [x] [fix] ADR-003 Decision 3 supersession note updated for ADR-014 #cross-adr
+- [x] [fix] ANALYSIS-042 updated with deferral adoption status #analysis-update
+
+### Comprehensive Gap Analysis (2026-03-09)
+
+- [x] [analysis] 3 parallel 🧠:analyst agents: spec inventory (594 decision points), ADR audit (all 13 ADRs), cross-reference (9 gaps) #gap-analysis
+- [x] [fact] Phase 1 assessed at ~85% complete: Groups 1-7 done, Group 8 ~60%, Group 9 ~75% #status
+- [x] [fact] 9 gaps identified: 4 pre-resolved by existing decisions, 5 require action #gaps
+- [x] [fact] GAP-4 is CRITICAL: ADR-004 Plugin Security Model forward-referenced by 4 active ADRs, 11 items blocked #security #critical
+- [x] [fact] 9 stale ADR body text instances identified (amendments correct, body text not updated) #staleness
+- [x] [fact] ADR-006 needs amendment for remark/unified/mdast-util-heading-range deps from ADR-014 D5 #amendment-needed
+- [x] [fact] ~60 open IMP-NNN implementation notes across active ADRs, not blocking Phase 1 #implementation-notes
 
 ### Organization Rename and Path Migration
 
@@ -1112,6 +1303,15 @@ From /Users/peter.kloss/Downloads/agent-plugin-design-spec.md:
 | created | [[ANALYSIS-040-prior-art-for-cross-platform-adapter-patterns]] | COMPLETE |
 | created | [[ANALYSIS-041-plugin-manifest-cross-platform-comparison]] | COMPLETE |
 | renamed | ANALYSIS-035 through ANALYSIS-041 | From space-separated to kebab-case file names |
+| created | [[ADR-014-explicit-installation-model-and-content-features]] | ACCEPTED (Round 2: 5 Accept + 1 D&C). Supersedes ADR-013. |
+| created | [[DEBATE-ADR-014-explicit-installation-model-and-content-features]] | COMPLETE (Round 1 + Round 2 verdicts) |
+| created | [[RECONCILIATION-2026-03-09-decision-audit]] | COMPLETE (6 extraction agents, reconciliation) |
+| updated | [[ADR-001-plugin-format-and-manifest]] | Amendments #6 (manifest location), #7 (content types 6→8), #8 (installMode→features). ADR-014 relation added. |
+| updated | [[ADR-013-npm-package-distribution-and-revised-command-tree]] | Status changed to "superseded" with ADR-014 explanation |
+| updated | [[ADR-003-conflict-resolution-and-namespacing]] | Decision 3 supersession note updated for ADR-014 |
+| updated | [[ANALYSIS-042-native-platform-plugin-installation]] | Adoption status section added, ADR-014 relation |
+| updated | [[ANALYSIS-043-cross-platform-content-model-analysis]] | Adoption status section added, ADR-014 relation |
+| updated | [[ANALYSIS-044-feature-selection-mechanism-analysis]] | Adoption status section added, ADR-014 relation |
 
 ### Code Files
 
@@ -1133,6 +1333,11 @@ From /Users/peter.kloss/Downloads/agent-plugin-design-spec.md:
 - [fact] February 2026 saw 6 platforms ship parallel agent execution within a 2-week window #industry-trend
 - [fact] AGENTS.md read by 6/7, CLAUDE.md by 4/7, .claude/skills/ by 6/7, .agents/skills/ by 4/7 #cross-platform-coverage
 - [fact] 70% of config formats (package.json, tsconfig, Cargo.toml, etc.) handle schema evolution without format version fields #versioning
+- [fact] Phase 1 is ~85% complete after 7 Groups + Decision Audit + Gap Analysis #progress
+- [fact] ADR-004 Plugin Security Model is CRITICAL gap: 11 items blocked across 4 active ADRs, hook execution literally blocked until it exists #security #critical
+- [fact] 9 stale ADR body text instances identified where amendments are correct but inline text not updated #staleness
+- [fact] 594 decision points identified across 22 spec sections via comprehensive inventory #scope
+- [fact] ADR-014 is now the authoritative design document, superseding ADR-013, ADR-008, ADR-010 #architecture
 - [constraint] Agent Teams not working -- using subagent delegation for all specialist work #process
 - [constraint] Must manage platform-specific instruction files (CLAUDE.md, AGENTS.md, etc.) without breaking existing content #requirement
 - [insight] Each platform has different mechanisms for the same 6 capabilities -- the package must abstract these differences #architecture
@@ -1207,6 +1412,12 @@ From /Users/peter.kloss/Downloads/agent-plugin-design-spec.md:
 - relates_to [[ANALYSIS-040-prior-art-for-cross-platform-adapter-patterns]]
 - relates_to [[ANALYSIS-041-plugin-manifest-cross-platform-comparison]]
 - relates_to [[ANALYSIS-047-project-bootstrapping-and-dx-infrastructure]]
+- relates_to [[ADR-014-explicit-installation-model-and-content-features]]
+- relates_to [[DEBATE-ADR-014-explicit-installation-model-and-content-features]]
+- relates_to [[RECONCILIATION-2026-03-09-decision-audit]]
+- relates_to [[ANALYSIS-042-native-platform-plugin-installation]]
+- relates_to [[ANALYSIS-043-cross-platform-content-model-analysis]]
+- relates_to [[ANALYSIS-044-feature-selection-mechanism-analysis]]
 
 ---
 
