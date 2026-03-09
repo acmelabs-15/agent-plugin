@@ -828,6 +828,30 @@ Resolves GAP-8 from the comprehensive gap analysis. Spec Section 18 described a 
 
 **REQ-CTX-8: Global Platform Config Writing.** User-scope installations write to user-level platform configuration paths (e.g., `~/.claude/AGENTS.md`, `~/.cursor/rules/`, `~/.config/github-copilot/agents.json`). Platform detection (ADR-009) determines which user-level paths exist. The same platform adapter logic from project-scope installs applies, just targeting user-level paths instead of project-level paths.
 
+### Amendment #4: Project Scaffolding Delegation to @acmelabs-15/config (2026-03-09)
+
+Resolves GAP-6/7 from the comprehensive gap analysis. Spec Section 17 described an author project layout with Biome config, testing setup, content directories, and build output. The scope of "project scaffolding" has been clarified:
+
+**Base project scaffolding is delegated to `@acmelabs-15/config`** -- a separate package (inspired by TanStack Config) that provides opinionated, interactive project creation and DX management for all `@acmelabs-15` codebases. That package handles:
+
+- Runtime selection (Pure Bun vs Node, with strict enforcement)
+- Project structure (single package vs monorepo)
+- Tooling (Biome, TypeScript strict, testing framework)
+- Git and GitHub setup (branch protection, CI workflows, release automation)
+- MCP server scaffolding and management
+- npm publishing configuration
+
+**`agent-plugin create` layers plugin-specific scaffolding on top:**
+
+- `.agent-plugin/plugin.json` manifest (Decision 3)
+- Content type directories: skills/, agents/, hooks/, commands/, rules/, mcp/, AGENTS.md (Decision 4)
+- Plugin-specific package.json fields (name, description per Decision 3)
+- Example/template content files (optional)
+
+The `@acmelabs-15/config` package has no knowledge of agent-plugin concepts. The boundary is clean: config handles everything about "how a project is set up," agent-plugin handles everything about "what makes a project a plugin."
+
+`@acmelabs-15/config` is a separate codebase with its own spec and decision process. The spec brief is captured externally. Decisions about monorepo tooling, testing framework, release automation, Biome configuration, and other DX infrastructure are made in that package's context, not here.
+
 ## Observations
 
 - [decision] Explicit add/remove/update commands replace ADR-013's postinstall auto-wiring model. User invokes commands and sees what happens. Vercel Skills CLI is the primary prior art. #installation #explicit #vercel
@@ -844,6 +868,7 @@ Resolves GAP-8 from the comprehensive gap analysis. Spec Section 18 described a 
 - [risk] Custom source resolution reinstated at 500-1000 lines (less than ADR-008's 2000-3000 but still custom code). #complexity #tradeoff
 - [risk] Three selection mechanisms (markdown headers, code regions, file-based) create a learning curve for plugin authors #authoring #complexity
 - [decision] Project context system: 8 behavioral requirements (REQ-CTX-1 through REQ-CTX-8) define project root finding, dual context detection, consumer scope resolution, author command gating, context-independent commands, interactive fallback menu, global lockfile location, and global platform config writing. .acmelabz/project.json eliminated -- .agent-plugin/plugin.json sufficient. #project-context #amendment-3
+- [decision] Base project scaffolding delegated to `@acmelabs-15/config` (separate package, TanStack Config inspired). `agent-plugin create` depends on config for project setup, then layers plugin-specific files on top. Clean boundary: config handles project DX, agent-plugin handles plugin identity. #scaffolding #delegation #amendment-4
 
 ## Relations
 

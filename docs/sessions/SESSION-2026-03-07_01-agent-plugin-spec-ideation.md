@@ -22,8 +22,8 @@ tags:
 
 ## Acceptance Criteria
 
-- [~] Complete research on all major spec areas (CLI framework, dependencies, platform support, data storage, MCP server, scaffolding wizards) -- ~88% complete. Groups 1-7 done. Groups 8-9 partially remaining (2 gaps open: GAP-6/7 author project config, GAP-9 implementation phasing).
-- [~] Create ADRs for key architectural decisions identified in the spec -- 10 active ADRs created (ADR-001 through ADR-014, excluding ADR-004). ADR-004 (security) still needed. 3 ADRs superseded (008, 010, 013). ADR-014 now has 3 amendments.
+- [~] Complete research on all major spec areas (CLI framework, dependencies, platform support, data storage, MCP server, scaffolding wizards) -- ~92% complete. Groups 1-7 done. Group 8 mostly complete. Group 9 has 1 gap remaining (GAP-9 implementation phasing).
+- [~] Create ADRs for key architectural decisions identified in the spec -- 10 active ADRs created (ADR-001 through ADR-014, excluding ADR-004). ADR-004 (security) still needed. 3 ADRs superseded (008, 010, 013). ADR-014 now has 4 amendments.
 - [ ] Create feature specs in features/ directory following FEAT-NNN template structure -- Phase 3 (not started)
 - [x] All research findings saved as Brain memory notes -- 47 analysis notes created (ANALYSIS-001 through 047)
 - [x] Session note kept current with all touched files, commits, memory notes, work log
@@ -206,6 +206,9 @@ tags:
 - [decision] Global lockfile: ~/.config/agent-plugin/agent-lock.json for user-scope installations. Same schema as project .agent-lock.json. #project-context #global
 - [decision] Global platform config writing: user-scope installs write to user-level platform config paths (e.g., ~/.claude/AGENTS.md, ~/.cursor/rules/). Same adapter logic, different target paths. #project-context #global
 - [decision] .acmelabz/project.json author config file ELIMINATED -- .agent-plugin/plugin.json is sufficient for author context detection. No separate author config needed. #project-context #simplification
+- [decision] Base project scaffolding delegated to separate `@acmelabs-15/config` package (TanStack Config inspired). Handles runtime selection (pure Bun vs Node), project structure (single vs monorepo), tooling (Biome, TypeScript, testing), Git/GitHub setup (branch protection, CI, releases), MCP scaffolding, and frequently-used package auto-wiring. #scaffolding #delegation
+- [decision] `agent-plugin create` depends on `@acmelabs-15/config` for project setup, then layers plugin-specific files on top (.agent-plugin/plugin.json, content directories, AGENTS.md). Clean boundary: config = project DX, agent-plugin = plugin identity. #scaffolding #architecture
+- [decision] DX infrastructure decisions (Biome config, testing framework, monorepo tool, release automation) are `@acmelabs-15/config`'s scope, not agent-plugin's. Spec brief captured separately for future session. #scope-boundary
 - [fact] No cross-platform AI agent plugin manager exists -- this is confirmed whitespace opportunity (ANALYSIS-036) #market-gap
 - [fact] MCP is universal standard: 8/8 platforms support it, mcpServers JSON format identical across 6/8 #mcp #universal
 - [fact] AGENTS.md adopted by 6/8 platforms, 60K+ GitHub repos, Linux Foundation governance #standards
@@ -252,13 +255,13 @@ Template reference: /Users/peter.kloss/Documents/examples/docs/features/FEAT-003
 
 ## Ideation Workflow Status
 
-**Current Position:** Phase 1 ~88% COMPLETE. Groups 1-7 COMPLETE. ADR-014 ACCEPTED (Round 2: 5 Accept + 1 D&C), superseding ADR-013. Decision Audit Reconciliation COMPLETE. Gap Analysis COMPLETE (9 gaps identified, 4 pre-resolved, 3 resolved via amendments, 2 remaining). Group 8 IN PROGRESS (~80% decided, GAP-2 deferred, GAP-8 resolved via Amendment #3, GAP-6/7 remaining). Group 9 MOSTLY DECIDED (3/4 items already covered, GAP-9 remaining). Phases 2-5 NOT STARTED.
+**Current Position:** Phase 1 ~92% COMPLETE. Groups 1-7 COMPLETE. ADR-014 ACCEPTED (Round 2: 5 Accept + 1 D&C) with 4 amendments, superseding ADR-013. Decision Audit Reconciliation COMPLETE. Gap Analysis COMPLETE (9 gaps: 4 pre-resolved, 4 resolved via amendments/deferrals, 1 remaining). Group 8 MOSTLY COMPLETE (~90% decided, GAP-2 deferred, GAP-8 resolved Amendment #3, GAP-6/7 resolved Amendment #4). Group 9 MOSTLY DECIDED (3/4 items covered, GAP-9 remaining). Phases 2-5 NOT STARTED.
 
 **Remaining Phase 1 Work:**
 
-- Group 8: 1 item needs action (author project config details). MCP tool catalog deferred to creator skill evaluation. Project context system resolved (ADR-014 Amendment #3).
+- Group 8: MOSTLY COMPLETE. MCP tool catalog deferred (Amendment #2). Project context resolved (Amendment #3). Author project config resolved via delegation to @acmelabs-15/config (Amendment #4).
 - Group 9: 1 item needs action (implementation phasing)
-- 9 identified gaps to resolve (4 pre-resolved, 3 resolved via amendments/deferrals, 2 remaining)
+- 9 identified gaps to resolve (4 pre-resolved, 4 resolved via amendments/deferrals, 1 remaining: GAP-9 implementation phasing)
 - ADR-004 Plugin Security Model creation (CRITICAL: 11 items blocked across 4 active ADRs)
 - Stale ADR body text updates (9 instances across active ADRs)
 - ADR-006 amendment needed (remark/unified deps from ADR-014 D5)
@@ -658,7 +661,7 @@ Source: 3 parallel 🧠:analyst agents performed exhaustive cross-reference:
 | GAP-3 | LOW | MCP naming prefix -- spec says `ap:` prefix for tool names | PRE-RESOLVED: Colon separator adopted (ADR-003, ADR-009) with `plugin-name:server-name` pattern |
 | GAP-4 | **CRITICAL** | ADR-004 Plugin Security Model -- 11 items blocked across 4 ADRs | OPEN: Hook execution blocked, instruction file injection deferred, consent model missing |
 | GAP-5 | LOW | Hook event types -- spec S9 lists specific events | PRE-RESOLVED: ANALYSIS-037 identified 6 universal hook events across platforms |
-| GAP-6/7 | MEDIUM | Author project config -- spec S17 Biome, testing, monorepo layout | OPEN: ANALYSIS-047 created but not started. Biome, testing, monorepo decisions pending. |
+| GAP-6/7 | MEDIUM | Author project config -- spec S17 Biome, testing, monorepo layout | RESOLVED: Base project scaffolding delegated to separate `@acmelabs-15/config` package. Plugin-specific scaffolding stays in agent-plugin. ADR-014 Amendment #4. DX decisions (Biome, testing, monorepo, releases) made in config package's own spec process. |
 | GAP-8 | MEDIUM | Project context system -- spec S18 state detection, config resolution | RESOLVED: 8 behavioral requirements (REQ-CTX-1 through REQ-CTX-8) added to ADR-014 Amendment #3. .acmelabz/project.json eliminated. |
 | GAP-9 | LOW | Implementation phasing -- spec S22 proposes 5 phases | OPEN: Naturally deferred to Phase 4 (Epic/PRD). ADR-002 P1-2/P1-3 also deferred. |
 
@@ -714,7 +717,7 @@ Implementation notes tracked within ADRs. Not blocking Phase 1 ideation but must
 - IMP-006 (ADR-012): Creator skills independently shippable, phasing deferred
 - IMP-007 (ADR-008/012): Various cleanup items (gray-matter refs, zip slip, integrity verification)
 
-#### Group 8: MCP and Self-Bootstrap (Sections 15-18) -- IN PROGRESS (~80% decided)
+#### Group 8: MCP and Self-Bootstrap (Sections 15-18) -- MOSTLY COMPLETE (~90% decided)
 
 Spec sections 15-18 cover embedded MCP server, self-bootstrapping, author project layout, and project context system. Gap analysis shows most architectural decisions already made via ADR-014 and earlier ADRs; remaining items are narrower than originally scoped.
 
@@ -732,7 +735,7 @@ Already decided (covered by existing ADRs/decisions):
 Remaining items needing research/decisions:
 
 - [~] **GAP-2**: MCP tool catalog -- DEFERRED to creator skill evaluation. Derivation order: creator skills → CLI wizards → MCP tools. ADR-014 Amendment #2 records this decision. ~20-25 MCP tools estimated from 32-command CLI tree (excluding mcp serve, build, analyze, create project scaffold).
-- [ ] **GAP-6/7**: Author project config details -- spec Section 17 describes Biome config, testing setup, monorepo layout. No ADR covers this. ANALYSIS-047 created as pending workstream but not started. Needs: research + decisions on project scaffolding details.
+- [x] **GAP-6/7**: Author project config -- RESOLVED. Base project scaffolding delegated to separate `@acmelabs-15/config` package (TanStack Config inspired). DX decisions (Biome, testing, monorepo, releases, CI) are that package's scope. `agent-plugin create` depends on config for project setup, then layers plugin-specific files on top. ADR-014 Amendment #4. Spec brief saved to /Users/peter.kloss/Downloads/acmelabs-config-package-spec-brief.md.
 - [x] **GAP-8**: Project context system -- RESOLVED. 8 behavioral requirements (REQ-CTX-1 through REQ-CTX-8) added to ADR-014 Amendment #3. Covers: project root finding, dual context detection, consumer scope resolution with --global flag, author command gating, context-independent commands (mcp serve), interactive fallback menu, global lockfile location, global platform config writing. .acmelabz/project.json eliminated -- .agent-plugin/plugin.json is sufficient for author context detection.
 
 #### Group 9: Polish (Sections 19-22) -- MOSTLY DECIDED (~75% decided)
@@ -757,7 +760,7 @@ These are the specific items that need research and/or decisions before Phase 1 
 
 1. [x] **GAP-2** (MEDIUM): MCP tool catalog -- DEFERRED to creator skill evaluation (ADR-014 Amendment #2). Derivation: creator skills → CLI wizards → MCP tools. Not blocked for Phase 1 completion.
 2. [x] **GAP-8** (MEDIUM): Project context system -- RESOLVED. 8 behavioral requirements (REQ-CTX-1 through REQ-CTX-8) added to ADR-014 Amendment #3. .acmelabz/project.json eliminated -- .agent-plugin/plugin.json sufficient.
-3. [ ] **GAP-6/7** (MEDIUM): Author project config -- advance ANALYSIS-047 workstream (Biome, testing, monorepo layout, CI/CD). Research + decisions needed.
+3. [x] **GAP-6/7** (MEDIUM): Author project config -- RESOLVED. Delegated to `@acmelabs-15/config` package. ADR-014 Amendment #4.
 4. [ ] **GAP-9** (LOW): Implementation phasing -- can be partially deferred to Phase 4 (Epic/PRD), but high-level phasing alignment with ADR-014 architecture should be confirmed.
 
 **Step 2: Create ADR-004 Plugin Security Model (CRITICAL)**
@@ -1153,6 +1156,17 @@ All of the above resolved → Phase 1 COMPLETE. Ready for Phase 2.
 - [x] [fix] ADR-014 Amendment #1 (command naming) and Amendment #2 (MCP catalog deferral) added #adr-014
 - [x] [fix] ADR-012 Amendment #1 added (eval→analyze, improve→analyze --fix cross-reference) #adr-012
 
+### GAP-6/7 Resolution: Author Project Config Delegation (2026-03-09)
+
+- [x] [analysis] Reviewed spec Section 17 (author project layout) -- significantly stale (references acmelabz.json, .acmelabz/project.json, fastmcp, per-MCP biome.json, all superseded) #gap-6-7
+- [x] [analysis] Reviewed ANALYSIS-047 (project bootstrapping and DX infrastructure) -- open questions about Biome, testing, monorepo, build, releases, CI/CD, GitHub config #gap-6-7
+- [x] [decision] Scope clarification: spec S17 describes plugin author project layout, ANALYSIS-047 describes CLI codebase DX. Both need "project scaffolding" but the right solution is a shared config package. #scope
+- [x] [decision] Base project scaffolding delegated to separate `@acmelabs-15/config` package (TanStack Config inspired). Handles: runtime selection (pure Bun with ZERO Node enforcement vs Node), project structure (single vs monorepo), tooling auto-setup (Biome, TypeScript strict, testing), Git/GitHub automation (main branch, branch protection, CI workflows, release automation, npm publish), MCP scaffolding, frequently-used package auto-wiring with boilerplate. #delegation #architecture
+- [x] [decision] `agent-plugin create` depends on config for project setup, then layers plugin-specific files (.agent-plugin/plugin.json, content directories, AGENTS.md). Clean boundary: config = project DX, agent-plugin = plugin identity. Config has NO knowledge of agent-plugin concepts. #boundary
+- [x] [decision] All DX infrastructure decisions (Biome, testing, monorepo tool, release automation, CI) are config package's scope. Decided in separate session. #scope-boundary
+- [x] [artifact] Spec brief saved to /Users/peter.kloss/Downloads/acmelabs-config-package-spec-brief.md for future session #documentation
+- [x] [fix] ADR-014 Amendment #4 added documenting the delegation and clean boundary #adr-014 #amendment
+
 ### GAP-8 Resolution: Project Context System (2026-03-09)
 
 - [x] [analysis] Read spec Section 17 (author project layout) and Section 18 (project context system) -- identified stale function-level definitions #gap-8
@@ -1355,7 +1369,7 @@ From /Users/peter.kloss/Downloads/agent-plugin-design-spec.md:
 | updated | [[ANALYSIS-042-native-platform-plugin-installation]] | Adoption status section added, ADR-014 relation |
 | updated | [[ANALYSIS-043-cross-platform-content-model-analysis]] | Adoption status section added, ADR-014 relation |
 | updated | [[ANALYSIS-044-feature-selection-mechanism-analysis]] | Adoption status section added, ADR-014 relation |
-| updated | [[ADR-014-explicit-installation-model-and-content-features]] | Amendment #1 (plural names, analyze/analyze --fix), Amendment #2 (MCP catalog deferral), Amendment #3 (project context system: 8 behavioral requirements REQ-CTX-1 through REQ-CTX-8), Decision 6 command tree updated |
+| updated | [[ADR-014-explicit-installation-model-and-content-features]] | Amendment #1 (plural names, analyze/analyze --fix), Amendment #2 (MCP catalog deferral), Amendment #3 (project context system: 8 behavioral requirements REQ-CTX-1 through REQ-CTX-8), Amendment #4 (project scaffolding delegation to @acmelabs-15/config), Decision 6 command tree updated |
 | updated | [[ADR-012-scaffolding-and-content-management]] | Amendment #1 (eval→analyze, improve→analyze --fix cross-reference) |
 
 ### Code Files
