@@ -1,3 +1,7 @@
+---
+permalink: analysis/analysis-048-decision-audit-reconciliation
+---
+
 # Decision Audit Reconciliation (2026-03-09)
 
 Source: 6 parallel extraction agents read 22,969 lines of conversation log line-by-line, then 1 reconciliation agent walked through all findings chronologically.

@@ -1642,7 +1642,17 @@ Added 2026-03-09. These are NEW decisions that change the fundamental installati
 
 Cannot write ANY feature spec until these are resolved.
 
-- [ ] **P0-1: ADR-004 Plugin Security Model** -- 11 security-critical decisions deferred to nonexistent ADR. Hook execution literally blocked. Must cover: hook consent model, instruction file injection (NEG-006), multi-source vetting (NEG-007), content hashing, MCP access control, plugin permission boundaries, trust model, supply chain verification, shell-quote sanitization, privilege escalation prevention, strictest-wins composability.
+- [x] **P0-1: ADR-004 Plugin Security Model** (COMPLETE — ALL 10 DECISIONS LOCKED) -- 11 security-critical decisions deferred to nonexistent ADR. Hook execution literally blocked. Must cover: hook consent model, instruction file injection (NEG-006), multi-source vetting (NEG-007), content hashing, MCP access control, plugin permission boundaries, trust model, supply chain verification, shell-quote sanitization, privilege escalation prevention, strictest-wins composability.
+  - **D1 (LOCKED)**: Hook consent model — automated static analysis for TS/Python/bash, human fallback for flagged/unknown. CI: clean auto-approved, flagged fails (--trust-hooks override).
+  - **D2 (LOCKED)**: Hook execution safety — always execFile (never exec), no shell interpretation. Bun TypeScript is recommended hook format. Command string = "run this file", all logic inside the script. Scaffolding generates .ts hook stubs by default.
+  - **D3 (LOCKED)**: Hook composability — all hooks for an event fire independently (no short-circuit), each in its own sandboxed process. Strictest-wins on exit codes only. No plugin can block another plugin's hooks. User resolves conflicts by removing plugins.
+  - **D4 (LOCKED)**: Content injection — accepted risk, not mitigated by plugin manager. Prompt injection in instruction files is unsolvable (content IS instructions). Rely on source trust model, platform protections, visibility/auditability, and community signals instead.
+  - **D5 (LOCKED)**: Source trust model — no trust system. Source type is irrelevant to security. All sources get identical treatment (same analysis, execution, sandboxing). No trust signals displayed, no trust tiers, no capability gating.
+  - **D6 (LOCKED)**: Supply chain verification — no custom verification. Rely on npm's native SHA-512 integrity checks. No additional content hashing, signatures, or provenance tracking.
+  - **D7 (LOCKED)**: MCP server access control — platform responsibility, not ours. We write config entries; the platform launches and sandboxes MCP server processes. No analysis or gating of MCP commands.
+  - **D8 (LOCKED)**: Plugin permission boundaries — platform responsibility. No sandbox, no permission declarations, no filesystem/network restrictions. Platforms already provide these controls; reimplementing them would be less reliable.
+  - **D9 (LOCKED)**: AI modification trust — platform responsibility. analyze/analyze --fix uses platform's AI and its existing approval UX. No custom approval layer.
+  - **D10 (LOCKED)**: Path traversal prevention — not needed. Plugin sources already scoped by distribution mechanism (npm tarballs, git clones, local trust). No validation implemented.
 
 - [ ] **P0-2: Creator Skills Evaluation** -- 4 skills (skill-creator, agent-creator, mcp-builder, instruction-evaluator) are declared (ADR-012 D7) but ZERO-specified. Must evaluate Anthropic source repos (skill-creator, agent-creator, mcp-builder from Anthropic GitHub; instruction-evaluator is original). For EACH skill, document: evaluation criteria, report format, improvement workflow, parameter surface. This unblocks GAP-2 (MCP tool catalog) and all `analyze`/`analyze --fix` commands.
 
