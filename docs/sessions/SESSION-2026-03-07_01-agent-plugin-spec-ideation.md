@@ -22,8 +22,8 @@ tags:
 
 ## Acceptance Criteria
 
-- [~] Complete research on all major spec areas (CLI framework, dependencies, platform support, data storage, MCP server, scaffolding wizards) -- ~85% complete. Groups 1-7 done. Groups 8-9 partially remaining (4 gaps open).
-- [~] Create ADRs for key architectural decisions identified in the spec -- 10 active ADRs created (ADR-001 through ADR-014, excluding ADR-004). ADR-004 (security) still needed. 3 ADRs superseded (008, 010, 013).
+- [~] Complete research on all major spec areas (CLI framework, dependencies, platform support, data storage, MCP server, scaffolding wizards) -- ~88% complete. Groups 1-7 done. Groups 8-9 partially remaining (2 gaps open: GAP-6/7 author project config, GAP-9 implementation phasing).
+- [~] Create ADRs for key architectural decisions identified in the spec -- 10 active ADRs created (ADR-001 through ADR-014, excluding ADR-004). ADR-004 (security) still needed. 3 ADRs superseded (008, 010, 013). ADR-014 now has 3 amendments.
 - [ ] Create feature specs in features/ directory following FEAT-NNN template structure -- Phase 3 (not started)
 - [x] All research findings saved as Brain memory notes -- 47 analysis notes created (ANALYSIS-001 through 047)
 - [x] Session note kept current with all touched files, commits, memory notes, work log
@@ -196,6 +196,16 @@ tags:
 - [decision] `eval` subcommand renamed to `analyze`: clearer intent, avoids JavaScript eval() ambiguity. Read-only quality analysis producing structured report. #commands #rename
 - [decision] `improve` subcommand replaced by `analyze --fix` flag: follows universal CLI convention (ESLint --fix, Prettier --write, Biome --fix). Same interactive diff preview behavior. Reduces command tree by 3 entries. #commands #simplification
 - [decision] MCP tool catalog deferred to creator skill evaluation: derivation order is creator skills → CLI wizards → MCP tools. Not all CLI commands become MCP tools. Excluded: mcp serve (circular), build (long-running), analyze (invokes AI, circular), create project scaffold (heavy wizard). ~20-25 MCP tools estimated. #mcp #tool-catalog #sequencing
+- [decision] Project context system: 8 behavioral requirements (REQ-CTX-1 through REQ-CTX-8) define how agent-plugin detects project context, resolves scope, and gates commands. ADR-014 Amendment #3. #project-context
+- [decision] Project root finding: walk up from CWD looking for .agent-lock.json (consumer) or .agent-plugin/plugin.json (author). Stop at git root or filesystem root. #project-context #root-finding
+- [decision] Dual context: a directory can be BOTH author and consumer simultaneously (self-bootstrapping case). Both context types active, all commands available. #project-context #dual-context
+- [decision] Consumer scope resolution: --global flag → user scope; project detected → project scope; no project + interactive → prompt; no project + CI → error with --global hint #project-context #scope
+- [decision] Author command gating: require .agent-plugin/plugin.json. If not found, error suggesting `agent-plugin create`. #project-context #author
+- [decision] mcp serve works in any context (author, consumer, both, or neither). Context-independent. #project-context #mcp
+- [decision] Interactive fallback menu is context-aware: both contexts → all commands; author only → author first; consumer only → consumer first; neither → show create and add. #project-context #interactive
+- [decision] Global lockfile: ~/.config/agent-plugin/agent-lock.json for user-scope installations. Same schema as project .agent-lock.json. #project-context #global
+- [decision] Global platform config writing: user-scope installs write to user-level platform config paths (e.g., ~/.claude/AGENTS.md, ~/.cursor/rules/). Same adapter logic, different target paths. #project-context #global
+- [decision] .acmelabz/project.json author config file ELIMINATED -- .agent-plugin/plugin.json is sufficient for author context detection. No separate author config needed. #project-context #simplification
 - [fact] No cross-platform AI agent plugin manager exists -- this is confirmed whitespace opportunity (ANALYSIS-036) #market-gap
 - [fact] MCP is universal standard: 8/8 platforms support it, mcpServers JSON format identical across 6/8 #mcp #universal
 - [fact] AGENTS.md adopted by 6/8 platforms, 60K+ GitHub repos, Linux Foundation governance #standards
@@ -242,13 +252,13 @@ Template reference: /Users/peter.kloss/Documents/examples/docs/features/FEAT-003
 
 ## Ideation Workflow Status
 
-**Current Position:** Phase 1 ~85% COMPLETE. Groups 1-7 COMPLETE. ADR-014 ACCEPTED (Round 2: 5 Accept + 1 D&C), superseding ADR-013. Decision Audit Reconciliation COMPLETE. Gap Analysis COMPLETE (9 gaps identified, 4 already resolved via existing ADRs, 5 require action). Group 8 IN PROGRESS (3 items narrower than originally scoped). Group 9 MOSTLY DECIDED (3/4 items already covered by existing ADRs/decisions). Phases 2-5 NOT STARTED.
+**Current Position:** Phase 1 ~88% COMPLETE. Groups 1-7 COMPLETE. ADR-014 ACCEPTED (Round 2: 5 Accept + 1 D&C), superseding ADR-013. Decision Audit Reconciliation COMPLETE. Gap Analysis COMPLETE (9 gaps identified, 4 pre-resolved, 3 resolved via amendments, 2 remaining). Group 8 IN PROGRESS (~80% decided, GAP-2 deferred, GAP-8 resolved via Amendment #3, GAP-6/7 remaining). Group 9 MOSTLY DECIDED (3/4 items already covered, GAP-9 remaining). Phases 2-5 NOT STARTED.
 
 **Remaining Phase 1 Work:**
 
-- Group 8: 2 items need action (author project config details, project context system). MCP tool catalog deferred to creator skill evaluation.
+- Group 8: 1 item needs action (author project config details). MCP tool catalog deferred to creator skill evaluation. Project context system resolved (ADR-014 Amendment #3).
 - Group 9: 1 item needs action (implementation phasing)
-- 9 identified gaps to resolve (5 actionable, 4 pre-resolved)
+- 9 identified gaps to resolve (4 pre-resolved, 3 resolved via amendments/deferrals, 2 remaining)
 - ADR-004 Plugin Security Model creation (CRITICAL: 11 items blocked across 4 active ADRs)
 - Stale ADR body text updates (9 instances across active ADRs)
 - ADR-006 amendment needed (remark/unified deps from ADR-014 D5)
@@ -649,7 +659,7 @@ Source: 3 parallel 🧠:analyst agents performed exhaustive cross-reference:
 | GAP-4 | **CRITICAL** | ADR-004 Plugin Security Model -- 11 items blocked across 4 ADRs | OPEN: Hook execution blocked, instruction file injection deferred, consent model missing |
 | GAP-5 | LOW | Hook event types -- spec S9 lists specific events | PRE-RESOLVED: ANALYSIS-037 identified 6 universal hook events across platforms |
 | GAP-6/7 | MEDIUM | Author project config -- spec S17 Biome, testing, monorepo layout | OPEN: ANALYSIS-047 created but not started. Biome, testing, monorepo decisions pending. |
-| GAP-8 | MEDIUM | Project context system -- spec S18 state detection, config resolution | OPEN: No ADR covers project context detection and workspace awareness |
+| GAP-8 | MEDIUM | Project context system -- spec S18 state detection, config resolution | RESOLVED: 8 behavioral requirements (REQ-CTX-1 through REQ-CTX-8) added to ADR-014 Amendment #3. .acmelabz/project.json eliminated. |
 | GAP-9 | LOW | Implementation phasing -- spec S22 proposes 5 phases | OPEN: Naturally deferred to Phase 4 (Epic/PRD). ADR-002 P1-2/P1-3 also deferred. |
 
 **GAP-4 Detail: ADR-004 Plugin Security Model (CRITICAL)**
@@ -704,7 +714,7 @@ Implementation notes tracked within ADRs. Not blocking Phase 1 ideation but must
 - IMP-006 (ADR-012): Creator skills independently shippable, phasing deferred
 - IMP-007 (ADR-008/012): Various cleanup items (gray-matter refs, zip slip, integrity verification)
 
-#### Group 8: MCP and Self-Bootstrap (Sections 15-18) -- IN PROGRESS (~60% decided)
+#### Group 8: MCP and Self-Bootstrap (Sections 15-18) -- IN PROGRESS (~80% decided)
 
 Spec sections 15-18 cover embedded MCP server, self-bootstrapping, author project layout, and project context system. Gap analysis shows most architectural decisions already made via ADR-014 and earlier ADRs; remaining items are narrower than originally scoped.
 
@@ -723,7 +733,7 @@ Remaining items needing research/decisions:
 
 - [~] **GAP-2**: MCP tool catalog -- DEFERRED to creator skill evaluation. Derivation order: creator skills → CLI wizards → MCP tools. ADR-014 Amendment #2 records this decision. ~20-25 MCP tools estimated from 32-command CLI tree (excluding mcp serve, build, analyze, create project scaffold).
 - [ ] **GAP-6/7**: Author project config details -- spec Section 17 describes Biome config, testing setup, monorepo layout. No ADR covers this. ANALYSIS-047 created as pending workstream but not started. Needs: research + decisions on project scaffolding details.
-- [ ] **GAP-8**: Project context system -- spec Section 18 describes project state detection, config resolution, workspace awareness. No ADR covers this. Needs: research on how agent-plugin detects project context (plugin.json presence, platform detection scope, workspace root finding).
+- [x] **GAP-8**: Project context system -- RESOLVED. 8 behavioral requirements (REQ-CTX-1 through REQ-CTX-8) added to ADR-014 Amendment #3. Covers: project root finding, dual context detection, consumer scope resolution with --global flag, author command gating, context-independent commands (mcp serve), interactive fallback menu, global lockfile location, global platform config writing. .acmelabz/project.json eliminated -- .agent-plugin/plugin.json is sufficient for author context detection.
 
 #### Group 9: Polish (Sections 19-22) -- MOSTLY DECIDED (~75% decided)
 
@@ -746,7 +756,7 @@ Remaining items needing research/decisions:
 These are the specific items that need research and/or decisions before Phase 1 is complete:
 
 1. [x] **GAP-2** (MEDIUM): MCP tool catalog -- DEFERRED to creator skill evaluation (ADR-014 Amendment #2). Derivation: creator skills → CLI wizards → MCP tools. Not blocked for Phase 1 completion.
-2. [ ] **GAP-8** (MEDIUM): Project context system -- research spec S18 (state detection, config resolution, workspace awareness). Decide how agent-plugin detects project context. May need analysis note + ADR decisions.
+2. [x] **GAP-8** (MEDIUM): Project context system -- RESOLVED. 8 behavioral requirements (REQ-CTX-1 through REQ-CTX-8) added to ADR-014 Amendment #3. .acmelabz/project.json eliminated -- .agent-plugin/plugin.json sufficient.
 3. [ ] **GAP-6/7** (MEDIUM): Author project config -- advance ANALYSIS-047 workstream (Biome, testing, monorepo layout, CI/CD). Research + decisions needed.
 4. [ ] **GAP-9** (LOW): Implementation phasing -- can be partially deferred to Phase 4 (Epic/PRD), but high-level phasing alignment with ADR-014 architecture should be confirmed.
 
@@ -1143,6 +1153,23 @@ All of the above resolved → Phase 1 COMPLETE. Ready for Phase 2.
 - [x] [fix] ADR-014 Amendment #1 (command naming) and Amendment #2 (MCP catalog deferral) added #adr-014
 - [x] [fix] ADR-012 Amendment #1 added (eval→analyze, improve→analyze --fix cross-reference) #adr-012
 
+### GAP-8 Resolution: Project Context System (2026-03-09)
+
+- [x] [analysis] Read spec Section 17 (author project layout) and Section 18 (project context system) -- identified stale function-level definitions #gap-8
+- [x] [decision] .acmelabz/project.json author config file ELIMINATED -- .agent-plugin/plugin.json is sufficient for author context detection #simplification
+- [x] [decision] ADR detail level: behavioral requirements (what and why), NOT implementation-level function signatures (that's Phase 3 feature specs) #process
+- [x] [decision] 8 behavioral requirements (REQ-CTX-1 through REQ-CTX-8) confirmed by user for project context system #project-context
+- [x] [decision] REQ-CTX-1: Project root finding -- walk up from CWD, stop at git root or filesystem root #project-context
+- [x] [decision] REQ-CTX-2: Dual context detection -- directory can be BOTH author and consumer (self-bootstrapping) #project-context
+- [x] [decision] REQ-CTX-3: Consumer scope resolution -- --global flag, project detection, interactive prompt, CI error #project-context
+- [x] [decision] REQ-CTX-4: Author command gating -- require .agent-plugin/plugin.json, error with create suggestion #project-context
+- [x] [decision] REQ-CTX-5: Context-independent commands -- mcp serve, --help, --version always work #project-context
+- [x] [decision] REQ-CTX-6: Interactive fallback menu -- context-aware command ordering #project-context
+- [x] [decision] REQ-CTX-7: Global lockfile -- ~/.config/agent-plugin/agent-lock.json (XDG) #project-context
+- [x] [decision] REQ-CTX-8: Global platform config writing -- user-level paths, same adapter logic #project-context
+- [x] [fix] ADR-014 Amendment #3 added with all 8 behavioral requirements #adr-014 #amendment
+- [x] [fix] ADR-014 observation added for project context system decisions #adr-014
+
 ### Organization Rename and Path Migration
 
 - [x] [fact] Organization renamed from acmelabz to acmelabs-15, npm scope @acmelabs-15
@@ -1328,7 +1355,7 @@ From /Users/peter.kloss/Downloads/agent-plugin-design-spec.md:
 | updated | [[ANALYSIS-042-native-platform-plugin-installation]] | Adoption status section added, ADR-014 relation |
 | updated | [[ANALYSIS-043-cross-platform-content-model-analysis]] | Adoption status section added, ADR-014 relation |
 | updated | [[ANALYSIS-044-feature-selection-mechanism-analysis]] | Adoption status section added, ADR-014 relation |
-| updated | [[ADR-014-explicit-installation-model-and-content-features]] | Amendment #1 (plural names, analyze/analyze --fix), Amendment #2 (MCP catalog deferral), Decision 6 command tree updated |
+| updated | [[ADR-014-explicit-installation-model-and-content-features]] | Amendment #1 (plural names, analyze/analyze --fix), Amendment #2 (MCP catalog deferral), Amendment #3 (project context system: 8 behavioral requirements REQ-CTX-1 through REQ-CTX-8), Decision 6 command tree updated |
 | updated | [[ADR-012-scaffolding-and-content-management]] | Amendment #1 (eval→analyze, improve→analyze --fix cross-reference) |
 
 ### Code Files

@@ -794,6 +794,40 @@ The MCP tool catalog (spec Section 15's 14 tools) cannot be finalized until bund
 
 Not all CLI commands should become MCP tools. Commands excluded from MCP exposure: `mcp serve` (circular), `build` (long-running), `analyze` / `analyze --fix` (invokes AI, circular), `create` project scaffold (heavy wizard). Estimated ~20-25 MCP tools from the 32-command CLI tree.
 
+### Amendment #3: Project Context System (2026-03-09)
+
+Resolves GAP-8 from the comprehensive gap analysis. Spec Section 18 described a project context system with `loadProjectContext`, `discoverContent`, and `discoverMcpServers` functions. The behavioral requirements below replace those function-level definitions with what-and-why requirements suitable for this ADR level of detail. Implementation-level signatures belong in Phase 3 feature specs.
+
+**Key elimination**: The spec's `.acmelabz/project.json` author config file (Section 17) is eliminated. `.agent-plugin/plugin.json` (Decision 3) is sufficient for author context detection. No separate author config is needed.
+
+**8 Behavioral Requirements for Project Context:**
+
+**REQ-CTX-1: Project Root Finding.** Walk up from CWD looking for `.agent-lock.json` (consumer project marker) or `.agent-plugin/plugin.json` (author project marker). Stop at git root (`.git/`) or filesystem root. If neither marker is found, the current directory is not a project context.
+
+**REQ-CTX-2: Dual Context Detection.** A single directory can be BOTH an author project and a consumer project simultaneously. This is the self-bootstrapping case: the plugin's own repository contains `.agent-plugin/plugin.json` (author) AND `.agent-lock.json` (consumer, because the plugin installs itself for dogfooding). Both context types are active and their commands are available.
+
+**REQ-CTX-3: Consumer Scope Resolution.** Consumer commands (add, remove, update, install, list) support two scopes:
+
+- `--global` flag explicitly provided: operate on user scope (global lockfile at `~/.config/agent-plugin/agent-lock.json`, write to user-level platform config paths).
+- Project detected (`.agent-lock.json` found): operate on project scope (project lockfile, project platform configs).
+- No project detected AND interactive terminal: prompt user via `@clack/prompts confirm` asking whether to operate globally.
+- No project detected AND non-interactive (CI): error with message suggesting `--global` flag.
+
+**REQ-CTX-4: Author Command Gating.** Author commands (create content-type subcommands like `skills create`, `agents create`, `mcp create`, `mcp create-tool`, etc.) require `.agent-plugin/plugin.json` to exist. If not found during project root walking, error with message suggesting `agent-plugin create` to scaffold a new plugin project.
+
+**REQ-CTX-5: Context-Independent Commands.** `mcp serve` works in any context (author, consumer, both, or neither). It starts the embedded MCP server regardless of project detection state. Similarly, `--help`, `--version`, and shell completions are always available.
+
+**REQ-CTX-6: Interactive Fallback Menu.** When no subcommand is provided and the terminal is interactive, display a context-aware `@clack/prompts select` menu:
+
+- Both author and consumer context detected: show all commands, author commands listed first.
+- Author context only (`.agent-plugin/plugin.json` but no `.agent-lock.json`): show author commands first, consumer commands second.
+- Consumer context only (`.agent-lock.json` but no `.agent-plugin/plugin.json`): show consumer commands first, author commands second.
+- Neither context detected: show `create` (scaffold new plugin) and `add` (start consuming plugins) as primary options, with `--global` flag hint for user-scope operations.
+
+**REQ-CTX-7: Global Lockfile Location.** User-scope (global) installations use `~/.config/agent-plugin/agent-lock.json` following XDG conventions (consistent with ADR-003's XDG lockfile placement). This lockfile has the same schema as project-scope `.agent-lock.json`.
+
+**REQ-CTX-8: Global Platform Config Writing.** User-scope installations write to user-level platform configuration paths (e.g., `~/.claude/AGENTS.md`, `~/.cursor/rules/`, `~/.config/github-copilot/agents.json`). Platform detection (ADR-009) determines which user-level paths exist. The same platform adapter logic from project-scope installs applies, just targeting user-level paths instead of project-level paths.
+
 ## Observations
 
 - [decision] Explicit add/remove/update commands replace ADR-013's postinstall auto-wiring model. User invokes commands and sees what happens. Vercel Skills CLI is the primary prior art. #installation #explicit #vercel
@@ -809,6 +843,7 @@ Not all CLI commands should become MCP tools. Commands excluded from MCP exposur
 - [insight] Implicit postinstall wiring sacrifices visibility for convenience. For AI agent plugins, users need to see what skills and rules enter their agent context. Explicit commands preserve this visibility. #rationale #transparency
 - [risk] Custom source resolution reinstated at 500-1000 lines (less than ADR-008's 2000-3000 but still custom code). #complexity #tradeoff
 - [risk] Three selection mechanisms (markdown headers, code regions, file-based) create a learning curve for plugin authors #authoring #complexity
+- [decision] Project context system: 8 behavioral requirements (REQ-CTX-1 through REQ-CTX-8) define project root finding, dual context detection, consumer scope resolution, author command gating, context-independent commands, interactive fallback menu, global lockfile location, and global platform config writing. .acmelabz/project.json eliminated -- .agent-plugin/plugin.json sufficient. #project-context #amendment-3
 
 ## Relations
 
