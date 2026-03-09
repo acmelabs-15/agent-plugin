@@ -163,7 +163,7 @@ The auto-generated CLI includes a built-in `mcp` command group for every plugin 
 
 ## Trust Model
 
-Installing a plugin with `cli: "auto"` or `cli: "./path"` grants the plugin author the ability to execute code with the user's permissions when the MCP server is started (either via auto-start or `mcp start`). This is inherent to the MCP server model. MCP servers are not sandboxed. This trust boundary is surfaced during install-time confirmation (ADR-010 Phase 4). Users accept this risk when confirming installation. This is consistent with all current MCP clients (Claude Code, Cursor, GitHub Copilot, Kiro, etc.).
+Installing a plugin with `cli: "auto"` or `cli: "./path"` grants the plugin author the ability to execute code with the user's permissions when the MCP server is started (either via auto-start or `mcp start`). This is inherent to the MCP server model. MCP servers are not sandboxed. This trust boundary is surfaced during install-time confirmation (ADR-010 Phase 4). Users accept this risk when confirming installation. This is consistent with all current MCP clients (Claude Code, Cursor, GitHub Copilot, Gemini CLI, etc.).
 
 ## Consequences
 

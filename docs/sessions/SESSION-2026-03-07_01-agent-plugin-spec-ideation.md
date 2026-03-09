@@ -52,7 +52,7 @@ tags:
 - [decision] Per-ADR workflow: research, discuss, create ADR, run adr-review, save debate log to critique/DEBATE-ADR-NNN-name, resolve P0/P1 with user, then next ADR #process
 - [decision] Cross-platform full lifecycle management confirmed as target #positioning
 - [decision] Platform criteria: must support prompts, skills, agents, hooks, MCPs, AND running agents in parallel #platform-criteria
-- [decision] Target ALL 4 full-support platforms: Claude Code, Cursor, GitHub Copilot, Kiro (reduced from 7 per ADR-002 Amendment #1) #platforms
+- [decision] Target ALL 4 full-support platforms: Claude Code, Cursor, GitHub Copilot, Gemini CLI (reduced from 7 per ADR-002 Amendment #1) #platforms
 - [decision] Must update platform-specific instruction files (CLAUDE.md, AGENTS.md, etc.) on install without breaking existing content #platform-instructions
 - [decision] Full three-audience model (Consumer CLI + Author CLI + AI MCP) in single package -- MCP server is key differentiator, shared core logic with thin audience-specific layers #audiences
 - [decision] Package name: `@acmelabs-15/agent-plugin` (scoped) -- need to register `acmelabs-15` npm org at npmjs.com #naming
@@ -305,7 +305,7 @@ Discussion topics completed (one at a time):
 
 - [x] Market positioning: confirmed cross-platform full lifecycle management
 - [x] Platform criteria: must support prompts + skills + agents + hooks + MCPs + parallel agents
-- [x] Platform list: ALL 4 full-support platforms (Claude Code, Cursor, Copilot, Kiro) -- reduced from 7 per ADR-002 Amendment #1
+- [x] Platform list: ALL 4 full-support platforms (Claude Code, Cursor, Copilot, Gemini CLI) -- reduced from 7 per ADR-002 Amendment #1
 - [x] Platform instruction file management on install (new requirement)
 - [x] Three-audience model: CONFIRMED full three-audience model (Consumer CLI + Author CLI + AI MCP) in single package
 - [x] Naming: CONFIRMED @acmelabs-15/agent-plugin (scoped). Need to register acmelabs-15 npm org.
@@ -1493,7 +1493,7 @@ From /Users/peter.kloss/Downloads/agent-plugin-design-spec.md:
 - [fact] Design spec is comprehensive at 22 sections covering CLI, MCP, scaffolding, platform support, data storage, and self-bootstrapping #scope
 - [fact] Spec pre-selects specific dependencies (gunshi, @clack/prompts, drizzle-orm, orama, fastmcp, etc.) -- each needs research validation #dependencies
 - [fact] Self-bootstrapping is a key architectural constraint: the tool uses itself to create its own content #architecture
-- [fact] 4 platforms qualify with full content type support: Claude Code, Cursor, Copilot, Kiro (reduced from 7 per ADR-002 Amendment #1 -- OpenCode, Amp, Windsurf dropped) #platforms
+- [fact] 4 platforms qualify with full content type support: Claude Code, Cursor, Copilot, Gemini CLI (reduced from 7 per ADR-002 Amendment #1 -- OpenCode, Amp, Windsurf dropped) #platforms
 - [fact] 3 platforms near-complete at 5.5/6: Codex CLI (hooks notification-only), Cline (no custom sub-agents), Gemini CLI (sequential sub-agents) #platforms
 - [fact] Claude Code has 9,000+ plugins and official marketplace; Vercel npx skills has 8,800 GitHub stars for skills-only #ecosystem
 - [fact] No existing tool manages full plugin lifecycle across multiple platforms -- this is the gap #market-gap
@@ -1656,7 +1656,7 @@ Cannot write ANY feature spec until these are resolved.
 
 - [ ] **P0-2: Creator Skills Evaluation** -- 4 skills (skill-creator, agent-creator, mcp-builder, instruction-evaluator) are declared (ADR-012 D7) but ZERO-specified. Must evaluate Anthropic source repos (skill-creator, agent-creator, mcp-builder from Anthropic GitHub; instruction-evaluator is original). For EACH skill, document: evaluation criteria, report format, improvement workflow, parameter surface. This unblocks GAP-2 (MCP tool catalog) and all `analyze`/`analyze --fix` commands.
 
-- [x] **P0-5: Platform Adapter Paths for 4 Platforms x 8 Content Types** (COMPLETE — ADR-002 Amendment #1, ADR-009 Amendment #1. Reduced from 7 to 4 platforms: Claude Code, Cursor, Copilot, Kiro. OpenCode/Amp/Windsurf dropped for incomplete content type support.) -- ADR-009 D3 has config registry entries for only 2 of 7 platforms (Claude Code, OpenCode). Missing: Cursor, Copilot CLI, Kiro, Amp, Windsurf. ADR-014 D4 added `rules/` and `AGENTS.md` content types -- no platform paths specified for these. Create complete `platforms.config.json` with: content directory paths per platform per type, MCP config paths, hook config paths. Cannot write install/add specs without this.
+- [x] **P0-5: Platform Adapter Paths for 4 Platforms x 8 Content Types** (COMPLETE — ADR-002 Amendment #1, ADR-009 Amendment #1. Reduced from 7 to 4 platforms: Claude Code, Cursor, Copilot, Gemini CLI. OpenCode/Amp/Windsurf dropped for incomplete content type support.) -- ADR-009 D3 has config registry entries for only 2 of 7 platforms (Claude Code, OpenCode). Missing: Cursor, Copilot CLI, Gemini CLI, Amp, Windsurf. ADR-014 D4 added `rules/` and `AGENTS.md` content types -- no platform paths specified for these. Create complete `platforms.config.json` with: content directory paths per platform per type, MCP config paths, hook config paths. Cannot write install/add specs without this.
 
 ---
 

@@ -27,7 +27,7 @@ tags: ["architecture", "plugin-format", "manifest", "decision", "plugin-json"]
 
 ## Context
 
-We are designing the plugin format for `@acmelabs-15/agent-plugin`, a cross-platform AI agent plugin manager targeting 4 platforms: Claude Code, Cursor, GitHub Copilot, and Kiro.
+We are designing the plugin format for `@acmelabs-15/agent-plugin`, a cross-platform AI agent plugin manager targeting 4 platforms: Claude Code, Cursor, GitHub Copilot, and Gemini CLI.
 
 Three reference systems were analyzed to inform this decision:
 
@@ -123,7 +123,7 @@ We use JSON for `plugin.json` because: (a) universal tooling support across all 
 }
 ```
 
-All plugins are inherently cross-platform. The plugin manager handles translation to each platform's native format, so there is no `platforms` field. Every plugin can be installed on all 4 supported platforms (Claude Code, Cursor, GitHub Copilot, and Kiro).
+All plugins are inherently cross-platform. The plugin manager handles translation to each platform's native format, so there is no `platforms` field. Every plugin can be installed on all 4 supported platforms (Claude Code, Cursor, GitHub Copilot, and Gemini CLI).
 
 **Deferred fields**: Plugin dependencies, conflicts, and source provenance are deferred to a future ADR (not yet written). These are load-bearing architectural concepts requiring dedicated design -- dependency resolution ordering, conflict detection algorithms, and provenance verification each warrant their own decision record.
 
@@ -281,9 +281,9 @@ Different strategies per component type rather than blanket blocking:
 - [requirement] Installer must implement per-type conflict resolution strategies #installer
 - [insight] Claude Code's nested manifest path (.claude-plugin/plugin.json) is documented as error-prone by Claude Code itself #reference-analysis
 - [insight] Hybrid plugins (independent skills + shared mcpServers) expose a gap in the bundle/collection binary that may need future resolution #installMode
-- [fact] Four target platforms: Claude Code, Cursor, GitHub Copilot, Kiro #cross-platform
+- [fact] Four target platforms: Claude Code, Cursor, GitHub Copilot, Gemini CLI #cross-platform
 - [fact] 6-component model (skills, agents, prompts, hooks, commands, mcpServers) is a deliberate subset of Claude Code's 7-type system, omitting lspServers and outputStyles #plugin-format
-- [fact] mcpServers field name aligns with 6/8 AI platforms: Claude Code, Copilot CLI, Cursor, Amazon Q, Kiro (ANALYSIS-041) #cross-platform
+- [fact] mcpServers field name aligns with 6/8 AI platforms: Claude Code, Copilot CLI, Cursor, Amazon Q, Gemini CLI (ANALYSIS-041) #cross-platform
 
 ## Relations
 

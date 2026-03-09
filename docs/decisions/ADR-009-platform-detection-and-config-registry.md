@@ -37,7 +37,7 @@ These problems are tightly coupled: detection determines which platforms to conf
 
 ## Decision Drivers
 
-- Reliable detection across CLI-first tools (Claude Code) and GUI editors (Cursor, Kiro IDE) where binaries may not be in PATH
+- Reliable detection across CLI-first tools (Claude Code, Gemini CLI) and GUI editors (Cursor) where binaries may not be in PATH
 - Detection must complete within a bounded time (3 seconds total for all 4 platforms) to avoid blocking the install flow
 - Plugin authors must not need platform-specific knowledge; `plugin.json` remains platform-agnostic (ADR-001)
 - MCP server keys must not collide with user-defined servers or other plugins in the shared JSON object
@@ -93,7 +93,7 @@ All 4 platform checks run in parallel using `Promise.allSettled` with `Bun.spawn
 | Claude Code | `claude` | `~/.claude/` | `~/.claude/` |
 | Cursor | `cursor` | `~/Library/Application Support/Cursor/` | `~/.config/Cursor/` |
 | Copilot CLI | `copilot` (or `gh copilot` extension) | `~/.copilot/` | `~/.copilot/` |
-| Kiro | `kiro-cli` | `~/.kiro/` | `~/.kiro/` |
+| Gemini CLI | `gemini` | `~/.gemini/` | `~/.gemini/` |
 
 ### Decision 2: MCP Key Namespacing with Colon Separator
 
@@ -127,7 +127,7 @@ All platform-specific mapping lives in a single static JSON data file named `pla
 
 **Claude Code user-scoped MCP config**: Claude Code supports both project-level (`.mcp.json` in project root) and user-level (`~/.claude.json`) MCP configuration. The `platforms.config.json` entry for Claude Code includes both paths, enabling installs to either scope.
 
-**Env var overrides**: The `platforms.config.json` schema includes an `envOverrides` field per platform that lists environment variables to check for non-standard paths. Detection expands these variables before checking paths. Of the 4 supported platforms, Cursor on Linux respects `XDG_CONFIG_HOME` for its config directory. The remaining 3 platforms use fixed config paths with no env var overrides.
+**Env var overrides**: The `platforms.config.json` schema includes an `envOverrides` field per platform that lists environment variables to check for non-standard paths. Detection expands these variables before checking paths. Of the 4 supported platforms, Cursor on Linux respects `XDG_CONFIG_HOME` for its config directory, and Gemini CLI respects `GEMINI_CLI_HOME` for its config directory. The remaining 2 platforms use fixed config paths with no env var overrides.
 
 **Schema example** (`platforms.config.json`, showing 2 of 4 platforms):
 
@@ -180,11 +180,11 @@ All platform-specific mapping lives in a single static JSON data file named `pla
 
 All 4 supported platforms use the standard `{ command, args, env }` MCP object format. The schema retains a `formatTransformer` field in `mcpConfig` for future platforms that may require non-standard formats; the runtime would dispatch to a named transformer function that converts the standard shape to the platform's expected format.
 
-**Maintenance and distribution**: `platforms.config.json` is bundled inside the `@acmelabs-15/agent-plugin` npm package and ships with every release. When a platform changes its config paths (e.g., Kiro migrating from `.amazonq/` to `.kiro/`), the file is updated and published as a new package version. Users receive updates through normal `npm update` or `bun update` flows. No remote fetching or dynamic update mechanism is needed -- the file is static data that changes at the same cadence as the tool itself.
+**Maintenance and distribution**: `platforms.config.json` is bundled inside the `@acmelabs-15/agent-plugin` npm package and ships with every release. When a platform changes its config paths (e.g., Gemini CLI changing its default config directory), the file is updated and published as a new package version. Users receive updates through normal `npm update` or `bun update` flows. No remote fetching or dynamic update mechanism is needed -- the file is static data that changes at the same cadence as the tool itself.
 
 **Why not code-based adapters (Option I)**: Code-based adapters couple platform knowledge to TypeScript modules. Each new platform requires a new module, tests, and a build. ANALYSIS-029 refined ANALYSIS-027's adapter approach to this data-driven design, where the adapter logic reads from the data file rather than encoding paths in source code.
 
-**Why not plugin.json (Option J)**: Forcing plugin authors to specify per-platform paths contradicts ADR-001's decision that all plugins are inherently cross-platform with no `platforms` field. Plugin authors should not need to know that Kiro uses `.kiro/settings/mcp.json` while Cursor uses `.cursor/mcp.json`.
+**Why not plugin.json (Option J)**: Forcing plugin authors to specify per-platform paths contradicts ADR-001's decision that all plugins are inherently cross-platform with no `platforms` field. Plugin authors should not need to know that Gemini CLI uses `.gemini/settings.json` while Cursor uses `.cursor/mcp.json`.
 
 ## Consequences
 
@@ -349,7 +349,7 @@ Implementation compliance will be verified through:
 - [fact] All 4 supported platforms use the mcpServers root key, simplifying MCP config writes #mcp #platform-consistency
 - [fact] All 4 supported platforms use the standard MCP format (command, args, env). No format transformers needed for current platform set. #mcp #format-consistency
 - [fact] Claude Code supports both project-level (.mcp.json) and user-level (~/.claude.json) MCP configuration #claude-code #mcp-scope
-- [fact] Of 4 supported platforms, only Cursor on Linux uses env var overrides (XDG_CONFIG_HOME for config directory). The remaining 3 platforms use fixed config paths. #env-overrides #detection
+- [fact] Of 4 supported platforms, Cursor on Linux uses XDG_CONFIG_HOME and Gemini CLI uses GEMINI_CLI_HOME for config directory overrides. The remaining 2 platforms use fixed config paths. #env-overrides #detection
 - [fact] GUI editor Cursor has Medium likelihood of binary in PATH, requiring directory fallback for reliable detection #detection-reliability
 - [fact] Copilot CLI users may have only the gh extension (gh copilot) without a standalone copilot binary. binaryNames field supports arrays to check both copilot and gh with subcommand verification #copilot #detection-gap
 - [insight] Colon chosen over slash for MCP keys because Claude Code uses colon internally, JSON Pointer RFC 6901 requires slash escaping as ~1, and ADR-003 establishes colon as the project's identifier separator convention #namespacing #consistency
@@ -373,21 +373,21 @@ Per ADR-002 Amendment #1, supported platforms reduced from 7 to 4. The `platform
 
 **Complete `platforms.config.json` content directory mappings**:
 
-| Content Type | Claude Code | Cursor | GitHub Copilot | Kiro |
+| Content Type | Claude Code | Cursor | GitHub Copilot | Gemini CLI |
 |---|---|---|---|---|
-| Skills | `.claude/skills/` | `.cursor/skills/` | `.github/skills/` | `.kiro/skills/` |
-| Agents | `.claude/agents/` (.md) | `.cursor/agents/` (.md) | `.github/agents/` (.agent.md) | `.kiro/agents/` (.json) |
-| Commands | `.claude/commands/` (.md) | `.cursor/commands/` (.md) | `.github/prompts/` (.prompt.md) | `.kiro/commands/` (.md) |
-| Rules | `.claude/rules/` (.md) | `.cursor/rules/` (.mdc/.md) | `.github/instructions/` (.instructions.md) | `.kiro/steering/` (.md) |
-| AGENTS.md | CLAUDE.md (root) | AGENTS.md (root) | AGENTS.md (root) | AGENTS.md (root) |
-| Hooks | `.claude/settings.json` | `.cursor/hooks.json` + `.cursor/hooks/` | `.github/hooks/*.json` | `.kiro/hooks/*.kiro.hook` |
-| MCP | `.mcp.json` | `.cursor/mcp.json` | `~/.copilot/mcp-config.json` | `.kiro/settings/mcp.json` |
+| Skills | `.claude/skills/` | `.cursor/skills/` | `.github/skills/` | `.gemini/skills/` |
+| Agents | `.claude/agents/` (.md) | `.cursor/agents/` (.md) | `.github/agents/` (.agent.md) | `.gemini/agents/` (.md) |
+| Commands | `.claude/commands/` (.md) | `.cursor/commands/` (.md) | `.github/prompts/` (.prompt.md) | `.gemini/commands/` (.toml) |
+| Rules | `.claude/rules/` (.md) | `.cursor/rules/` (.mdc/.md) | `.github/instructions/` (.instructions.md) | `.gemini/GEMINI.md` |
+| AGENTS.md | CLAUDE.md (root) | AGENTS.md (root) | AGENTS.md (root) | Requires `context.fileName` config in `.gemini/settings.json` |
+| Hooks | `.claude/settings.json` | `.cursor/hooks.json` + `.cursor/hooks/` | `.github/hooks/*.json` | `.gemini/settings.json` (`hooks` key) |
+| MCP | `.mcp.json` | `.cursor/mcp.json` | `~/.copilot/mcp-config.json` | `.gemini/settings.json` (`mcpServers` key) |
 
 **Format differences requiring platform adapters**:
-- Agents: Kiro uses JSON, Copilot uses `.agent.md` extension, Claude Code and Cursor use `.md`
-- Commands: Copilot uses `.prompt.md` with different frontmatter schema
-- Rules: Cursor supports MDC format with inclusion modes, Copilot uses `applyTo` globs, Kiro uses inclusion frontmatter
-- Hooks: All 4 platforms use JSON but with different schemas and event names
-- AGENTS.md: Claude Code uses CLAUDE.md instead
+- Agents: Copilot uses `.agent.md` extension; Claude Code, Cursor, and Gemini CLI use `.md`
+- Commands: Copilot uses `.prompt.md` with different frontmatter schema; Gemini CLI uses `.toml`
+- Rules: Cursor supports MDC format with inclusion modes, Copilot uses `applyTo` globs, Gemini CLI uses a single `GEMINI.md` file
+- Hooks: Claude Code, Cursor, and Copilot use JSON with different schemas and event names; Gemini CLI uses `hooks` key in `.gemini/settings.json`
+- AGENTS.md: Claude Code uses CLAUDE.md instead; Gemini CLI does not read AGENTS.md by default (requires `context.fileName` config)
 
 **Dropped platform entries removed**: OpenCode, Amp, Windsurf entries removed from `platforms.config.json`. The D1 detection table and D3 schema example have been updated inline to reflect only the 4 supported platforms.

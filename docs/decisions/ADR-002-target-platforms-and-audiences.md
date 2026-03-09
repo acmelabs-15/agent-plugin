@@ -60,9 +60,9 @@ The following platforms meet all 6 criteria and receive full first-class support
 | Claude Code | Anthropic | `CLAUDE.md` | `.claude/skills/` | `.claude/agents/*.md` |
 | Cursor | Anysphere | `.cursor/rules/*.mdc`, `AGENTS.md` | `.cursor/skills/`, `.claude/skills/`, `.agents/skills/` | `.cursor/agents/*.md` |
 | GitHub Copilot | Microsoft/GitHub | `.github/copilot-instructions.md`, `CLAUDE.md` | `.github/skills/`, `.claude/skills/` | `.github/agents/*.agent.md` |
-| Kiro | AWS | `.kiro/steering/*.md`, `AGENTS.md` | `.kiro/skills/` | `.kiro/agents/*.json` |
+| Gemini CLI | Google | `.gemini/GEMINI.md` (+ `AGENTS.md` via `context.fileName`) | `.gemini/skills/<name>/SKILL.md` | `.gemini/agents/<name>.md` |
 
-**Cross-platform coverage**: `AGENTS.md` is read by all 4 supported platforms. `CLAUDE.md` is read by 3/4. `.claude/skills/` is read by 3/4. `.agents/skills/` is read by 3/4 and emerging as a standard.
+**Cross-platform coverage**: `AGENTS.md` is read by 2/4 (Cursor natively, Gemini CLI via config). `CLAUDE.md` is read by 2/4 (Claude Code, GitHub Copilot). `.claude/skills/` is read by 3/4 (Claude Code, Cursor, GitHub Copilot).
 
 **General fallback**: For platforms without well-defined paths, the plugin manager uses `.agents/` directory and `AGENTS.md` as the fallback convention.
 
@@ -74,7 +74,7 @@ Platforms scoring below 6/6 are not supported. Notable exclusions:
 |:--|:--|:--|
 | Codex CLI (OpenAI) | 5.5/6 | Hooks are notification-only (cannot block/modify) |
 | Cline | 5.5/6 | No custom sub-agent definitions |
-| Gemini CLI (Google) | 5.5/6 | Sub-agents run sequentially only |
+| ~~Gemini CLI (Google)~~ | ~~5.5/6~~ | ~~Sub-agents run sequentially only~~ (promoted to supported per Amendment #1 -- parallel agent gap closed) |
 
 These platforms may be added in the future if they close their capability gaps. The 6/6 threshold is non-negotiable — partial support creates silent failures that are worse than explicit non-support.
 
@@ -184,7 +184,7 @@ On plugin install, the tool MUST:
 - **IMP-003**: Register the `acmelabs-15` npm organization at npmjs.com before any publish operations.
 - **IMP-004**: Design the manifest schema in Phase 1 with explicit fields for self-description (the manifest must be able to describe `agent-plugin` itself as a valid plugin).
 - **IMP-005**: Build the MCP server as an embedded component that starts automatically when AI assistants query for plugin metadata. No separate process management required.
-- **IMP-006**: Instruction file update logic uses a hybrid managed-section pattern (ANALYSIS-009): HTML comment markers (`<!-- BEGIN AGENT-PLUGIN:name -->` / `<!-- END AGENT-PLUGIN:name -->`) for shared files (CLAUDE.md, AGENTS.md), dedicated per-plugin files for per-file platforms (Cursor .mdc, Kiro steering, Windsurf rules, Copilot CLI path-specific). Tool-owned templates render content from plugin metadata; authors never write raw instruction content. Content sanitization mandatory (3 CVEs prove instruction file injection is a real attack vector).
+- **IMP-006**: Instruction file update logic uses a hybrid managed-section pattern (ANALYSIS-009): HTML comment markers (`<!-- BEGIN AGENT-PLUGIN:name -->` / `<!-- END AGENT-PLUGIN:name -->`) for shared files (CLAUDE.md, AGENTS.md), dedicated per-plugin files for per-file platforms (Cursor .mdc, Gemini CLI skills, Copilot CLI path-specific). Tool-owned templates render content from plugin metadata; authors never write raw instruction content. Content sanitization mandatory (3 CVEs prove instruction file injection is a real attack vector).
 
 ## References
 
@@ -196,7 +196,7 @@ On plugin install, the tool MUST:
 
 ## Observations
 
-- [decision] 4 primary target platforms selected based on full content type support: Claude Code, Cursor, GitHub Copilot, Kiro (reduced from 7 per Amendment #1) #platforms #cross-platform
+- [decision] 4 primary target platforms selected based on full content type support: Claude Code, Cursor, GitHub Copilot, Gemini CLI (reduced from 7 per Amendment #1) #platforms #cross-platform
 - [decision] No graceful degradation tier — platforms below 6/6 are excluded entirely; partial support creates silent failures worse than no support #platforms #no-degradation
 - [decision] Three-audience model in single package: Consumer CLI, Author CLI, AI Assistants via embedded MCP server #architecture #audiences
 - [decision] Package scoped as @acmelabs-15/agent-plugin on npm #distribution #npm
@@ -225,12 +225,13 @@ The original 7 target platforms are reduced to 4. Only platforms that support AL
 1. Claude Code (Anthropic)
 2. Cursor (Anysphere)
 3. GitHub Copilot (Microsoft/GitHub)
-4. Kiro (AWS)
+4. Gemini CLI (Google)
 
 **Dropped platforms** (insufficient content type coverage):
 - OpenCode: No file-based hooks (plugin-based only)
 - Amp: No file-based agent definitions, no hooks system, commands deprecated in favor of skills
 - Windsurf: No file-based agent definitions
+- Kiro: Limited hook and command support, no file-based slash commands
 
 **Rationale**: The plugin manager installs 7 content types to platform directories. If a platform doesn't support a content type natively, the installed content would be ignored. Rather than partial support with confusing "skipped" messages, we support platforms that can use everything we install.
 

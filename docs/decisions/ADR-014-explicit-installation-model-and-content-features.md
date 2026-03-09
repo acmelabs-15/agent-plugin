@@ -480,7 +480,7 @@ Write or update the plugin entry in `.agent-lock.json` with source, sourceType, 
 ```text
 Installed @scope/code-tools
   Features: typescript, testing
-  Platforms: Claude Code, Cursor, Kiro
+  Platforms: Claude Code, Cursor, Gemini CLI
   Skills: 3 installed
   Hooks: 1 installed
   Rules: 4 installed
