@@ -208,7 +208,13 @@ tags:
 - [decision] Phase 1 completion requires both coverage (~92%) AND depth (~43% spec-ready). 72 decisions evaluated across 9 active ADRs. 31 SUFFICIENT, 41 NEED MORE DETAIL. #completeness-audit
 - [decision] Decision Completeness Audit (2026-03-09) identified: 5 P0 blocking gaps, 15 P1 gaps blocking specific specs, 5 cross-ADR contradictions that must be resolved first. #completeness-audit
 - [decision] Remaining Phase 1 work is primarily DEEPENING existing decisions (adding specifics so implementers cannot make assumptions), not discovering new areas. #phase-1-strategy
-- [fact] ADR-004 Plugin Security Model does not exist but is forward-referenced by 4 active ADRs, blocking 11 security-critical decisions including hook execution. #critical-gap
+- [fact] ADR-004 Plugin Security Model does not exist but is forward-referenced by 4 active ADRs, blocking 11 security-critical decisions including hook execution.
+- [decision] plugin.config (`.agent-plugin/plugin.json`) is OPTIONAL, not required. Enables feature cherry-picking when present. Without it, system falls back to scanning well-known directories (`skills/`, `agents/`, `commands/`, `AGENTS.md`, `rules/`, `hooks/`, `mcp/`). Reverses previous "always required" decision. #installation #configless
+- [decision] Plugin codebases with well-known directory structure must be directly consumable by Vercel npx skills and TanStack intent approaches. plugin.config is enhancement only. Cross-ecosystem compatibility is a hard requirement. #compatibility #ecosystem
+- [decision] Configless sources get lockfile entries same as config-based sources. Removal uses plugin.config if present, otherwise re-scans directories to determine what to remove. #lockfile #removal
+- [decision] For configless monorepo sources, scan through ALL packages for well-known directories, not just root. #monorepo #discovery
+- [decision] Cross-ecosystem compatibility is BIDIRECTIONAL: our codebases consumable by Vercel/TanStack, AND sources created by Vercel/TanStack consumable by agent-plugin. Configless directory scan is the mechanism. #compatibility #ecosystem
+- [decision] agent-plugin must detect and install Claude plugins (`.claude-plugin/plugin.json` format). Source resolution checks three manifest formats in priority order: our format → Claude format → directory scan fallback. #claude-plugin #compatibility #critical-gap
 - [fact] Creator skills (skill-creator, agent-creator, mcp-builder, instruction-evaluator) are declared but zero-specified. No evaluation criteria, report formats, or Anthropic source analysis exists. Blocks all `analyze`/`analyze --fix` commands. #critical-gap
 - [fact] Only 2 of 7 platforms have config registry entries. No content directory mappings for `rules/` or `AGENTS.md`. Cannot implement platform writing without completing platforms.config.json. #critical-gap
 - [fact] 5 cross-ADR contradictions create ambiguity: hook model (ADR-003 vs ADR-014), remark deps (ADR-006 vs ADR-014), command tree (ADR-007 vs ADR-014), dependency necessity (chokidar/plugin-completion), lockfile robustness (ADR-003 vs ADR-014). #cross-adr-conflicts
@@ -268,7 +274,8 @@ ADR-014 ACCEPTED (Round 2: 5 Accept + 1 D&C) with 4 amendments, superseding ADR-
 
 **Remaining Phase 1 Work (Summary):**
 
-- 5 cross-ADR contradictions to resolve (hook model, remark deps, command tree, dep necessity, lockfile robustness)
+- 6 cross-ADR contradictions to resolve (hook model, remark deps, command tree, dep necessity, lockfile robustness, plugin.config required vs optional)
+- 6 NEW decision items: configless source discovery, monorepo scanning, per-item validation, configless removal flow, cross-ecosystem compatibility (bidirectional), Claude plugin format compatibility
 - 5 P0 gaps: ADR-004 security (11 items), creator skills (4 skills zero-specified), hook model contradiction, remark dep contradiction, platform adapter paths (7 platforms x 8 content types)
 - 15 P1 gaps: consumer command flows, features edge cases, content directory conventions, MCP template, Zod schemas, wizard reconciliation, validate/build definitions, command flags, lockfile robustness, daemon transport, managed sections, platformConfig overlap, plugin deps, JSON payloads, dep necessity
 - GAP-9 implementation phasing (LOW, deferrable to Phase 4)
@@ -1588,6 +1595,27 @@ These create ambiguity that blocks deepening work. MUST resolve first.
 - [ ] **C-3: Command tree staleness** (ADR-007 D1 vs ADR-014 D6) -- ADR-007 has init/upgrade/new. ADR-014 has update/content-type groups/no init. Mark ADR-007 D1 as superseded by ADR-014 D6.
 - [ ] **C-4: chokidar necessity** (ADR-006 D7 vs ADR-014 D6) -- chokidar was for `dev` command. `dev` command eliminated. Remove chokidar from dep stack OR identify new use case.
 - [ ] **C-5: Lockfile robustness** (ADR-003 D3 vs ADR-014 D2) -- ADR-003 specified corruption recovery, integrity hash, backup, atomic writes. ADR-014 has none. Decide: carry forward to `.agent-lock.json` OR explicitly drop with rationale.
+- [ ] **C-6: plugin.config required vs optional** (ADR-014 D3 vs NEW-1) -- ADR-014 D3 says "plugin.json is ALWAYS required (not optional like Claude Code)." NEW-1 says plugin.config is OPTIONAL with directory-scan fallback. Resolve: amend ADR-014 D3 to make plugin.config optional, document configless discovery flow.
+
+---
+
+#### Block A2: New Decision Items — Configless Discovery and Cross-Ecosystem Compatibility
+
+Added 2026-03-09. These are NEW decisions that change the fundamental installation model and create contradiction C-6 with existing ADR-014 D3. Must be resolved alongside Block A contradictions.
+
+- [ ] **NEW-1: Configless Source Discovery** — `.agent-plugin/plugin.config` becomes OPTIONAL. If source has it, use it (enables feature cherry-picking). If source does NOT have it, fall back to scanning well-known directories (`skills/`, `agents/`, `commands/`, `AGENTS.md`, `rules/`, `hooks/`, `mcp/`) in the source root. Each discovered item is validated individually and placed into correct user/project scope and user-selected platform scopes. **Contradicts ADR-014 D3 ("plugin.json is ALWAYS required") — creates C-6.**
+- [ ] **NEW-2: Monorepo Package Scanning** — For configless sources that are monorepos, scan through ALL packages (not just root) for well-known directories. Needs: monorepo structure detection, package enumeration, overlapping content handling.
+- [ ] **NEW-3: Per-Item Validation During Directory Scan** — Each item discovered in scanned directories must be individually validated before installation. Needs: validation criteria per content type (what makes a valid skill, agent, hook, command, rule, MCP config, AGENTS.md?).
+- [ ] **NEW-4: Configless Removal Flow** — Sources get lockfile entries regardless of plugin.config presence. On remove: consult lockfile for source → go back to source → use plugin.config if present, otherwise re-scan directories → know what to remove from correct user/project scope and platform scopes. Same removal completeness as config-based sources.
+- [ ] **NEW-5: Cross-Ecosystem Compatibility (Bidirectional)** — Two directions: (A) Our generated plugin codebases produce well-known directory layouts (`skills/`, `agents/`, etc.) that are directly consumable by Vercel `npx skills` and TanStack intent (they just won't get cherry-picking). (B) Sources created by TanStack intent or Vercel npx skills (which have `skills/`, `agents/`, etc. but no `.agent-plugin/plugin.json`) MUST be installable by `agent-plugin add`. The configless directory scan (NEW-1) is the mechanism that makes this work — it doesn't matter WHO created the source, if it has well-known directories, agent-plugin handles it.
+- [ ] **NEW-6: Claude Plugin Format Compatibility** — agent-plugin should detect when a source is a Claude plugin (`.claude-plugin/plugin.json` format) and handle installing/managing the entire Claude plugin. Won't work identically to `claude mcp add` or Claude's native plugin install, but agent-plugin maps Claude plugin content types to our model and installs via our flow. Source resolution needs to check for MULTIPLE manifest formats in priority order: (1) `.agent-plugin/plugin.json` (our format, full feature support), (2) `.claude-plugin/plugin.json` (Claude format, mapped installation), (3) no manifest (directory scan fallback). Needs: Claude plugin.json schema mapping, content type correspondence, what Claude-specific fields we honor vs ignore.
+
+**Impact on existing decisions:**
+- ADR-014 D3: "plugin.json ALWAYS required" → must change to "plugin.config OPTIONAL, enables features"
+- ADR-014 D7 Step 2: "read manifest" → needs configless variant (directory scan fallback) AND Claude plugin variant
+- ADR-014 D1: add flow → needs three paths (our config, Claude plugin config, configless directory scan)
+- ADR-008: source resolution → manifest discovery needs multi-format detection (our → Claude → directory scan)
+- New contradiction C-6: plugin.config required vs optional
 
 ---
 
@@ -1681,7 +1709,8 @@ Block D (GAP-9) and Block E (housekeeping) can continue in parallel with Phase 2
 
 **Sequencing Notes:**
 
-- Block A MUST complete before Blocks B and C (cannot deepen contradicting decisions)
+- Block A (including C-6) MUST complete before Blocks A2, B, and C (cannot deepen contradicting decisions)
+- Block A2 (NEW-1 through NEW-5) depends on C-6 resolution. Once C-6 resolves "plugin.config is optional," A2 items can be detailed as ADR-014 amendments
 - Within Block B: P0-1 (ADR-004) can run parallel with P0-2 (creator skills). Both are prerequisites for P0-5 (platform paths depend on security model for managed sections)
 - Block C items are mostly parallelizable within their groups (consumer commands can be specced in parallel, scaffolding items in parallel, etc.)
 - Block E can run anytime (housekeeping doesn't block other work)
