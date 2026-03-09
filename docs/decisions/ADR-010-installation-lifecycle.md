@@ -30,7 +30,7 @@ tags:
 
 ## Context and Problem Statement
 
-`@acmelabs-15/agent-plugin` is a cross-platform CLI with an embedded MCP server for managing AI agent plugins across 7 platforms (ADR-002). ADR-003 established always-namespace, overlay/recompute hooks, JSON lockfile with atomic writes, and hybrid D+C platform config. ADR-005 established Bun as runtime. ADR-007 defined the CLI command tree, three-tier input resolution, and @clack/prompts component mapping.
+`@acmelabs-15/agent-plugin` is a cross-platform CLI with an embedded MCP server for managing AI agent plugins across 4 platforms (ADR-002, as amended). ADR-003 established always-namespace, overlay/recompute hooks, JSON lockfile with atomic writes, and hybrid D+C platform config. ADR-005 established Bun as runtime. ADR-007 defined the CLI command tree, three-tier input resolution, and @clack/prompts component mapping.
 
 What ADR-003 and ADR-007 left unspecified:
 
@@ -159,7 +159,7 @@ Installation proceeds in 6 sequential phases. Each phase is a checkpoint. On fai
 
 ```text
 Phase 1: DETECT
-  Scan for all 7 platforms using platforms.config.json (ANALYSIS-029).
+  Scan for all 4 supported platforms using platforms.config.json (ANALYSIS-029).
   Detection uses binary existence check + config directory check, run in parallel.
   Output: list of detected platforms with their config file paths.
 

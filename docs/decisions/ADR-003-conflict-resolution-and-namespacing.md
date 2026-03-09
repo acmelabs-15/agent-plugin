@@ -29,7 +29,7 @@ tags:
 
 1. **Naming collisions**: Multiple plugins may define components with the same name (e.g., two plugins both provide a skill called `code-review`). Without disambiguation, the second install silently overwrites the first.
 2. **Hook merging**: Hook components have different collision semantics than named components. Multiple hooks on the same event are additive, not conflicting. Blocking hooks (e.g., Claude Code PreToolUse) require a resolution rule when plugins disagree.
-3. **Platform configuration**: Frontmatter fields vary across 7 target platforms. A universal superset would include unsupported fields on some platforms. Authors need a way to declare platform-specific settings without knowing each platform's field names.
+3. **Platform configuration**: Frontmatter fields vary across 4 target platforms. A universal superset would include unsupported fields on some platforms. Authors need a way to declare platform-specific settings without knowing each platform's field names.
 4. **State tracking**: Plugin updates and removals require knowing which installed components belong to which plugin, what files were modified, and whether the state file is corrupted.
 
 These concerns are tightly coupled: the namespacing strategy determines whether conflict resolution prompts are needed, which affects state tracking complexity, which affects the lockfile design.
@@ -53,7 +53,7 @@ These concerns are tightly coupled: the namespacing strategy determines whether 
 
 ## Decision Outcome
 
-**Chosen option: Option A (always-namespace)**, because it eliminates conflict resolution entirely. Every installed component is automatically prefixed with `plugin-name:component-name`. No user prompts, no rename tracking, no cross-reference updates, no state store for mappings. Works identically for bundle and collection installModes, in CI and interactive contexts, across all 7 target platforms.
+**Chosen option: Option A (always-namespace)**, because it eliminates conflict resolution entirely. Every installed component is automatically prefixed with `plugin-name:component-name`. No user prompts, no rename tracking, no cross-reference updates, no state store for mappings. Works identically for bundle and collection installModes, in CI and interactive contexts, across all 4 target platforms.
 
 This ADR covers 6 interconnected decisions:
 
@@ -146,7 +146,7 @@ Platform-specific configuration uses a hybrid D+C pattern (ANALYSIS-014): adapte
 | 3 | Manifest-level `platformConfig` in plugin.json | `platformConfig.claude-code.model: "sonnet"` |
 | 4 | Per-component `platforms` block in SKILL.md frontmatter | `platforms.claude-code.model: "opus"` |
 
-**Cross-platform concepts** (3 abstract fields that map across all 7 platforms):
+**Cross-platform concepts** (3 abstract fields that map across all 4 supported platforms):
 
 - `loadingStrategy`: always, file-conditional, manual, auto-detect
 - `filePatterns`: glob patterns for conditional loading
@@ -193,7 +193,7 @@ Hook merge security, per-hook user consent for blocking hooks, and CWE-94 mitiga
 ### Negative
 
 - **NEG-001**: Always-namespace produces longer component names. `my-linting-plugin:code-review` is 32 characters vs `code-review` at 11.
-- **NEG-002**: Platform adapter layer must maintain a field mapping table for each of 7 platforms. This is an ongoing maintenance burden as platforms evolve.
+- **NEG-002**: Platform adapter layer must maintain a field mapping table for each of 4 supported platforms. This is an ongoing maintenance burden as platforms evolve.
 - **NEG-003**: Overlay/recompute overwrites manual edits to the merged hooks output. Users must edit their own hooks (preserved via snapshot in lockfile), not the merged output.
 - **NEG-004**: Custom prompt injection detection (regex-based) catches obvious attacks but can be evaded by sophisticated adversaries. Medium confidence for this vector.
 - **NEG-005**: No existing npm package combines JSON merging + provenance tracking + clean unmerge. The overlay system requires custom implementation (estimated medium effort per ANALYSIS-010).
@@ -285,7 +285,7 @@ Implementation compliance will be confirmed via:
 - [[ANALYSIS-013 Input Sanitization Patterns]] — Zod v4 + shell-quote + validator pipeline
 - [[ANALYSIS-014 Platform Config Patterns]] — hybrid D+C, 4-level resolution, cross-platform concepts
 - [[ADR-001 Plugin Format and Manifest]] — bundle/collection installModes, plugin.json schema
-- [[ADR-002 Target Platforms and Audiences]] — 7 platforms, 3 audience types including CI/MCP
+- [[ADR-002 Target Platforms and Audiences]] — 4 platforms, 3 audience types including CI/MCP
 - [[DEBATE-ADR-003 Conflict Resolution and Namespacing]] — unanimous Needs Revision, 7 P0 + 14 P1 issues, all resolved in this revision
 
 ## Observations

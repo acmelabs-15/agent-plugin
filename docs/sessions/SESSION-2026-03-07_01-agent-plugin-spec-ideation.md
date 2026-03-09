@@ -52,7 +52,7 @@ tags:
 - [decision] Per-ADR workflow: research, discuss, create ADR, run adr-review, save debate log to critique/DEBATE-ADR-NNN-name, resolve P0/P1 with user, then next ADR #process
 - [decision] Cross-platform full lifecycle management confirmed as target #positioning
 - [decision] Platform criteria: must support prompts, skills, agents, hooks, MCPs, AND running agents in parallel #platform-criteria
-- [decision] Target ALL 7 full-support platforms: Claude Code, Cursor, GitHub Copilot CLI, Kiro, OpenCode, Amp, Windsurf #platforms
+- [decision] Target ALL 4 full-support platforms: Claude Code, Cursor, GitHub Copilot, Kiro (reduced from 7 per ADR-002 Amendment #1) #platforms
 - [decision] Must update platform-specific instruction files (CLAUDE.md, AGENTS.md, etc.) on install without breaking existing content #platform-instructions
 - [decision] Full three-audience model (Consumer CLI + Author CLI + AI MCP) in single package -- MCP server is key differentiator, shared core logic with thin audience-specific layers #audiences
 - [decision] Package name: `@acmelabs-15/agent-plugin` (scoped) -- need to register `acmelabs-15` npm org at npmjs.com #naming
@@ -66,7 +66,7 @@ tags:
 - [decision] Component declarations in plugin.json (skills, agents, hooks, prompts, mcp paths) #manifest
 - [decision] installMode: "bundle" or "collection" -- bundle = all-or-nothing, collection = pick and choose #install-mode
 - [decision] Core optional fields: author, license, repository, homepage, keywords #manifest
-- [decision] platforms field REMOVED from plugin.json -- all plugins are inherently cross-platform, plugin manager handles translation to all 7 platforms #manifest #cross-platform
+- [decision] platforms field REMOVED from plugin.json -- all plugins are inherently cross-platform, plugin manager handles translation to all 4 supported platforms #manifest #cross-platform
 - [decision] formatVersion REMOVED from plugin.json -- schema evolution via additive changes, unknown field tolerance, doctor command, upgrade/update auto-detection, migration wizards via clack/prompts (ANALYSIS-007: 70% of config formats handle evolution without version fields) #manifest #schema-evolution
 - [decision] Component format: cross-platform core frontmatter (name, description, type, requires, sources) + platformConfig section for platform-specific overrides #component-format
 - [decision] Platform-aware frontmatter generation: on install, emit ONLY fields the target platform supports but include ALL supported fields. Source frontmatter is the superset. #platform-adaptation
@@ -75,8 +75,8 @@ tags:
 - [decision] Source versioning: all source types support optional version specifier (e.g., owner/repo@v1.2.0, @scope/pkg@^2.0.0). No version = latest. Git sources use tags/releases, npm uses semver. #distribution #versioning
 - [decision] Installed version tracking: plugin manager records installed version in state store for accurate upgrade/update behavior #state-management #versioning
 - [decision] Invalid version handling: detect invalid version, display available versions via @clack/prompts select picker (including latest) for user to choose #ux #versioning
-- [decision] Platform instruction file paths fully specified for all 7 platforms (ANALYSIS-008). Fallback convention: .agents/ directory and AGENTS.md for platforms without well-defined paths #platforms #instruction-files
-- [fact] AGENTS.md read by 6/7 platforms, CLAUDE.md by 4/7, .claude/skills/ by 6/7, .agents/skills/ by 4/7 and emerging as standard #platforms #cross-platform-coverage
+- [decision] Platform instruction file paths fully specified for all 4 supported platforms (ANALYSIS-008). Fallback convention: .agents/ directory and AGENTS.md for platforms without well-defined paths #platforms #instruction-files
+- [fact] AGENTS.md read by all 4 supported platforms, CLAUDE.md by 3/4, .claude/skills/ by 3/4, .agents/skills/ by 3/4 #platforms #cross-platform-coverage
 - [decision] NEG-006 added to ADR-002: instruction file modification is an attack vector, deferred to ADR-004 #security
 - [decision] NEG-007 added to ADR-002: no centralized vetting in multi-source model, deferred to ADR-004 #security
 - [decision] Self-bootstrapping = self-install + dogfood: agent-plugin install acmelabs-15/agent-plugin works AND tool's own content uses plugin format #self-bootstrap
@@ -96,7 +96,7 @@ tags:
 - [decision] platformConfig: Hybrid D+C pattern adopted (adapter + layered overrides). 4-level resolution: Agent Skills standard fields → adapter concept mapping → plugin.json platformConfig → per-component platforms block. 3 cross-platform concepts: loadingStrategy, filePatterns, approvedTools. 80% of plugins only need levels 1-2 (estimated). #platform-config #architecture
 - [decision] Zod v4 (full, not Mini) as org-wide validation standard. Bundle size irrelevant for CLI/backend. Better DX via method chaining, IntelliSense, and built-in English error messages. #validation #org-standard
 - [decision] ADR-001 Section 9 updated to reference ADR-003 as authoritative for conflict resolution #cross-adr-consistency
-- [decision] Command tree finalized: publish removed (no registry), new mcp init uses @modelcontextprotocol/sdk + zod, completions via @gunshi/plugin-completion, 7 platforms per ADR-002 #command-tree
+- [decision] Command tree finalized: publish removed (no registry), new mcp init uses @modelcontextprotocol/sdk + zod, completions via @gunshi/plugin-completion, 4 platforms per ADR-002 #command-tree
 - [decision] upgrade only (update alias dropped): convention is upgrade = install newer versions. No alias to avoid npm-style naming confusion. #command-alias
 - [decision] --conflict flag REMOVED: always-namespace (ADR-003) eliminates file conflicts between plugins. No user choice needed. #conflict-resolution #simplification
 - [decision] picocolors REMOVED: @clack/prompts v1.1.0 replaced picocolors with node:util styleText. Use styleText directly for terminal colors. Zero dependencies. #colors #dependency-change
@@ -144,7 +144,7 @@ tags:
 - [decision] Schema-first architecture: single Zod v4 schema per wizard drives all 3 interfaces (interactive, CI, MCP). Prevents interface drift. #schema-first #consistency
 - [decision] Bundled creator skills: skill-creator, agent-creator, mcp-builder (adapted from Anthropic), instruction-evaluator (original). Self-bootstrapping via self-install. #creator-skills #self-bootstrap
 - [decision] eval/improve split: eval = read-only analysis with report, improve = interactive diff preview with Why annotations and 3 apply modes. #eval-improve #lifecycle
-- [decision] rules/ renamed to instructions/. Instructions merge into AGENTS.md (6/7 platforms) + CLAUDE.md at install time. #instructions #rename
+- [decision] rules/ renamed to instructions/. Instructions merge into AGENTS.md (all 4 platforms) + CLAUDE.md at install time. #instructions #rename
 - [decision] MCP server scaffolding: @modelcontextprotocol/sdk with separate tool files and marker comments for create-tool patching. No per-MCP biome.json or package.json. #mcp #scaffolding
 - [decision] eval/improve trust model: executes bundled first-party Bun TypeScript scripts (not user code). HTML eval viewer via Bun.serve(). Shared viewer infrastructure across skill/agent/mcp eval. #trust-model #security
 - [decision] Faithfulness principle: creator skills stay close to Anthropic originals. Exceptions: Python→Bun TS conversion, fastmcp→@modelcontextprotocol/sdk, minor verbiage alignment. #faithfulness #creator-skills
@@ -220,7 +220,7 @@ tags:
 - [decision] C-5 RESOLVED: Lockfile robustness carry-forward from ADR-003 D3: atomic writes (atomically), .bak backup, _integrity hash (SHA-256). Dropped: file permissions mode 600 (no secrets), re-derive from disk (lockfile is single source of truth, not cache). #lockfile #robustness
 - [decision] C-6 RESOLVED: plugin.json OPTIONAL (reverses "always required"). Three-tier manifest detection: (1) .agent-plugin/plugin.json (full features), (2) .claude-plugin/plugin.json (mapped), (3) directory scan fallback (no cherry-picking). #manifest #optional #critical-gap
 - [fact] Creator skills (skill-creator, agent-creator, mcp-builder, instruction-evaluator) are declared but zero-specified. No evaluation criteria, report formats, or Anthropic source analysis exists. Blocks all `analyze`/`analyze --fix` commands. #critical-gap
-- [fact] Only 2 of 7 platforms have config registry entries. No content directory mappings for `rules/` or `AGENTS.md`. Cannot implement platform writing without completing platforms.config.json. #critical-gap
+- [fact] Platform config registry entries now complete for all 4 supported platforms (was 2/7 before platform reduction). #critical-gap
 - [fact] 5 cross-ADR contradictions create ambiguity: hook model (ADR-003 vs ADR-014), remark deps (ADR-006 vs ADR-014), command tree (ADR-007 vs ADR-014), dependency necessity (chokidar/plugin-completion), lockfile robustness (ADR-003 vs ADR-014). #cross-adr-conflicts
 - [fact] No cross-platform AI agent plugin manager exists -- this is confirmed whitespace opportunity (ANALYSIS-036) #market-gap
 - [fact] MCP is universal standard: 8/8 platforms support it, mcpServers JSON format identical across 6/8 #mcp #universal
@@ -280,7 +280,7 @@ ADR-014 ACCEPTED (Round 2: 5 Accept + 1 D&C) with 4 amendments, superseding ADR-
 
 - 6 cross-ADR contradictions: ALL RESOLVED (C-1 hook model, C-2 remark deps, C-3 command tree, C-4 dep necessity, C-5 lockfile robustness, C-6 plugin.config optional). Block A COMPLETE.
 - 6 NEW decision items (unblocked by C-6): configless source discovery, monorepo scanning, per-item validation, configless removal flow, cross-ecosystem compatibility (bidirectional), Claude plugin format compatibility. Pending detailed specification as ADR-014 amendments.
-- 5 P0 gaps: ADR-004 security (11 items), creator skills (4 skills zero-specified), hook model contradiction, remark dep contradiction, platform adapter paths (7 platforms x 8 content types)
+- 5 P0 gaps: ADR-004 security (11 items), creator skills (4 skills zero-specified), hook model contradiction, remark dep contradiction, platform adapter paths (4 platforms x 8 content types -- RESOLVED)
 - 15 P1 gaps: consumer command flows, features edge cases, content directory conventions, MCP template, Zod schemas, wizard reconciliation, validate/build definitions, command flags, lockfile robustness, daemon transport, managed sections, platformConfig overlap, plugin deps, JSON payloads, dep necessity
 - GAP-9 implementation phasing (LOW, deferrable to Phase 4)
 - ADR housekeeping: 9 stale body text updates, IMP-007
@@ -305,7 +305,7 @@ Discussion topics completed (one at a time):
 
 - [x] Market positioning: confirmed cross-platform full lifecycle management
 - [x] Platform criteria: must support prompts + skills + agents + hooks + MCPs + parallel agents
-- [x] Platform list: ALL 7 full-support platforms (Claude Code, Cursor, Copilot CLI, Kiro, OpenCode, Amp, Windsurf)
+- [x] Platform list: ALL 4 full-support platforms (Claude Code, Cursor, Copilot, Kiro) -- reduced from 7 per ADR-002 Amendment #1
 - [x] Platform instruction file management on install (new requirement)
 - [x] Three-audience model: CONFIRMED full three-audience model (Consumer CLI + Author CLI + AI MCP) in single package
 - [x] Naming: CONFIRMED @acmelabs-15/agent-plugin (scoped). Need to register acmelabs-15 npm org.
@@ -317,7 +317,7 @@ Discussion topics completed (one at a time):
 - [x] platforms field removed -- all plugins are cross-platform
 - [x] No publish command -- no registry
 - [x] Source versioning, invalid version handling, installed version tracking
-- [x] Platform instruction file paths for all 7 platforms (ANALYSIS-008) + fallback convention
+- [x] Platform instruction file paths for all 4 supported platforms (ANALYSIS-008) + fallback convention
 
 ADR status:
 
@@ -332,7 +332,7 @@ ADR status:
 - [x] ADR-002 P0-3 resolved: NEG-006 added (instruction file injection, deferred to ADR-004)
 - [x] ADR-002 P0-4 resolved: NEG-007 added (no centralized vetting, deferred to ADR-004)
 - [x] ADR-002 P1-1 resolved: Duplicate ADR already deleted
-- [x] ADR-002 P1-4 resolved: Instruction file paths filled in for all 7 platforms + fallback
+- [x] ADR-002 P1-4 resolved: Instruction file paths filled in for all 4 supported platforms + fallback
 - [x] ADR-002 P1-5 resolved: Moot -- degradation tier removed
 - [ ] ADR-002 P1-2 skipped: Audience priority ordering deferred to Phase 4 (Epic/PRD)
 - [ ] ADR-002 P1-3 skipped: Phased delivery deferred to Phase 4 (Epic/PRD)
@@ -409,7 +409,7 @@ Research completed:
 
 Decisions made:
 
-- [x] Command tree: `publish` removed (ADR-002), `new mcp init` uses @modelcontextprotocol/sdk + zod (ADR-006), completions via @gunshi/plugin-completion (ADR-006), 7 platforms per ADR-002 #decided
+- [x] Command tree: `publish` removed (ADR-002), `new mcp init` uses @modelcontextprotocol/sdk + zod (ADR-006), completions via @gunshi/plugin-completion (ADR-006), 4 platforms per ADR-002 #decided
 - [x] Command alias: `upgrade` only (update alias dropped to avoid npm naming confusion) #decided
 - [x] `--conflict` flag REMOVED: always-namespace (ADR-003) prevents file conflicts. Reinstall/upgrade overwrites own files. #decided
 - [x] picocolors REMOVED from dependency stack: @clack/prompts v1.1.0 replaced it with node:util styleText. Use styleText directly. #decided
@@ -440,7 +440,7 @@ ADR status:
 Research completed:
 
 - [x] [[ANALYSIS-025-source-resolution-patterns]] -- npm/GitHub/local resolution, semver (Bun.semver), staging, manifest discovery
-- [x] [[ANALYSIS-026-platform-detection-and-mapping]] -- detection patterns, config dirs, content mapping for all 7 platforms
+- [x] [[ANALYSIS-026-platform-detection-and-mapping]] -- detection patterns, config dirs, content mapping for all 4 supported platforms
 - [x] [[ANALYSIS-027-installation-mechanics]] -- install scope, MCP merging, dependency management, uninstall/upgrade
 
 All 11 discussion topics decided:
@@ -491,7 +491,7 @@ All decisions discussed one at a time with user:
 - [x] Content-type command groups replace ADR-007 `new` subtree (skill/agent/mcp/command/hook/instruction with subcommands)
 - [x] Bundled creator skills: skill-creator, agent-creator, mcp-builder (adapted from Anthropic sources), instruction-evaluator (original)
 - [x] eval/improve split: eval = read-only analysis with report, improve = interactive diff preview with apply modes
-- [x] Instructions replace rules: rules/ → instructions/, merge into AGENTS.md (6/7 platforms) + CLAUDE.md
+- [x] Instructions replace rules: rules/ → instructions/, merge into AGENTS.md (all 4 supported platforms) + CLAUDE.md
 - [x] Wizard simplifications: emoji prefix dropped, autoLoadAgents dropped, skill frontmatter aligned with Claude Code SKILL.md fields
 - [x] Interactive improve preview: color-coded diff, "Why" annotations, three apply modes (apply all, review one-by-one, skip)
 - [x] Remove confirmation: p.confirm() showing files, manifest entries, and dependent content. --yes flag for CI.
@@ -782,7 +782,7 @@ Remaining items needing research/decisions:
 | P0-2 | **Creator skills zero-specified** | ADR-012 D7 | 4 skills (skill-creator, agent-creator, mcp-builder, instruction-evaluator) declared but none have: evaluation criteria, report formats, improvement workflows, or Anthropic source analysis. `analyze`/`analyze --fix` commands cannot be specced. |
 | P0-3 | **Hook model contradiction** | ADR-003 D2 vs ADR-014 D7 | ADR-003 says overlay/recompute with deepmerge. ADR-014 says no cross-plugin merging, separate entries. Cannot implement hooks. |
 | P0-4 | **remark/unified not in dependency stack** | ADR-006 D9 vs ADR-014 D5 | ADR-006 explicitly removed markdown libs. ADR-014 requires remark/unified/mdast-util-heading-range for features. Direct contradiction. |
-| P0-5 | **Platform adapter paths not specified** | ADR-009 D3, ADR-014 D8 | Only 2 of 7 platforms have config registry entries. No content directory mappings for `rules/` or `AGENTS.md`. Cannot implement platform writing. |
+| P0-5 | **Platform adapter paths not specified** | ADR-009 D3, ADR-014 D8 | All 4 supported platforms now have complete config registry entries (was 2/7 before platform reduction). No content directory mappings for `rules/` or `AGENTS.md`. Cannot implement platform writing. |
 
 **P1 Gaps (Blocking Specific Feature Specs):**
 
@@ -935,7 +935,7 @@ All of the above resolved → Phase 1 COMPLETE. Ready for Phase 2.
 
 - [x] [decision] Cross-platform full lifecycle management confirmed as target positioning #market
 - [x] [decision] Platform criteria locked: prompts + skills + agents + hooks + MCPs + parallel agents #platforms
-- [x] [decision] All 7 full-support platforms targeted #platforms
+- [x] [decision] All 4 full-support platforms targeted (reduced from 7 per ADR-002 Amendment #1) #platforms
 - [x] [decision] Platform instruction file management required on install #new-requirement
 - [x] [decision] Full three-audience model confirmed (Consumer + Author + AI) #audiences
 - [x] [decision] Package name @acmelabs-15/agent-plugin confirmed, npm org registration needed #naming
@@ -947,7 +947,7 @@ All of the above resolved → Phase 1 COMPLETE. Ready for Phase 2.
 - [x] [decision] formatVersion removed after ANALYSIS-007 research #manifest
 - [x] [decision] No publish command #distribution
 - [x] [decision] Source versioning, invalid version handling, installed version tracking #versioning
-- [x] [decision] Platform instruction file paths for all 7 platforms + fallback convention #platforms
+- [x] [decision] Platform instruction file paths for all 4 supported platforms + fallback convention #platforms
 - [x] [fix] Deleted premature ADR-001 (created before user discussion) #process-correction
 
 ### ADR-001 Review and Updates
@@ -970,7 +970,7 @@ All of the above resolved → Phase 1 COMPLETE. Ready for Phase 2.
 - [x] [fix] P0-3 resolved: NEG-006 added (instruction file injection, deferred to ADR-004) #security
 - [x] [fix] P0-4 resolved: NEG-007 added (no centralized vetting, deferred to ADR-004) #security
 - [x] [fix] P1-1 resolved: Duplicate ADR-001-target-platforms-and-selection-criteria deleted #cleanup
-- [x] [fix] P1-4 resolved: Platform table updated with actual instruction file paths for all 7 platforms #platforms
+- [x] [fix] P1-4 resolved: Platform table updated with actual instruction file paths for all 4 supported platforms #platforms
 - [x] [fix] P1-5 resolved: Moot -- degradation tier removed #platforms
 - [ ] P1-2 skipped: Audience priority ordering deferred to Phase 4 #deferred
 - [ ] P1-3 skipped: Phased delivery deferred to Phase 4 #deferred
@@ -1350,7 +1350,7 @@ From /Users/peter.kloss/Downloads/agent-plugin-design-spec.md:
 5. CLI architecture (gunshi-based command tree)
 6. @clack/prompts usage (full v1.1.0 API)
 7. Source resolution (npm, GitHub, local)
-8. Platform support (7 platforms with 6/6 capabilities)
+8. Platform support (4 platforms with full content type support (reduced from 7))
 9. Installation mechanics (scope, conflicts, hook merging, MCP merging, dependencies)
 10. Data storage (SQLite via drizzle-orm replacing JSON lockfile)
 11. Manifest format (plugin.json at root)
@@ -1493,12 +1493,12 @@ From /Users/peter.kloss/Downloads/agent-plugin-design-spec.md:
 - [fact] Design spec is comprehensive at 22 sections covering CLI, MCP, scaffolding, platform support, data storage, and self-bootstrapping #scope
 - [fact] Spec pre-selects specific dependencies (gunshi, @clack/prompts, drizzle-orm, orama, fastmcp, etc.) -- each needs research validation #dependencies
 - [fact] Self-bootstrapping is a key architectural constraint: the tool uses itself to create its own content #architecture
-- [fact] 7 platforms qualify with full 6/6 support: Claude Code, Cursor, Copilot CLI, Kiro, OpenCode, Amp, Windsurf #platforms
+- [fact] 4 platforms qualify with full content type support: Claude Code, Cursor, Copilot, Kiro (reduced from 7 per ADR-002 Amendment #1 -- OpenCode, Amp, Windsurf dropped) #platforms
 - [fact] 3 platforms near-complete at 5.5/6: Codex CLI (hooks notification-only), Cline (no custom sub-agents), Gemini CLI (sequential sub-agents) #platforms
 - [fact] Claude Code has 9,000+ plugins and official marketplace; Vercel npx skills has 8,800 GitHub stars for skills-only #ecosystem
 - [fact] No existing tool manages full plugin lifecycle across multiple platforms -- this is the gap #market-gap
 - [fact] February 2026 saw 6 platforms ship parallel agent execution within a 2-week window #industry-trend
-- [fact] AGENTS.md read by 6/7, CLAUDE.md by 4/7, .claude/skills/ by 6/7, .agents/skills/ by 4/7 #cross-platform-coverage
+- [fact] AGENTS.md read by 4/4, CLAUDE.md by 3/4, .claude/skills/ by 3/4, .agents/skills/ by 3/4 (ratios updated after platform reduction) #cross-platform-coverage
 - [fact] 70% of config formats (package.json, tsconfig, Cargo.toml, etc.) handle schema evolution without format version fields #versioning
 - [fact] Phase 1 is ~85% complete after 7 Groups + Decision Audit + Gap Analysis #progress
 - [fact] ADR-004 Plugin Security Model is CRITICAL gap: 11 items blocked across 4 active ADRs, hook execution literally blocked until it exists #security #critical
@@ -1509,7 +1509,7 @@ From /Users/peter.kloss/Downloads/agent-plugin-design-spec.md:
 - [constraint] Must manage platform-specific instruction files (CLAUDE.md, AGENTS.md, etc.) without breaking existing content #requirement
 - [insight] Each platform has different mechanisms for the same 6 capabilities -- the package must abstract these differences #architecture
 - [insight] Agent Skills (SKILL.md with YAML frontmatter) is the most portable extension format across platforms #portability
-- [insight] .claude/skills/ has highest cross-platform reach (6/7) due to Claude Code early standard adoption #skills
+- [insight] .claude/skills/ has highest cross-platform reach (3/4 supported platforms) due to Claude Code early standard adoption #skills
 
 ## Relations
 
@@ -1622,12 +1622,12 @@ These create ambiguity that blocks deepening work. MUST resolve first.
 
 Added 2026-03-09. These are NEW decisions that change the fundamental installation model and create contradiction C-6 with existing ADR-014 D3. Must be resolved alongside Block A contradictions.
 
-- [ ] **NEW-1: Configless Source Discovery** — `.agent-plugin/plugin.config` becomes OPTIONAL. If source has it, use it (enables feature cherry-picking). If source does NOT have it, fall back to scanning well-known directories (`skills/`, `agents/`, `commands/`, `AGENTS.md`, `rules/`, `hooks/`, `mcp/`) in the source root. Each discovered item is validated individually and placed into correct user/project scope and user-selected platform scopes. **Contradicts ADR-014 D3 ("plugin.json is ALWAYS required") — creates C-6.**
-- [ ] **NEW-2: Monorepo Package Scanning** — For configless sources that are monorepos, scan through ALL packages (not just root) for well-known directories. Needs: monorepo structure detection, package enumeration, overlapping content handling.
-- [ ] **NEW-3: Per-Item Validation During Directory Scan** — Each item discovered in scanned directories must be individually validated before installation. Needs: validation criteria per content type (what makes a valid skill, agent, hook, command, rule, MCP config, AGENTS.md?).
-- [ ] **NEW-4: Configless Removal Flow** — Sources get lockfile entries regardless of plugin.config presence. On remove: consult lockfile for source → go back to source → use plugin.config if present, otherwise re-scan directories → know what to remove from correct user/project scope and platform scopes. Same removal completeness as config-based sources.
-- [ ] **NEW-5: Cross-Ecosystem Compatibility (Bidirectional)** — Two directions: (A) Our generated plugin codebases produce well-known directory layouts (`skills/`, `agents/`, etc.) that are directly consumable by Vercel `npx skills` and TanStack intent (they just won't get cherry-picking). (B) Sources created by TanStack intent or Vercel npx skills (which have `skills/`, `agents/`, etc. but no `.agent-plugin/plugin.json`) MUST be installable by `agent-plugin add`. The configless directory scan (NEW-1) is the mechanism that makes this work — it doesn't matter WHO created the source, if it has well-known directories, agent-plugin handles it.
-- [ ] **NEW-6: Claude Plugin Format Compatibility** — agent-plugin should detect when a source is a Claude plugin (`.claude-plugin/plugin.json` format) and handle installing/managing the entire Claude plugin. Won't work identically to `claude mcp add` or Claude's native plugin install, but agent-plugin maps Claude plugin content types to our model and installs via our flow. Source resolution needs to check for MULTIPLE manifest formats in priority order: (1) `.agent-plugin/plugin.json` (our format, full feature support), (2) `.claude-plugin/plugin.json` (Claude format, mapped installation), (3) no manifest (directory scan fallback). Needs: Claude plugin.json schema mapping, content type correspondence, what Claude-specific fields we honor vs ignore.
+- [x] **NEW-1: Configless Source Discovery** (COMPLETE — ADR-014 Amendment #5 C-6) — `.agent-plugin/plugin.config` becomes OPTIONAL. If source has it, use it (enables feature cherry-picking). If source does NOT have it, fall back to scanning well-known directories (`skills/`, `agents/`, `commands/`, `AGENTS.md`, `rules/`, `hooks/`, `mcp/`) in the source root. Each discovered item is validated individually and placed into correct user/project scope and user-selected platform scopes. **Contradicts ADR-014 D3 ("plugin.json is ALWAYS required") — creates C-6.**
+- [x] **NEW-2: Monorepo Package Scanning** (COMPLETE — ADR-014 Amendment #6) — For configless sources that are monorepos, scan through ALL packages (not just root) for well-known directories. Needs: monorepo structure detection, package enumeration, overlapping content handling.
+- [x] **NEW-3: Per-Item Validation During Directory Scan** (COMPLETE — ADR-014 Amendment #7) — Each item discovered in scanned directories must be individually validated before installation. Needs: validation criteria per content type (what makes a valid skill, agent, hook, command, rule, MCP config, AGENTS.md?).
+- [x] **NEW-4: Configless Removal Flow** (COMPLETE — ADR-014 Amendment #5 C-6) — Sources get lockfile entries regardless of plugin.config presence. On remove: consult lockfile for source → go back to source → use plugin.config if present, otherwise re-scan directories → know what to remove from correct user/project scope and platform scopes. Same removal completeness as config-based sources.
+- [x] **NEW-5: Cross-Ecosystem Compatibility (Bidirectional)** (COMPLETE — ADR-014 Amendment #5 C-6) — Two directions: (A) Our generated plugin codebases produce well-known directory layouts (`skills/`, `agents/`, etc.) that are directly consumable by Vercel `npx skills` and TanStack intent (they just won't get cherry-picking). (B) Sources created by TanStack intent or Vercel npx skills (which have `skills/`, `agents/`, etc. but no `.agent-plugin/plugin.json`) MUST be installable by `agent-plugin add`. The configless directory scan (NEW-1) is the mechanism that makes this work — it doesn't matter WHO created the source, if it has well-known directories, agent-plugin handles it.
+- [x] **NEW-6: Claude Plugin Format Compatibility** (COMPLETE — ADR-014 Amendment #5 C-6) — agent-plugin should detect when a source is a Claude plugin (`.claude-plugin/plugin.json` format) and handle installing/managing the entire Claude plugin. Won't work identically to `claude mcp add` or Claude's native plugin install, but agent-plugin maps Claude plugin content types to our model and installs via our flow. Source resolution needs to check for MULTIPLE manifest formats in priority order: (1) `.agent-plugin/plugin.json` (our format, full feature support), (2) `.claude-plugin/plugin.json` (Claude format, mapped installation), (3) no manifest (directory scan fallback). Needs: Claude plugin.json schema mapping, content type correspondence, what Claude-specific fields we honor vs ignore.
 
 **Impact on existing decisions:**
 - ADR-014 D3: "plugin.json ALWAYS required" → must change to "plugin.config OPTIONAL, enables features"
@@ -1656,7 +1656,7 @@ Cannot write ANY feature spec until these are resolved.
 
 - [ ] **P0-2: Creator Skills Evaluation** -- 4 skills (skill-creator, agent-creator, mcp-builder, instruction-evaluator) are declared (ADR-012 D7) but ZERO-specified. Must evaluate Anthropic source repos (skill-creator, agent-creator, mcp-builder from Anthropic GitHub; instruction-evaluator is original). For EACH skill, document: evaluation criteria, report format, improvement workflow, parameter surface. This unblocks GAP-2 (MCP tool catalog) and all `analyze`/`analyze --fix` commands.
 
-- [ ] **P0-5: Platform Adapter Paths for All 7 Platforms x 8 Content Types** -- ADR-009 D3 has config registry entries for only 2 of 7 platforms (Claude Code, OpenCode). Missing: Cursor, Copilot CLI, Kiro, Amp, Windsurf. ADR-014 D4 added `rules/` and `AGENTS.md` content types -- no platform paths specified for these. Create complete `platforms.config.json` with: content directory paths per platform per type, MCP config paths, hook config paths. Cannot write install/add specs without this.
+- [x] **P0-5: Platform Adapter Paths for 4 Platforms x 8 Content Types** (COMPLETE — ADR-002 Amendment #1, ADR-009 Amendment #1. Reduced from 7 to 4 platforms: Claude Code, Cursor, Copilot, Kiro. OpenCode/Amp/Windsurf dropped for incomplete content type support.) -- ADR-009 D3 has config registry entries for only 2 of 7 platforms (Claude Code, OpenCode). Missing: Cursor, Copilot CLI, Kiro, Amp, Windsurf. ADR-014 D4 added `rules/` and `AGENTS.md` content types -- no platform paths specified for these. Create complete `platforms.config.json` with: content directory paths per platform per type, MCP config paths, hook config paths. Cannot write install/add specs without this.
 
 ---
 

@@ -24,7 +24,7 @@ tags:
 
 ## Context and Problem Statement
 
-`@acmelabs-15/agent-plugin` is a cross-platform CLI with an embedded MCP server for managing AI agent plugins across 7 platforms. ADR-005 established Bun as runtime, ADR-006 established the dependency stack (gunshi for command routing, @clack/prompts for interactive UX, ci-info for CI detection). This ADR defines how the CLI is structured, how commands are organized, and how three execution modes (interactive, CI, MCP) shape user interaction.
+`@acmelabs-15/agent-plugin` is a cross-platform CLI with an embedded MCP server for managing AI agent plugins across 4 platforms (see ADR-002 Amendment #1; reduced from 7). ADR-005 established Bun as runtime, ADR-006 established the dependency stack (gunshi for command routing, @clack/prompts for interactive UX, ci-info for CI detection). This ADR defines how the CLI is structured, how commands are organized, and how three execution modes (interactive, CI, MCP) shape user interaction.
 
 The core question: How should the CLI organize its command tree, handle global flags, resolve missing input across execution modes, and map interactive prompts to @clack/prompts components?
 

@@ -27,7 +27,7 @@ tags: ["architecture", "plugin-format", "manifest", "decision", "plugin-json"]
 
 ## Context
 
-We are designing the plugin format for `@acmelabs-15/agent-plugin`, a cross-platform AI agent plugin manager targeting 7 platforms: Claude Code, Cursor, GitHub Copilot CLI, Kiro, OpenCode, Amp, and Windsurf.
+We are designing the plugin format for `@acmelabs-15/agent-plugin`, a cross-platform AI agent plugin manager targeting 4 platforms: Claude Code, Cursor, GitHub Copilot, and Kiro.
 
 Three reference systems were analyzed to inform this decision:
 
@@ -37,7 +37,7 @@ Three reference systems were analyzed to inform this decision:
 
 Key forces at play:
 
-- **Cross-platform compatibility**: Plugins must work across 7 different AI agent platforms with varying native plugin formats
+- **Cross-platform compatibility**: Plugins must work across 4 different AI agent platforms with varying native plugin formats
 - **Developer experience**: Authors need a clear, predictable structure that is easy to scaffold and maintain
 - **Component flexibility**: Plugins may contain skills, agents, prompts, hooks, commands, and MCP server configurations in various combinations
 - **Installation UX**: Users need control over which components to install when components are independent
@@ -98,7 +98,7 @@ No `formatVersion` or `manifest_version` field. Research (ANALYSIS-007) found th
 
 ### Why JSON for the Manifest
 
-We use JSON for `plugin.json` because: (a) universal tooling support across all 7 target platforms, each of which already parses JSON natively; (b) unambiguous parsing with no implicit type coercion (no YAML "Norway problem" where `NO` becomes `false`); (c) native to the JavaScript/TypeScript ecosystem where most AI agent tooling is built; (d) JSON Schema enables IDE autocomplete, inline validation, and documentation generation from the schema definition. TOML and YAML were considered but rejected: TOML lacks nested object ergonomics needed for component declarations, and YAML's implicit typing creates correctness risks in automated pipelines.
+We use JSON for `plugin.json` because: (a) universal tooling support across all 4 target platforms, each of which already parses JSON natively; (b) unambiguous parsing with no implicit type coercion (no YAML "Norway problem" where `NO` becomes `false`); (c) native to the JavaScript/TypeScript ecosystem where most AI agent tooling is built; (d) JSON Schema enables IDE autocomplete, inline validation, and documentation generation from the schema definition. TOML and YAML were considered but rejected: TOML lacks nested object ergonomics needed for component declarations, and YAML's implicit typing creates correctness risks in automated pipelines.
 
 ### 5. installMode Field
 
@@ -123,7 +123,7 @@ We use JSON for `plugin.json` because: (a) universal tooling support across all 
 }
 ```
 
-All plugins are inherently cross-platform. The plugin manager handles translation to each platform's native format, so there is no `platforms` field. Every plugin can be installed on all 7 supported platforms (Claude Code, Cursor, GitHub Copilot CLI, Kiro, OpenCode, Amp, Windsurf).
+All plugins are inherently cross-platform. The plugin manager handles translation to each platform's native format, so there is no `platforms` field. Every plugin can be installed on all 4 supported platforms (Claude Code, Cursor, GitHub Copilot, and Kiro).
 
 **Deferred fields**: Plugin dependencies, conflicts, and source provenance are deferred to a future ADR (not yet written). These are load-bearing architectural concepts requiring dedicated design -- dependency resolution ordering, conflict detection algorithms, and provenance verification each warrant their own decision record.
 
@@ -274,14 +274,14 @@ Different strategies per component type rather than blanket blocking:
 - [decision] Commands added as 6th first-class component type for user-invoked operations (ADR-012 IMP-005) #plugin-format
 - [decision] JSON chosen over YAML/TOML for manifest: universal tooling, unambiguous parsing, JSON Schema support #manifest #format
 - [decision] prompts/ is a novel first-class component type not in reference systems, distinct from skills and agents #plugin-format
-- [decision] All plugins are inherently cross-platform; no platforms field needed; plugin manager handles translation to all 7 target platforms #cross-platform
+- [decision] All plugins are inherently cross-platform; no platforms field needed; plugin manager handles translation to all 4 target platforms #cross-platform
 - [decision] dependencies, conflicts, and source provenance deferred to future ADRs as load-bearing architectural concepts #deferred
 - [decision] Security controls deferred to ADR-004 Plugin Security Model #security #deferred
 - [constraint] Authors must always create plugin.json; scaffolding wizard mitigates this burden #developer-experience
 - [requirement] Installer must implement per-type conflict resolution strategies #installer
 - [insight] Claude Code's nested manifest path (.claude-plugin/plugin.json) is documented as error-prone by Claude Code itself #reference-analysis
 - [insight] Hybrid plugins (independent skills + shared mcpServers) expose a gap in the bundle/collection binary that may need future resolution #installMode
-- [fact] Seven target platforms: Claude Code, Cursor, GitHub Copilot CLI, Kiro, OpenCode, Amp, Windsurf #cross-platform
+- [fact] Four target platforms: Claude Code, Cursor, GitHub Copilot, Kiro #cross-platform
 - [fact] 6-component model (skills, agents, prompts, hooks, commands, mcpServers) is a deliberate subset of Claude Code's 7-type system, omitting lspServers and outputStyles #plugin-format
 - [fact] mcpServers field name aligns with 6/8 AI platforms: Claude Code, Copilot CLI, Cursor, Amazon Q, Kiro (ANALYSIS-041) #cross-platform
 

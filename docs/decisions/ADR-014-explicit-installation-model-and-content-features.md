@@ -198,7 +198,7 @@ Eight content types replace ADR-001's original six:
 | ADR-001 Type | ADR-014 Replacement | Reason |
 |---|---|---|
 | `prompts/` | `rules/` | "Prompts" is ambiguous in AI contexts. "Rules" better describes file-based content that sets standards and guidelines. |
-| `instructions/` | `AGENTS.md` | Plugin-wide instructions belong in a single AGENTS.md file (adopted by 6/7 platforms, 60K+ GitHub repos, Linux Foundation governance). A directory of instruction files is unnecessary. |
+| `instructions/` | `AGENTS.md` | Plugin-wide instructions belong in a single AGENTS.md file (adopted by 3/4 supported platforms and 60K+ GitHub repos, Linux Foundation governance). A directory of instruction files is unnecessary. |
 | (none) | `CLI` | Optional content type for plugins that ship custom CLI extensions. **Deferred**: CLI content type is listed for taxonomy completeness but is not specified in this ADR. Schema, directory convention, and installation behavior will be defined in a future ADR if demand emerges. Not part of MVP. |
 | (none) | `commands/` elevated | Commands were added as a 6th type in ADR-001 Amendment 4 (ADR-012). This ADR confirms them as first-class with section-based features. |
 
@@ -768,7 +768,7 @@ ANALYSIS-043 documented that no ecosystem provides cross-type per-component cher
 
 The shift from `prompts/` to `rules/` reflects ecosystem terminology. "Prompts" in AI contexts refers to user input messages. "Rules" better describes the content type's purpose: file-based coding standards, guidelines, and conventions that inform agent behavior.
 
-The shift from `instructions/` to `AGENTS.md` follows the AGENTS.md standard. A single AGENTS.md file at the plugin root replaces a directory of instruction files. This aligns with how 6 of 7 target platforms consume plugin-wide instructions.
+The shift from `instructions/` to `AGENTS.md` follows the AGENTS.md standard. A single AGENTS.md file at the plugin root replaces a directory of instruction files. This aligns with how 3 of 4 supported platforms consume plugin-wide instructions (all except Claude Code which uses CLAUDE.md).
 
 ## Amendments
 
@@ -901,6 +901,41 @@ Source resolution uses three-tier manifest detection in priority order:
 **Cross-ecosystem compatibility is bidirectional**: (A) Our generated plugin codebases produce well-known directory layouts consumable by Vercel/TanStack. (B) Sources created by those tools are consumable by `agent-plugin add`.
 
 In all three tiers: sources are tracked in the lockfile. Removal works by consulting lockfile then re-checking the source (via manifest or directory scan) to determine what to remove from all scopes.
+
+### Amendment #6: Monorepo Package Scanning (2026-03-09)
+
+Specifies how configless directory scanning (Amendment #5, Tier 3) works for monorepo sources.
+
+**Monorepo detection**: Check source root for workspace configuration:
+- `package.json` with `workspaces` field (npm/bun/yarn)
+- `pnpm-workspace.yaml` (pnpm)
+- If neither exists, the source is not a monorepo — scan only the root
+
+**Package enumeration**: Resolve workspace glob patterns (e.g., `["packages/*", "apps/*"]`) to get package directories. Each resolved directory becomes a scan target for well-known directories (`skills/`, `agents/`, `commands/`, `AGENTS.md`, `rules/`, `hooks/`, `mcp/`).
+
+**Overlapping content**: If multiple packages in the same monorepo contain items with the same name and type (e.g., two packages both have `skills/code-review.md`), the wizard shows the user both and asks which to install. Consistent with ADR-014's "explicit over implicit" principle. No automatic resolution — the user picks.
+
+### Amendment #7: Per-Item Validation During Directory Scan (2026-03-09)
+
+Specifies validation criteria for items discovered during configless directory scanning (Amendment #5, Tier 3).
+
+**Basic validation (all content types)**: File exists, is non-empty, and has the expected extension for its type. No deep content parsing at scan time — if a file meets these criteria, it's installable. The platform handles content interpretation.
+
+**Validation by content type**:
+
+| Content type | Directory | Valid extensions | Additional check |
+|---|---|---|---|
+| Skills | `skills/` | `.md` | None |
+| Agents | `agents/` | `.md` | None |
+| Commands | `commands/` | `.md` | None |
+| Rules | `rules/` | `.md` | None |
+| AGENTS.md | root | `.md` | Must be at source root, not nested |
+| Hooks | `hooks/` | `.ts`, `.py`, `.sh` | ADR-004 D1 static analysis runs on all hooks regardless of discovery method |
+| MCP | `mcp/` | `.ts`, `.js`, `.json` | Directory must contain an entry point (index.ts/js or package.json with main) |
+
+**Key principle**: Hooks are the only content type with security-relevant validation. All other types are just files — the AI platform interprets them, and bad content is the platform's problem (consistent with ADR-004 D4).
+
+**Invalid items**: Files that fail validation are skipped with a warning message during the `add` flow. They do not block installation of valid items from the same source.
 
 ## Observations
 

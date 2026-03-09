@@ -14,6 +14,8 @@ tags:
 - P0-2
 ---
 
+> **Platform Scope Change**: Per ADR-002 Amendment #1 (2026-03-09), supported platforms reduced from 7 to 4: Claude Code, Cursor, GitHub Copilot, Kiro. OpenCode, Amp, and Windsurf were dropped due to incomplete content type coverage. References to dropped platforms in this note are historical only.
+
 # ANALYSIS-035 Hook Merging Strategies Without Custom Lockfile
 
 ## 1. Objective and Scope

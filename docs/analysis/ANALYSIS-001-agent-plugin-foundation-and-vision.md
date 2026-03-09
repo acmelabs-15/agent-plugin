@@ -10,6 +10,8 @@ tags:
 - ecosystem
 ---
 
+> **Platform Scope Change**: Per ADR-002 Amendment #1 (2026-03-09), supported platforms reduced from 7 to 4: Claude Code, Cursor, GitHub Copilot, Kiro. OpenCode, Amp, and Windsurf were dropped due to incomplete content type coverage. References to dropped platforms in this note are historical only.
+
 # ANALYSIS-001 Agent Plugin Foundation and Vision
 
 ## 1. Objective and Scope

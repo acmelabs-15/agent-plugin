@@ -59,13 +59,10 @@ The following platforms meet all 6 criteria and receive full first-class support
 |:--|:--|:--|:--|:--|
 | Claude Code | Anthropic | `CLAUDE.md` | `.claude/skills/` | `.claude/agents/*.md` |
 | Cursor | Anysphere | `.cursor/rules/*.mdc`, `AGENTS.md` | `.cursor/skills/`, `.claude/skills/`, `.agents/skills/` | `.cursor/agents/*.md` |
-| GitHub Copilot CLI | Microsoft/GitHub | `.github/copilot-instructions.md`, `CLAUDE.md` | `.github/skills/`, `.claude/skills/` | `.github/agents/*.agent.md` |
+| GitHub Copilot | Microsoft/GitHub | `.github/copilot-instructions.md`, `CLAUDE.md` | `.github/skills/`, `.claude/skills/` | `.github/agents/*.agent.md` |
 | Kiro | AWS | `.kiro/steering/*.md`, `AGENTS.md` | `.kiro/skills/` | `.kiro/agents/*.json` |
-| OpenCode | Community | `AGENTS.md`, `CLAUDE.md` | `.opencode/skills/`, `.claude/skills/`, `.agents/skills/` | `.opencode/agents/*.md` |
-| Amp | Sourcegraph | `AGENTS.md`, `CLAUDE.md` | `.agents/skills/`, `.claude/skills/` | N/A (no file-based agents) |
-| Windsurf | Codeium | `.windsurf/rules/*.md`, `AGENTS.md` | `.windsurf/skills/`, `.agents/skills/`, `.claude/skills/` | N/A (no file-based agents) |
 
-**Cross-platform coverage**: `AGENTS.md` is read by 6/7 platforms. `CLAUDE.md` is read by 4/7. `.claude/skills/` is read by 6/7. `.agents/skills/` is read by 4/7 and emerging as a standard.
+**Cross-platform coverage**: `AGENTS.md` is read by all 4 supported platforms. `CLAUDE.md` is read by 3/4. `.claude/skills/` is read by 3/4. `.agents/skills/` is read by 3/4 and emerging as a standard.
 
 **General fallback**: For platforms without well-defined paths, the plugin manager uses `.agents/` directory and `AGENTS.md` as the fallback convention.
 
@@ -132,7 +129,7 @@ On plugin install, the tool MUST:
 
 ### Positive
 
-- **POS-001**: Cross-platform reach across 7 platforms with full capability support covers the majority of the AI coding agent market
+- **POS-001**: Cross-platform reach across 4 supported platforms with full capability support covers the majority of the AI coding agent market
 - **POS-002**: The three-audience model in a single package simplifies distribution, versioning, and dependency management compared to a multi-package approach
 - **POS-003**: The embedded MCP server for AI assistants is a unique differentiator that no competitor currently offers, enabling AI-native plugin discovery and usage
 - **POS-004**: Own format with borrowed concepts gives full control over the plugin specification without being constrained by upstream changes to Vercel or Claude Code ecosystems
@@ -140,7 +137,7 @@ On plugin install, the tool MUST:
 
 ### Negative
 
-- **NEG-001**: Supporting 7 platforms increases the testing and maintenance surface area (7 platforms × 6 capabilities = 42+ test combinations)
+- **NEG-001**: Supporting 4 platforms increases the testing and maintenance surface area (4 platforms × 8 content types = 32+ test combinations)
 - **NEG-002**: Platform instruction file management (create/update without breaking) is inherently fragile and will require per-platform parsing logic for each instruction file format
 - **NEG-003**: No hosted registry means discovery depends entirely on GitHub/GitLab URLs and word-of-mouth, limiting organic plugin ecosystem growth
 - **NEG-004**: Own format means no existing tooling ecosystem to leverage. All validation, linting, and IDE support must be built from scratch
@@ -199,7 +196,7 @@ On plugin install, the tool MUST:
 
 ## Observations
 
-- [decision] 7 primary target platforms selected based on 6/6 capability score: Claude Code, Cursor, GitHub Copilot CLI, Kiro, OpenCode, Amp, Windsurf #platforms #cross-platform
+- [decision] 4 primary target platforms selected based on full content type support: Claude Code, Cursor, GitHub Copilot, Kiro (reduced from 7 per Amendment #1) #platforms #cross-platform
 - [decision] No graceful degradation tier — platforms below 6/6 are excluded entirely; partial support creates silent failures worse than no support #platforms #no-degradation
 - [decision] Three-audience model in single package: Consumer CLI, Author CLI, AI Assistants via embedded MCP server #architecture #audiences
 - [decision] Package scoped as @acmelabs-15/agent-plugin on npm #distribution #npm
@@ -219,3 +216,22 @@ On plugin install, the tool MUST:
 - relates_to [[ANALYSIS-008-platform-instruction-file-paths]]
 - relates_to [[ANALYSIS-009-instruction-file-update-patterns]]
 - relates_to [[ANALYSIS-014-platform-config-patterns]]
+
+### Amendment #1: Platform Reduction to 4 Supported Platforms (2026-03-09)
+
+The original 7 target platforms are reduced to 4. Only platforms that support ALL required content types (Skills, Agents, Commands, Rules/Instructions, AGENTS.md, Hooks, MCP) are supported.
+
+**Supported platforms**:
+1. Claude Code (Anthropic)
+2. Cursor (Anysphere)
+3. GitHub Copilot (Microsoft/GitHub)
+4. Kiro (AWS)
+
+**Dropped platforms** (insufficient content type coverage):
+- OpenCode: No file-based hooks (plugin-based only)
+- Amp: No file-based agent definitions, no hooks system, commands deprecated in favor of skills
+- Windsurf: No file-based agent definitions
+
+**Rationale**: The plugin manager installs 7 content types to platform directories. If a platform doesn't support a content type natively, the installed content would be ignored. Rather than partial support with confusing "skipped" messages, we support platforms that can use everything we install.
+
+**Re-evaluation criteria**: If a dropped platform adds the missing content types, it can be re-added by updating `platforms.config.json` with an entry for that platform. No code changes needed (ADR-009 D3 data-driven design).
