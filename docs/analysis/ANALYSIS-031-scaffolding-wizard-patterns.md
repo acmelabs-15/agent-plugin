@@ -36,7 +36,7 @@ The self-bootstrapping architecture (Section 16) requires that CLI wizards, MCP 
 
 ## 3. Approach
 
-**Methodology**: Cross-referenced design spec Section 12 against ADR-001, ADR-003, ADR-007, and the author project layout (Section 17). Evaluated template engine options against project constraints (Bun runtime, gray-matter for frontmatter, TypeScript strict mode). Analyzed @clack/prompts `group()` API for multi-step wizard compatibility.
+**Methodology**: Cross-referenced design spec Section 12 against ADR-001, ADR-003, ADR-007, and the author project layout (Section 17). Evaluated template engine options against project constraints (Bun runtime, yaml 2.x with manual frontmatter parser for frontmatter, TypeScript strict mode). Analyzed @clack/prompts `group()` API for multi-step wizard compatibility.
 
 **Tools Used**: Design spec, ADR documents, web research on scaffolding tools and @clack/prompts
 
@@ -97,7 +97,7 @@ The self-bootstrapping architecture (Section 16) requires that CLI wizards, MCP 
 | postToolUseMatcher | `p.text()` | none (conditional) | `--post-tool-matcher` |
 | addQualityGate | `p.confirm()` | false | `--quality-gate-hook` |
 
-**Output**: Agent `.md` file via `gray-matter.stringify()`.
+**Output**: Agent `.md` file via yaml 2.x frontmatter serializer (manual parser + Zod v4 validation). ~~gray-matter.stringify()~~ was disqualified per ADR-012 (CVE-2025-64718).
 
 #### `new skill` (single group)
 
@@ -290,16 +290,21 @@ Four options evaluated:
 | A: Handlebars | handlebars (plop uses this) | Logic-less, well-known, helpers | Extra dependency, overkill for simple interpolation |
 | B: EJS | ejs (hygen uses this) | Inline JS logic, lightweight | Security risk with eval, extra dependency |
 | C: Tagged template literals | None (native TS) | Zero dependencies, type-safe, Bun-native | Verbose for complex templates, no partial support |
-| D: gray-matter.stringify() | gray-matter (already a dep) | Already in dependency stack, handles frontmatter natively | Only handles frontmatter+body, not TypeScript code |
+| ~~D: gray-matter.stringify()~~ | ~~gray-matter~~ | ~~Already in dependency stack, handles frontmatter natively~~ | **DISQUALIFIED**: CVE-2025-64718 in pinned js-yaml@^3.13.1 dependency, 5+ years inactive maintainer. See ADR-012. |
+| D (revised): yaml 2.x + manual parser | yaml 2.x + 5-10 line manual frontmatter parser + Zod v4 | Actively maintained, no CVEs, small footprint, Zod validates structure | Requires writing a small parser (~10 lines) instead of using a library |
 
-**Recommendation**: Option C + D combined. Use `gray-matter.stringify(body, frontmatter)` for all markdown content types (agents, skills, commands, rules). Use tagged template literals for TypeScript code generation (MCP server files). This requires zero new dependencies and leverages gray-matter which is already in the stack.
+**Recommendation**: Option C + D (revised) combined. Use yaml 2.x with a manual frontmatter parser and Zod v4 validation for all markdown content types (agents, skills, commands, rules). Use tagged template literals for TypeScript code generation (MCP server files). This requires only yaml 2.x as a new dependency (already needed for frontmatter parsing elsewhere). gray-matter was originally recommended here but was disqualified during ADR-006 review due to CVE-2025-64718 in its pinned js-yaml@^3.13.1 dependency. See ADR-012 for the full disqualification rationale and replacement strategy.
 
-**Rationale**: The templates are simple. Agent markdown is frontmatter + body text. Skill SKILL.md is frontmatter + section headings. MCP TypeScript files are import statements + function calls. None of these require loops, partials, or conditional blocks that would justify a template engine. Create-t3-app validates this approach: it generates an entire Next.js project without a template engine, using direct file manipulation.
+**Rationale**: The templates are simple. Agent markdown is frontmatter + body text. Skill SKILL.md is frontmatter + section headings. MCP TypeScript files are import statements + function calls. None of these require loops, partials, or conditional blocks that would justify a template engine. The manual frontmatter parser is approximately 5-10 lines of code and pairs with Zod v4 for schema validation, providing stronger type guarantees than gray-matter offered. Create-t3-app validates this approach: it generates an entire Next.js project without a template engine, using direct file manipulation.
 
-**Implementation pattern for markdown content**:
+**Implementation pattern for markdown content** (updated per IMP-007/ADR-012: gray-matter replaced by yaml 2.x + manual parser):
 
 ```typescript
-import matter from "gray-matter";
+import { stringify } from "yaml";
+// Manual frontmatter serializer (~5 lines, replaces gray-matter.stringify())
+function stringifyFrontmatter(body: string, data: Record<string, unknown>): string {
+  return `---\n${stringify(data).trimEnd()}\n---\n\n${body}`;
+}
 
 function generateAgent(input: AgentInput): string {
   const frontmatter = {
@@ -318,7 +323,7 @@ function generateAgent(input: AgentInput): string {
 ${input.instructions || "<!-- Add agent instructions here -->"}
 `;
 
-  return matter.stringify(body, frontmatter);
+  return stringifyFrontmatter(body, frontmatter);
 }
 ```
 
@@ -569,7 +574,7 @@ In MCP mode: `envVars: [{ name: "API_KEY", defaultValue: "sk-xxx" }]`
 | `new agent` uses 4 prompt groups | Design spec Section 12 | High |
 | `new mcp init` uses 2 prompt groups | Design spec Section 12 | High |
 | All other wizards use single group | Design spec Section 12 | High |
-| gray-matter handles frontmatter serialization | Design spec Section 21 | High |
+| ~~gray-matter handles frontmatter serialization~~ gray-matter disqualified (CVE-2025-64718); replaced by yaml 2.x + manual parser per ADR-012 | Design spec Section 21, ADR-012 | High |
 | Wizards must auto-update plugin.json | Design spec Section 12 (explicit in output) | High |
 | group() supports conditional prompts via results | @clack/prompts docs | High |
 | group() cannot contain loops | @clack/prompts API shape (fixed keys) | High |
@@ -581,7 +586,7 @@ In MCP mode: `envVars: [{ name: "API_KEY", defaultValue: "sk-xxx" }]`
 ### Facts (Verified)
 
 - The design spec defines exact prompt types and validation for all 7 wizards
-- gray-matter.stringify() can serialize frontmatter + body for all markdown content types
+- ~~gray-matter.stringify() can serialize frontmatter + body for all markdown content types~~ gray-matter disqualified (CVE-2025-64718 in js-yaml@^3.13.1); yaml 2.x with a manual frontmatter parser replaces it per ADR-012
 - @clack/prompts group() accepts an object of prompt functions with access to prior results
 - group() cannot handle dynamic loops (env var collection requires a separate while-loop)
 - The spec mandates `plugin.json` auto-update for all file-generating wizards
@@ -612,7 +617,7 @@ All 7 content types from the design spec are accounted for. Each maps to exactly
 
 ### Template Strategy Decision
 
-Use gray-matter.stringify() for markdown, tagged template literals for TypeScript. Zero new dependencies.
+Use yaml 2.x with manual frontmatter parser + Zod v4 validation for markdown, tagged template literals for TypeScript. ~~gray-matter~~ disqualified per ADR-012 (CVE-2025-64718).
 
 ### Manifest Update Decision
 
@@ -666,7 +671,7 @@ The `new hook` wizard is unique: it generates no files on disk. It only modifies
 | Priority | Recommendation | Rationale | Effort |
 |---|---|---|---|
 | P0 | Use schema-first design: define each wizard's inputs as a Zod schema, derive prompts/flags/MCP params from it | Maintains consistency loop, reduces drift between 3 interfaces | Medium |
-| P0 | Use gray-matter.stringify() for markdown, template literals for TypeScript | Zero new dependencies, sufficient for current template complexity | Low |
+| P0 | Use yaml 2.x + manual frontmatter parser + Zod v4 for markdown, template literals for TypeScript | ~~gray-matter~~ disqualified (CVE-2025-64718, ADR-012); yaml 2.x is actively maintained, parser is ~10 lines | Low |
 | P0 | Auto-update plugin.json in all wizards | Spec requirement, reduces validation errors from manual manifest edits | Low |
 | P1 | Use sequential group() calls for multi-group wizards (agent, mcp init) | Matches spec's group structure, allows visual separators between groups | Low |
 | P1 | Use marker comments in generated index.ts for add-tool patching | Simple, zero-dependency, explicitly documented limitation | Low |
@@ -680,7 +685,7 @@ The `new hook` wizard is unique: it generates no files on disk. It only modifies
 
 **Confidence**: High
 
-**Rationale**: The design spec fully defines all 7 wizard flows with explicit prompt types, validation rules, and output files. The template strategy (gray-matter + template literals) requires zero new dependencies. The @clack/prompts group() API supports the multi-step flows with known workarounds for its limitations (loops, visual separators). The three-tier mode pattern from ADR-007 applies uniformly to all wizard inputs.
+**Rationale**: The design spec fully defines all 7 wizard flows with explicit prompt types, validation rules, and output files. The template strategy (yaml 2.x + manual frontmatter parser + template literals) adds only yaml 2.x as a dependency. gray-matter was the original recommendation but was disqualified during ADR-006 review due to CVE-2025-64718 (see ADR-012). The @clack/prompts group() API supports the multi-step flows with known workarounds for its limitations (loops, visual separators). The three-tier mode pattern from ADR-007 applies uniformly to all wizard inputs.
 
 ### User Impact
 
@@ -729,7 +734,7 @@ The `new hook` wizard is unique: it generates no files on disk. It only modifies
 
 - [fact] 7 scaffolding wizards cover all content types: agent, skill, command, hook, rule, mcp init, mcp add-tool #scaffolding
 - [fact] new agent is the largest wizard with 14 prompts across 4 groups; new rule is the smallest with 3 prompts #scaffolding #complexity
-- [decision] Template strategy: gray-matter.stringify() for markdown content, tagged template literals for TypeScript code, zero new dependencies #templates #dependencies
+- [decision] Template strategy: yaml 2.x + manual frontmatter parser + Zod v4 for markdown content, tagged template literals for TypeScript code. ~~gray-matter~~ disqualified per ADR-012 (CVE-2025-64718) #templates #dependencies
 - [decision] Sequential group() calls for multi-group wizards with p.log.step() visual separators between groups #clack-prompts #ux
 - [decision] Auto-update plugin.json for all file-generating wizards as specified in design spec #manifest #automation
 - [technique] Schema-first design: define Zod schema once, derive interactive prompts, CI flags, and MCP params from it #consistency-loop #architecture
@@ -737,6 +742,7 @@ The `new hook` wizard is unique: it generates no files on disk. It only modifies
 - [constraint] group() cannot express dynamic loops; env var collection requires imperative code outside group() #clack-prompts #limitation
 - [risk] index.ts patching is fragile if authors remove marker comments; manual registration fallback needed #mcp #maintenance
 - [insight] new hook is the only wizard that produces no files on disk; it modifies plugin.json exclusively #hooks #uniqueness
+- [decision] IMP-007/ADR-012: all gray-matter references marked as disqualified (CVE-2025-64718 in js-yaml@^3.13.1, 5+ years inactive maintainer). Replaced by yaml 2.x with manual 5-10 line frontmatter parser + Zod v4 validation. Historical references preserved with strikethrough notation. #security #dependencies #imp-007
 
 ## Relations
 
@@ -746,3 +752,4 @@ The `new hook` wizard is unique: it generates no files on disk. It only modifies
 - relates_to [[ANALYSIS-022 @clack/prompts API Surface and Gaps]]
 - relates_to [[ANALYSIS-023 gunshi Command Patterns and Capabilities]]
 - relates_to [[ANALYSIS-020 Frontmatter and Markdown Processing]]
+- depends_on [[ADR-012 Markdown Processing Pipeline]] (gray-matter disqualification, yaml 2.x replacement)
