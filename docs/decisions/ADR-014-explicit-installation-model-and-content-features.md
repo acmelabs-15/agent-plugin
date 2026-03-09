@@ -371,36 +371,36 @@ agent-plugin
   MCP Server
     mcp serve               Start embedded MCP tool server
 
-  Content-Type Groups
-    skill
+  Content-Type Groups (plural names)
+    skills
       create                Scaffold a new skill
       remove                Remove a skill from plugin
       list                  List skills in plugin
-      eval                  Evaluate skill quality (creator skill)
-      improve               Improve skill based on eval (creator skill)
-    agent
+      analyze               Analyze skill quality (creator skill, read-only report)
+      analyze --fix         Apply improvements from analysis (interactive diff preview)
+    agents
       create                Scaffold a new agent
       remove                Remove an agent from plugin
       list                  List agents in plugin
-      eval                  Evaluate agent quality (creator skill)
-      improve               Improve agent based on eval (creator skill)
+      analyze               Analyze agent quality (creator skill, read-only report)
+      analyze --fix         Apply improvements from analysis (interactive diff preview)
     mcp
       create                Scaffold a new MCP server
       create-tool           Add a tool to existing MCP server
       remove                Remove an MCP server from plugin
       remove-tool           Remove a tool from MCP server
       list                  List MCP servers in plugin
-      eval                  Evaluate MCP server quality (creator skill)
-      improve               Improve MCP server based on eval (creator skill)
-    command
+      analyze               Analyze MCP server quality (creator skill, read-only report)
+      analyze --fix         Apply improvements from analysis (interactive diff preview)
+    commands
       create                Scaffold a new command
       remove                Remove a command from plugin
       list                  List commands in plugin
-    hook
+    hooks
       create                Scaffold a new hook
       remove                Remove a hook from plugin
       list                  List hooks in plugin
-    rule
+    rules
       create                Scaffold a new rule
       remove                Remove a rule from plugin
       list                  List rules in plugin
@@ -770,6 +770,30 @@ The shift from `prompts/` to `rules/` reflects ecosystem terminology. "Prompts" 
 
 The shift from `instructions/` to `AGENTS.md` follows the AGENTS.md standard. A single AGENTS.md file at the plugin root replaces a directory of instruction files. This aligns with how 6 of 7 target platforms consume plugin-wide instructions.
 
+## Amendments
+
+### Amendment #1: Content-Type Group Naming and Analyze Command (2026-03-09)
+
+Three changes to Decision 6 (Revised Command Tree):
+
+1. **Plural content-type group names**: `skill` → `skills`, `agent` → `agents`, `command` → `commands`, `hook` → `hooks`, `rule` → `rules`. `mcp` stays singular (uncountable/abbreviation). Matches conventions like `rails generate`, `docker images`, `gh workflows`.
+
+2. **`eval` renamed to `analyze`**: Clearer intent, avoids ambiguity with JavaScript `eval()`. Read-only quality analysis producing a structured report.
+
+3. **`improve` replaced by `analyze --fix` flag**: Follows universal CLI convention (ESLint `--fix`, Prettier `--write`, Biome `--fix`, Ruff `--fix`). Same interactive diff preview behavior (color-coded diff, "Why" annotations, apply all / review one-by-one / skip). One command instead of two, reducing command tree by 3 entries.
+
+ADR-012 references to eval/improve should be read as analyze/analyze --fix.
+
+### Amendment #2: MCP Tool Catalog Deferred to Creator Skill Evaluation (2026-03-09)
+
+The MCP tool catalog (spec Section 15's 14 tools) cannot be finalized until bundled creator skills (skill-creator, agent-creator, mcp-builder) are evaluated. The derivation order is:
+
+1. Creator skills define the authoritative parameter surface
+2. CLI wizards mirror creator skill parameters (minus AI reasoning)
+3. MCP tools expose the same parameters as structured tool calls
+
+Not all CLI commands should become MCP tools. Commands excluded from MCP exposure: `mcp serve` (circular), `build` (long-running), `analyze` / `analyze --fix` (invokes AI, circular), `create` project scaffold (heavy wizard). Estimated ~20-25 MCP tools from the 32-command CLI tree.
+
 ## Observations
 
 - [decision] Explicit add/remove/update commands replace ADR-013's postinstall auto-wiring model. User invokes commands and sees what happens. Vercel Skills CLI is the primary prior art. #installation #explicit #vercel
@@ -777,7 +801,7 @@ The shift from `instructions/` to `AGENTS.md` follows the AGENTS.md standard. A 
 - [decision] Manifest location moved to .agent-plugin/plugin.json. Directory provides disambiguation. Follows Claude Code .claude-plugin/plugin.json convention. 3/3 AI platforms converged on plugin.json filename. #manifest #location
 - [decision] 8 content types replace 6: Skills, Agents, Hooks, Commands, Rules (was prompts/), MCP, AGENTS.md (was instructions/), CLI (new, optional). #content-types #taxonomy
 - [decision] Features model replaces installMode binary. Two scopes: plugin-level features (span components) and component-level features (section mappings). Three mechanisms: markdown headers (remark/unified), code regions (#region markers), file-based (rules). MCP has no features. #features #selection
-- [decision] Revised command tree: add/remove/update/install/list (consumer) + create/validate/build (author) + mcp serve + content-type CRUD groups. init/deinit eliminated. #commands #tree
+- [decision] Revised command tree: add/remove/update/install/list (consumer) + create/validate/build (author) + mcp serve + content-type CRUD/analyze groups. init/deinit eliminated. Content-type groups use plural names (skills, agents, commands, hooks, rules; mcp stays singular). eval/improve replaced by analyze/analyze --fix (matches eslint/prettier/biome convention). #commands #tree #amendment-9
 - [decision] 8-step add flow: resolve source, read manifest, validate with Zod, detect platforms, feature wizard, parse/compile content, write to platforms, update lockfile. #add-flow #installation
 - [decision] Platform metadata in plugin.json per component via platforms field. Content files are platform-agnostic. Platform adapter merges metadata during write. Two install types: file-based (copy) and config-based (modify JSON/YAML). #platforms #adapters
 - [fact] ADR-013 was accepted (Round 2: 5 Accept + 1 D&C) then immediately superseded by this design pivot #history #pivot

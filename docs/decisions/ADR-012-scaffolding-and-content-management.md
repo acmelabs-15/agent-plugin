@@ -356,6 +356,12 @@ Design spec Section 12 contains the original wizard flow diagrams. ANALYSIS-031 
 
 ---
 
+## Amendments
+
+### Amendment #1: eval/improve Renamed to analyze/analyze --fix (2026-03-09)
+
+Per ADR-014 Amendment #1, all references to `eval` subcommands in this ADR should be read as `analyze`, and all references to `improve` subcommands should be read as `analyze --fix`. The behavioral semantics are unchanged: `analyze` produces a read-only report, `analyze --fix` presents an interactive diff preview with apply modes. Content-type group names are also now plural (skills, agents, commands, hooks, rules; mcp stays singular).
+
 ## Observations
 
 - [decision] Content-type command groups replace ADR-007 new subtree for improved discoverability #cli-architecture #scaffolding

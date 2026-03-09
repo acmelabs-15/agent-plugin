@@ -192,6 +192,10 @@ tags:
 - [decision] Add flow: resolve source → read .agent-plugin/plugin.json → validate with Zod → detect platforms → feature wizard (clack multiselect) → parse/compile content → write to platforms → update .agent-lock.json → summary. #add-flow #installation
 - [decision] Revised command tree: add/remove/update/install/list (consumer) + create/validate/build (author) + mcp serve + content-type groups (skill/agent/mcp/command/hook/rule CRUD) #command-tree
 - [decision] `install` command restores all plugins from `.agent-lock.json` (team sync via git, analogous to `npm install` from package-lock.json) #install #team-sync
+- [decision] Content-type groups use plural names: skills, agents, commands, hooks, rules. mcp stays singular (abbreviation). Matches CLI conventions (rails, docker, gh). #command-tree #naming
+- [decision] `eval` subcommand renamed to `analyze`: clearer intent, avoids JavaScript eval() ambiguity. Read-only quality analysis producing structured report. #commands #rename
+- [decision] `improve` subcommand replaced by `analyze --fix` flag: follows universal CLI convention (ESLint --fix, Prettier --write, Biome --fix). Same interactive diff preview behavior. Reduces command tree by 3 entries. #commands #simplification
+- [decision] MCP tool catalog deferred to creator skill evaluation: derivation order is creator skills → CLI wizards → MCP tools. Not all CLI commands become MCP tools. Excluded: mcp serve (circular), build (long-running), analyze (invokes AI, circular), create project scaffold (heavy wizard). ~20-25 MCP tools estimated. #mcp #tool-catalog #sequencing
 - [fact] No cross-platform AI agent plugin manager exists -- this is confirmed whitespace opportunity (ANALYSIS-036) #market-gap
 - [fact] MCP is universal standard: 8/8 platforms support it, mcpServers JSON format identical across 6/8 #mcp #universal
 - [fact] AGENTS.md adopted by 6/8 platforms, 60K+ GitHub repos, Linux Foundation governance #standards
@@ -242,7 +246,7 @@ Template reference: /Users/peter.kloss/Documents/examples/docs/features/FEAT-003
 
 **Remaining Phase 1 Work:**
 
-- Group 8: 3 items need action (MCP tool catalog spec, author project config details, project context system)
+- Group 8: 2 items need action (author project config details, project context system). MCP tool catalog deferred to creator skill evaluation.
 - Group 9: 1 item needs action (implementation phasing)
 - 9 identified gaps to resolve (5 actionable, 4 pre-resolved)
 - ADR-004 Plugin Security Model creation (CRITICAL: 11 items blocked across 4 active ADRs)
@@ -640,7 +644,7 @@ Source: 3 parallel 🧠:analyst agents performed exhaustive cross-reference:
 | Gap ID | Severity | Description | Status |
 |--------|----------|-------------|--------|
 | GAP-1 | LOW | Install scope (project vs global) -- spec S9 default scope unclear | PRE-RESOLVED: Decided in Group 4 discussions (project default, prompt when no project, error in CI). Tracked in ADR-010/ANALYSIS-027. |
-| GAP-2 | MEDIUM | MCP tool catalog -- spec S15 lists 14 tools, no ADR specifies which tools | OPEN: Needs tool inventory review against revised command tree |
+| GAP-2 | MEDIUM | MCP tool catalog -- spec S15 lists 14 tools, no ADR specifies which tools | DEFERRED: Tool catalog depends on creator skill evaluation. Derivation order: skills → CLI → MCP tools. ADR-014 Amendment #2 records this. |
 | GAP-3 | LOW | MCP naming prefix -- spec says `ap:` prefix for tool names | PRE-RESOLVED: Colon separator adopted (ADR-003, ADR-009) with `plugin-name:server-name` pattern |
 | GAP-4 | **CRITICAL** | ADR-004 Plugin Security Model -- 11 items blocked across 4 ADRs | OPEN: Hook execution blocked, instruction file injection deferred, consent model missing |
 | GAP-5 | LOW | Hook event types -- spec S9 lists specific events | PRE-RESOLVED: ANALYSIS-037 identified 6 universal hook events across platforms |
@@ -717,7 +721,7 @@ Already decided (covered by existing ADRs/decisions):
 
 Remaining items needing research/decisions:
 
-- [ ] **GAP-2**: MCP tool catalog -- spec Section 15 lists 14 specific tools. ADR-014 references "MCP server" but no ADR specifies the tool catalog, schemas, or which tools to include. Needs: tool inventory review against revised command tree.
+- [~] **GAP-2**: MCP tool catalog -- DEFERRED to creator skill evaluation. Derivation order: creator skills → CLI wizards → MCP tools. ADR-014 Amendment #2 records this decision. ~20-25 MCP tools estimated from 32-command CLI tree (excluding mcp serve, build, analyze, create project scaffold).
 - [ ] **GAP-6/7**: Author project config details -- spec Section 17 describes Biome config, testing setup, monorepo layout. No ADR covers this. ANALYSIS-047 created as pending workstream but not started. Needs: research + decisions on project scaffolding details.
 - [ ] **GAP-8**: Project context system -- spec Section 18 describes project state detection, config resolution, workspace awareness. No ADR covers this. Needs: research on how agent-plugin detects project context (plugin.json presence, platform detection scope, workspace root finding).
 
@@ -741,7 +745,7 @@ Remaining items needing research/decisions:
 
 These are the specific items that need research and/or decisions before Phase 1 is complete:
 
-1. [ ] **GAP-2** (MEDIUM): MCP tool catalog -- review spec S15's 14 tools against revised command tree (ADR-014). Decide which tools to include, define schemas. May need new ADR or ADR-014 amendment.
+1. [x] **GAP-2** (MEDIUM): MCP tool catalog -- DEFERRED to creator skill evaluation (ADR-014 Amendment #2). Derivation: creator skills → CLI wizards → MCP tools. Not blocked for Phase 1 completion.
 2. [ ] **GAP-8** (MEDIUM): Project context system -- research spec S18 (state detection, config resolution, workspace awareness). Decide how agent-plugin detects project context. May need analysis note + ADR decisions.
 3. [ ] **GAP-6/7** (MEDIUM): Author project config -- advance ANALYSIS-047 workstream (Biome, testing, monorepo layout, CI/CD). Research + decisions needed.
 4. [ ] **GAP-9** (LOW): Implementation phasing -- can be partially deferred to Phase 4 (Epic/PRD), but high-level phasing alignment with ADR-014 architecture should be confirmed.
@@ -1127,6 +1131,18 @@ All of the above resolved → Phase 1 COMPLETE. Ready for Phase 2.
 - [x] [fact] ADR-006 needs amendment for remark/unified/mdast-util-heading-range deps from ADR-014 D5 #amendment-needed
 - [x] [fact] ~60 open IMP-NNN implementation notes across active ADRs, not blocking Phase 1 #implementation-notes
 
+### GAP-2 Resolution: MCP Tool Catalog and Command Tree Updates (2026-03-09)
+
+- [x] [analysis] Read spec Section 15 (14 MCP tools in 3 categories) and ADR-014 Decision 6 (35 CLI commands) #gap-2
+- [x] [decision] `eval` subcommand renamed to `analyze` (clearer, avoids JS eval() ambiguity) #commands #rename
+- [x] [decision] `improve` subcommand replaced by `analyze --fix` flag (ESLint/Prettier/Biome convention) #commands #simplification
+- [x] [decision] Content-type groups use plural names: skills, agents, commands, hooks, rules (mcp stays singular) #commands #naming
+- [x] [decision] MCP tool catalog deferred to creator skill evaluation. Derivation order: creator skills → CLI wizards → MCP tools #mcp #sequencing
+- [x] [decision] Not all CLI commands become MCP tools. Excluded: mcp serve, build, analyze, create project scaffold (~20-25 tools from 32 commands) #mcp #curation
+- [x] [fix] ADR-014 Decision 6 command tree updated with plural names, analyze/analyze --fix #adr-014 #amendment
+- [x] [fix] ADR-014 Amendment #1 (command naming) and Amendment #2 (MCP catalog deferral) added #adr-014
+- [x] [fix] ADR-012 Amendment #1 added (eval→analyze, improve→analyze --fix cross-reference) #adr-012
+
 ### Organization Rename and Path Migration
 
 - [x] [fact] Organization renamed from acmelabz to acmelabs-15, npm scope @acmelabs-15
@@ -1312,6 +1328,8 @@ From /Users/peter.kloss/Downloads/agent-plugin-design-spec.md:
 | updated | [[ANALYSIS-042-native-platform-plugin-installation]] | Adoption status section added, ADR-014 relation |
 | updated | [[ANALYSIS-043-cross-platform-content-model-analysis]] | Adoption status section added, ADR-014 relation |
 | updated | [[ANALYSIS-044-feature-selection-mechanism-analysis]] | Adoption status section added, ADR-014 relation |
+| updated | [[ADR-014-explicit-installation-model-and-content-features]] | Amendment #1 (plural names, analyze/analyze --fix), Amendment #2 (MCP catalog deferral), Decision 6 command tree updated |
+| updated | [[ADR-012-scaffolding-and-content-management]] | Amendment #1 (eval→analyze, improve→analyze --fix cross-reference) |
 
 ### Code Files
 
