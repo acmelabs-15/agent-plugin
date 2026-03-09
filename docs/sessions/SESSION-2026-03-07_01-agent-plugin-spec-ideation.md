@@ -21,15 +21,11 @@ tags:
 ---
 
 ## Acceptance Criteria
-
-- [~] Complete research on all major spec areas (CLI framework, dependencies, platform support, data storage, MCP server, scaffolding wizards) -- ~92% complete. Groups 1-7 done. Group 8 mostly complete. Group 9 has 1 gap remaining (GAP-9 implementation phasing).
-- [~] Create ADRs for key architectural decisions identified in the spec -- 10 active ADRs created (ADR-001 through ADR-014, excluding ADR-004). ADR-004 (security) still needed. 3 ADRs superseded (008, 010, 013). ADR-014 now has 4 amendments.
-- [ ] Create feature specs in features/ directory following FEAT-NNN template structure -- Phase 3 (not started)
+- [~] Complete research on all major spec areas (CLI framework, dependencies, platform support, data storage, MCP server, scaffolding wizards) -- Coverage ~92% (decisions exist for almost all areas). Depth ~43% (31 of 72 decisions spec-ready). Groups 1-7 done. Group 8 mostly complete. Group 9 has 1 gap remaining (GAP-9).
+- [~] Create ADRs for key architectural decisions identified in the spec -- 10 active ADRs created (ADR-001 through ADR-014, excluding ADR-004). ADR-004 (security) still needed (P0-1). 3 ADRs superseded (008, 010, 013). ADR-014 has 4 amendments. Decision Completeness Audit identified 41 of 72 decisions NEED MORE DETAIL before feature specs can be written.
+- [ ] Create feature specs in features/ directory following FEAT-NNN template structure -- Phase 3 (not started). Blocked by completing Phase 1 depth gaps.
 - [x] All research findings saved as Brain memory notes -- 47 analysis notes created (ANALYSIS-001 through 047)
-- [x] Session note kept current with all touched files, commits, memory notes, work log
-
----
-
+- [x] Session note kept current with all touched files, commits, memory notes, work log -- Updated with completeness audit findings (2026-03-09)
 ## Session Start Protocol (BLOCKING)
 
 | Req Level | Step | Status | Evidence |
@@ -209,6 +205,13 @@ tags:
 - [decision] Base project scaffolding delegated to separate `@acmelabs-15/config` package (TanStack Config inspired). Handles runtime selection (pure Bun vs Node), project structure (single vs monorepo), tooling (Biome, TypeScript, testing), Git/GitHub setup (branch protection, CI, releases), MCP scaffolding, and frequently-used package auto-wiring. #scaffolding #delegation
 - [decision] `agent-plugin create` depends on `@acmelabs-15/config` for project setup, then layers plugin-specific files on top (.agent-plugin/plugin.json, content directories, AGENTS.md). Clean boundary: config = project DX, agent-plugin = plugin identity. #scaffolding #architecture
 - [decision] DX infrastructure decisions (Biome config, testing framework, monorepo tool, release automation) are `@acmelabs-15/config`'s scope, not agent-plugin's. Spec brief captured separately for future session. #scope-boundary
+- [decision] Phase 1 completion requires both coverage (~92%) AND depth (~43% spec-ready). 72 decisions evaluated across 9 active ADRs. 31 SUFFICIENT, 41 NEED MORE DETAIL. #completeness-audit
+- [decision] Decision Completeness Audit (2026-03-09) identified: 5 P0 blocking gaps, 15 P1 gaps blocking specific specs, 5 cross-ADR contradictions that must be resolved first. #completeness-audit
+- [decision] Remaining Phase 1 work is primarily DEEPENING existing decisions (adding specifics so implementers cannot make assumptions), not discovering new areas. #phase-1-strategy
+- [fact] ADR-004 Plugin Security Model does not exist but is forward-referenced by 4 active ADRs, blocking 11 security-critical decisions including hook execution. #critical-gap
+- [fact] Creator skills (skill-creator, agent-creator, mcp-builder, instruction-evaluator) are declared but zero-specified. No evaluation criteria, report formats, or Anthropic source analysis exists. Blocks all `analyze`/`analyze --fix` commands. #critical-gap
+- [fact] Only 2 of 7 platforms have config registry entries. No content directory mappings for `rules/` or `AGENTS.md`. Cannot implement platform writing without completing platforms.config.json. #critical-gap
+- [fact] 5 cross-ADR contradictions create ambiguity: hook model (ADR-003 vs ADR-014), remark deps (ADR-006 vs ADR-014), command tree (ADR-007 vs ADR-014), dependency necessity (chokidar/plugin-completion), lockfile robustness (ADR-003 vs ADR-014). #cross-adr-conflicts
 - [fact] No cross-platform AI agent plugin manager exists -- this is confirmed whitespace opportunity (ANALYSIS-036) #market-gap
 - [fact] MCP is universal standard: 8/8 platforms support it, mcpServers JSON format identical across 6/8 #mcp #universal
 - [fact] AGENTS.md adopted by 6/8 platforms, 60K+ GitHub repos, Linux Foundation governance #standards
@@ -254,18 +257,24 @@ Template reference: /Users/peter.kloss/Documents/examples/docs/features/FEAT-003
 ---
 
 ## Ideation Workflow Status
+**Current Position:** Phase 1 tracked on two dimensions:
 
-**Current Position:** Phase 1 ~92% COMPLETE. Groups 1-7 COMPLETE. ADR-014 ACCEPTED (Round 2: 5 Accept + 1 D&C) with 4 amendments, superseding ADR-013. Decision Audit Reconciliation COMPLETE. Gap Analysis COMPLETE (9 gaps: 4 pre-resolved, 4 resolved via amendments/deferrals, 1 remaining). Group 8 MOSTLY COMPLETE (~90% decided, GAP-2 deferred, GAP-8 resolved Amendment #3, GAP-6/7 resolved Amendment #4). Group 9 MOSTLY DECIDED (3/4 items covered, GAP-9 remaining). Phases 2-5 NOT STARTED.
+- **Decision coverage** (~92%): Decisions EXIST for almost all spec areas. Groups 1-7 COMPLETE. Groups 8-9 mostly decided. 9 original gaps identified, 8 resolved, 1 remaining (GAP-9).
+- **Decision depth / spec-readiness** (~43%): Of 72 decisions across 9 active ADRs, only 31 are SUFFICIENT for feature spec writing without assumptions. 41 NEED MORE DETAIL. Decision Completeness Audit (2026-03-09) identified 5 P0 blocking gaps, 15 P1 gaps, and 5 cross-ADR contradictions.
 
-**Remaining Phase 1 Work:**
+**Phase 1 is NOT complete until both coverage AND depth are resolved.** The remaining work is primarily DEEPENING existing decisions (adding specifics so implementers cannot make assumptions), plus creating ADR-004 (security) and evaluating creator skills.
 
-- Group 8: MOSTLY COMPLETE. MCP tool catalog deferred (Amendment #2). Project context resolved (Amendment #3). Author project config resolved via delegation to @acmelabs-15/config (Amendment #4).
-- Group 9: 1 item needs action (implementation phasing)
-- 9 identified gaps to resolve (4 pre-resolved, 4 resolved via amendments/deferrals, 1 remaining: GAP-9 implementation phasing)
-- ADR-004 Plugin Security Model creation (CRITICAL: 11 items blocked across 4 active ADRs)
-- Stale ADR body text updates (9 instances across active ADRs)
-- ADR-006 amendment needed (remark/unified deps from ADR-014 D5)
+ADR-014 ACCEPTED (Round 2: 5 Accept + 1 D&C) with 4 amendments, superseding ADR-013. Decision Audit Reconciliation COMPLETE. Gap Analysis COMPLETE. Decision Completeness Audit COMPLETE. Phases 2-5 NOT STARTED.
 
+**Remaining Phase 1 Work (Summary):**
+
+- 5 cross-ADR contradictions to resolve (hook model, remark deps, command tree, dep necessity, lockfile robustness)
+- 5 P0 gaps: ADR-004 security (11 items), creator skills (4 skills zero-specified), hook model contradiction, remark dep contradiction, platform adapter paths (7 platforms x 8 content types)
+- 15 P1 gaps: consumer command flows, features edge cases, content directory conventions, MCP template, Zod schemas, wizard reconciliation, validate/build definitions, command flags, lockfile robustness, daemon transport, managed sections, platformConfig overlap, plugin deps, JSON payloads, dep necessity
+- GAP-9 implementation phasing (LOW, deferrable to Phase 4)
+- ADR housekeeping: 9 stale body text updates, IMP-007
+
+See "Decision Completeness Audit" and "Remaining Phase 1 Work (Sequenced)" sections below for full details.
 ### Phase 1: Research and Discovery
 
 #### Group 1: Foundation and Vision (Sections 1-3) -- COMPLETE
@@ -738,6 +747,64 @@ Remaining items needing research/decisions:
 - [x] **GAP-6/7**: Author project config -- RESOLVED. Base project scaffolding delegated to separate `@acmelabs-15/config` package (TanStack Config inspired). DX decisions (Biome, testing, monorepo, releases, CI) are that package's scope. `agent-plugin create` depends on config for project setup, then layers plugin-specific files on top. ADR-014 Amendment #4. Spec brief saved to /Users/peter.kloss/Downloads/acmelabs-config-package-spec-brief.md.
 - [x] **GAP-8**: Project context system -- RESOLVED. 8 behavioral requirements (REQ-CTX-1 through REQ-CTX-8) added to ADR-014 Amendment #3. Covers: project root finding, dual context detection, consumer scope resolution with --global flag, author command gating, context-independent commands (mcp serve), interactive fallback menu, global lockfile location, global platform config writing. .acmelabz/project.json eliminated -- .agent-plugin/plugin.json is sufficient for author context detection.
 
+#### Decision Completeness Audit (2026-03-09)
+
+**Objective**: Evaluate whether existing ADR decisions contain enough detail to write feature specs WITHOUT making assumptions.
+
+**Methodology**: 3 parallel Brain analyst agents audited ADR-001 through ADR-014 (excluding superseded ADRs 008, 010, 013). Each decision rated SUFFICIENT (can write spec directly) or NEEDS DETAIL (gaps require decisions).
+
+**Results Summary:**
+
+| Metric | Count | Percentage |
+|--------|-------|------------|
+| Total decisions evaluated | 72 | 100% |
+| SUFFICIENT (spec-ready) | 31 | 43% |
+| NEEDS DETAIL (gaps exist) | 41 | 57% |
+
+**Verdict**: 57% of decisions need more detail before feature specs can be written without assumptions.
+
+**P0 Gaps (Blocking Everything):**
+
+| # | Gap | Source | Blocks |
+|---|-----|--------|--------|
+| P0-1 | **ADR-004 does not exist** | ADR-002, 003, 006 | 11 security-critical decisions deferred to nonexistent ADR. Hook execution literally blocked. |
+| P0-2 | **Creator skills zero-specified** | ADR-012 D7 | 4 skills (skill-creator, agent-creator, mcp-builder, instruction-evaluator) declared but none have: evaluation criteria, report formats, improvement workflows, or Anthropic source analysis. `analyze`/`analyze --fix` commands cannot be specced. |
+| P0-3 | **Hook model contradiction** | ADR-003 D2 vs ADR-014 D7 | ADR-003 says overlay/recompute with deepmerge. ADR-014 says no cross-plugin merging, separate entries. Cannot implement hooks. |
+| P0-4 | **remark/unified not in dependency stack** | ADR-006 D9 vs ADR-014 D5 | ADR-006 explicitly removed markdown libs. ADR-014 requires remark/unified/mdast-util-heading-range for features. Direct contradiction. |
+| P0-5 | **Platform adapter paths not specified** | ADR-009 D3, ADR-014 D8 | Only 2 of 7 platforms have config registry entries. No content directory mappings for `rules/` or `AGENTS.md`. Cannot implement platform writing. |
+
+**P1 Gaps (Blocking Specific Feature Specs):**
+
+| # | Gap | Source | Scope |
+|---|-----|--------|-------|
+| P1-1 | Consumer command flows | ADR-014 D1 | `remove`, `update`, `install`, `list` lack step-by-step flows (only `add` has detailed 8-step flow) |
+| P1-2 | Features model edge cases | ADR-014 D5 | Heading level matching, nested heading inclusion, unmarked content treatment, code region nesting |
+| P1-3 | Content type directory conventions | ADR-014 D4 | Flat vs subdirectories per type. MCP inconsistent (`mcp/` dir vs `mcpServers` object). |
+| P1-4 | MCP server template uses rejected API | ADR-012 D6 | Only template in ANALYSIS-031 uses fastmcp. No @modelcontextprotocol/sdk template exists. |
+| P1-5 | Schema-first has no schemas | ADR-012 D3 | Says "single Zod schema per wizard" but 0 of 6 schemas defined. No derivation mechanism. |
+| P1-6 | Wizard specs not reconciled | ADR-012 D4, D10 | Group naming conflict ADR-012 vs ANALYSIS-031. Dropped fields still in analysis. |
+| P1-7 | `validate` and `build` undefined | ADR-014 D6 | Listed in command tree with no description of what they do. |
+| P1-8 | JSON diff/MCP changes schemas | ADR-012 D8 | `analyze --fix` UX concept clear but data formats undefined. |
+| P1-9 | Flags for new commands | ADR-007 D5 | Only `add`/`upgrade` have flags. All ADR-014 commands need specs. |
+| P1-10 | Lockfile corruption recovery | ADR-003 D3 → ADR-014 D2 | ADR-003 specified recovery. ADR-014 lockfile has none. |
+| P1-11 | Daemon transport protocol | ADR-011 D2 | CLI-to-daemon communication not specified. Cannot implement daemon mode. |
+| P1-12 | Managed-section template rendering | ADR-002 D6 | Content, ordering, removal, user-edit handling. |
+| P1-13 | `platformConfig` overlap | ADR-001 D8 vs ADR-014 D8 | Two different `platforms` fields. Relationship unclear. |
+| P1-14 | Plugin-to-plugin dependencies | ADR-001 D6 | Described as "load-bearing" but deferred to nonexistent ADR. |
+| P1-15 | Dep necessity after command removal | ADR-006 D7, D8 | `dev` and `complete` commands eliminated. Are chokidar and @gunshi/plugin-completion still needed? |
+
+**Cross-ADR Contradictions (Must Reconcile):**
+
+| # | ADR A | ADR B | Contradiction |
+|---|-------|-------|---------------|
+| C-1 | ADR-003 D2 (overlay/recompute) | ADR-014 D7 (no merging) | Hook installation model |
+| C-2 | ADR-006 D9 (removed remark) | ADR-014 D5 (requires remark) | Markdown processing deps |
+| C-3 | ADR-007 D1 (init, upgrade, new) | ADR-014 D6 (update, content-type groups) | Command tree |
+| C-4 | ADR-006 D7 (chokidar for dev) | ADR-014 D6 (dev eliminated) | Dependency necessity |
+| C-5 | ADR-003 D3 (recovery/integrity) | ADR-014 D2 (no recovery) | Lockfile robustness |
+
+**Key Insight**: Phase 1 coverage is high (~92%) but depth is insufficient (~43% spec-ready). Remaining work is primarily DEEPENING, not DISCOVERING.
+
 #### Group 9: Polish (Sections 19-22) -- MOSTLY DECIDED (~75% decided)
 
 Spec sections 19-22 cover shell completions, Bun-native APIs, markdown processing, and implementation phasing. Gap analysis shows 3/4 items already decided.
@@ -1167,6 +1234,21 @@ All of the above resolved → Phase 1 COMPLETE. Ready for Phase 2.
 - [x] [artifact] Spec brief saved to /Users/peter.kloss/Downloads/acmelabs-config-package-spec-brief.md for future session #documentation
 - [x] [fix] ADR-014 Amendment #4 added documenting the delegation and clean boundary #adr-014 #amendment
 
+### Decision Completeness Audit (2026-03-09)
+
+- [x] [audit] 3 parallel Brain analyst agents audited ADR-001 through ADR-014 (excluding superseded ADRs 008, 010, 013) for decision completeness #completeness-audit
+- [x] [audit] ADR-014 audit: 12 items (8 decisions + 4 amendments). 4 SUFFICIENT, 8 NEEDS DETAIL. Critical: add flow gaps, features edge cases, platform adapter paths, command definitions #adr-014-audit
+- [x] [audit] ADR-012 audit: 11 decisions. 1 SUFFICIENT, 10 NEEDS DETAIL. Critical: creator skills zero-specified (4 skills), schema-first has no schemas, MCP template uses rejected API #adr-012-audit
+- [x] [audit] Remaining ADRs audit (001, 002, 003, 006, 007, 009, 011): 49 decisions. 26 SUFFICIENT, 23 NEEDS DETAIL. Critical: ADR-004 nonexistent, platform config incomplete, hook model contradiction #remaining-adrs-audit
+- [x] [synthesis] Consolidated results: 72 total decisions, 31 SUFFICIENT (43%), 41 NEEDS DETAIL (57%) #audit-summary
+- [x] [analysis] Identified 5 P0 blocking gaps: ADR-004 security, creator skills, hook model, remark deps, platform adapter paths #p0-gaps
+- [x] [analysis] Identified 15 P1 gaps blocking specific feature specs across: consumer commands, content model, features, scaffolding, author commands, CLI, state, platform adapters, MCP, dependencies #p1-gaps
+- [x] [analysis] Identified 5 cross-ADR contradictions that must be resolved before deepening work: C-1 through C-5 #contradictions
+- [x] [decision] Phase 1 is NOT ~92% complete. Coverage is ~92% (decisions exist) but depth is ~43% (spec-ready). True completion requires both dimensions. #phase-1-status
+- [x] [decision] Remaining Phase 1 work is primarily DEEPENING, not DISCOVERING. Adding specifics to existing decisions so implementers cannot make assumptions. #work-strategy
+- [x] [artifact] Audit reports from 3 analyst agents consolidated into this session note (Decision Completeness Audit section) #documentation
+- [x] [artifact] Remaining Phase 1 Work (Sequenced) section completely rewritten with 5 blocks: A (contradictions), B (P0), C (P1), D (GAP-9), E (housekeeping) #sequencing
+
 ### GAP-8 Resolution: Project Context System (2026-03-09)
 
 - [x] [analysis] Read spec Section 17 (author project layout) and Section 18 (project context system) -- identified stale function-level definitions #gap-8
@@ -1488,3 +1570,118 @@ From /Users/peter.kloss/Downloads/agent-plugin-design-spec.md:
 | MUST | Update Brain memory with learnings | [ ] | |
 | MUST | Run markdownlint | [ ] | |
 | MUST | Commit all changes | [ ] | |
+
+
+## Remaining Phase 1 Work (Sequenced)
+### Remaining Phase 1 Work (Sequenced)
+
+Phase 1 completion requires resolving both coverage gaps (GAP-1 through GAP-9) and depth gaps (completeness audit findings). Work sequenced by dependencies.
+
+---
+
+#### Block A: Cross-ADR Contradiction Resolution (Prerequisite for Everything)
+
+These create ambiguity that blocks deepening work. MUST resolve first.
+
+- [ ] **C-1: Hook model** (ADR-003 D2 vs ADR-014 D7) -- ADR-003 says overlay/recompute with deepmerge. ADR-014 says no cross-plugin merging, separate entries per plugin. Decide which model is correct, update the contradicting ADR, document resolution.
+- [ ] **C-2: remark/unified deps** (ADR-006 D9 vs ADR-014 D5) -- ADR-006 explicitly removed markdown processing libs. ADR-014 requires remark/unified/mdast-util-heading-range for features. Add missing deps to ADR-006 via amendment OR explain why ADR-014 doesn't actually need them.
+- [ ] **C-3: Command tree staleness** (ADR-007 D1 vs ADR-014 D6) -- ADR-007 has init/upgrade/new. ADR-014 has update/content-type groups/no init. Mark ADR-007 D1 as superseded by ADR-014 D6.
+- [ ] **C-4: chokidar necessity** (ADR-006 D7 vs ADR-014 D6) -- chokidar was for `dev` command. `dev` command eliminated. Remove chokidar from dep stack OR identify new use case.
+- [ ] **C-5: Lockfile robustness** (ADR-003 D3 vs ADR-014 D2) -- ADR-003 specified corruption recovery, integrity hash, backup, atomic writes. ADR-014 has none. Decide: carry forward to `.agent-lock.json` OR explicitly drop with rationale.
+
+---
+
+#### Block B: P0 Gaps (Blocking Broad Feature Spec Areas)
+
+Cannot write ANY feature spec until these are resolved.
+
+- [ ] **P0-1: ADR-004 Plugin Security Model** -- 11 security-critical decisions deferred to nonexistent ADR. Hook execution literally blocked. Must cover: hook consent model, instruction file injection (NEG-006), multi-source vetting (NEG-007), content hashing, MCP access control, plugin permission boundaries, trust model, supply chain verification, shell-quote sanitization, privilege escalation prevention, strictest-wins composability.
+
+- [ ] **P0-2: Creator Skills Evaluation** -- 4 skills (skill-creator, agent-creator, mcp-builder, instruction-evaluator) are declared (ADR-012 D7) but ZERO-specified. Must evaluate Anthropic source repos (skill-creator, agent-creator, mcp-builder from Anthropic GitHub; instruction-evaluator is original). For EACH skill, document: evaluation criteria, report format, improvement workflow, parameter surface. This unblocks GAP-2 (MCP tool catalog) and all `analyze`/`analyze --fix` commands.
+
+- [ ] **P0-5: Platform Adapter Paths for All 7 Platforms x 8 Content Types** -- ADR-009 D3 has config registry entries for only 2 of 7 platforms (Claude Code, OpenCode). Missing: Cursor, Copilot CLI, Kiro, Amp, Windsurf. ADR-014 D4 added `rules/` and `AGENTS.md` content types -- no platform paths specified for these. Create complete `platforms.config.json` with: content directory paths per platform per type, MCP config paths, hook config paths. Cannot write install/add specs without this.
+
+---
+
+#### Block C: P1 Gaps Grouped by Area (Blocking Specific Feature Specs)
+
+**Consumer Commands:**
+
+- [ ] **P1-1: remove/update/install/list step-by-step flows** -- ADR-014 D1 has one-line descriptions. Only `add` has detailed 8-step flow (D7). Write equivalent flows for the other 4 consumer commands. Each needs: interaction model, error handling, edge cases, output format.
+
+**Content Model:**
+
+- [ ] **P1-3: Content type directory structure conventions** -- ADR-014 D4 taxonomy lists types but not directory layout. Flat files vs subdirectories per type? skills/code-review.md or skills/code-review/SKILL.md? MCP has inconsistency: `mcp/` directory in table vs `mcpServers` object in schema. Reconcile and specify all 8 types.
+
+**Features Model:**
+
+- [ ] **P1-2: Features model edge cases** -- ADR-014 D5 has 10 ambiguous edge cases: heading level matching (does `## X` match `### X`?), nested heading inclusion (sub-headings included?), unmarked content treatment (always included?), code region nesting, feature name validation, component-level no-features behavior, duplicate heading handling, feature wizard for updates, dependency cycles, mutual exclusion. Specify behavior for each.
+
+**Scaffolding:**
+
+- [ ] **P1-4: MCP server template correction** -- ANALYSIS-031 only template uses fastmcp API. ADR-012 D6 says use @modelcontextprotocol/sdk. Write corrected index.ts template using McpServer + StdioServerTransport. Write tool file template. Specify marker comment strings.
+- [ ] **P1-5: Zod schemas for all 6 wizard types** -- ADR-012 D3 says "single Zod schema per wizard drives all interfaces" but 0 schemas exist. Define schemas for: skill create, agent create, mcp create, mcp create-tool, command create, hook create, rule create. OR specify schema-to-prompt derivation mechanism if schemas are generated.
+- [ ] **P1-6: Wizard spec reconciliation** -- ADR-012 D4 says agent create has 4 groups (Identity, Model Config, Skills, Advanced). ANALYSIS-031 says (Identity, Capabilities, Behavior, Hooks). Which is canonical? ADR-012 D10 dropped emojiPrefix and autoLoadAgents but ANALYSIS-031 still lists them. Reconcile.
+- [ ] **P1-8: JSON diff schema and MCP proposed changes schema** -- ADR-012 D8 describes `analyze --fix` UX (color-coded diff, Why annotations, apply modes). Missing: JSON diff schema for `--dry-run`, MCP proposed changes schema, review one-by-one flow details.
+
+**Author Commands:**
+
+- [ ] **P1-7: validate and build command definitions** -- ADR-014 D6 lists them but no description. What does `validate` check? What does `build` produce? How does each work?
+
+**CLI:**
+
+- [ ] **P1-9: Flags for all new commands** -- ADR-007 D5 only specifies flags for `add` and `upgrade`. ADR-014 added: install, remove, update, create, validate, build, mcp serve, plus all content-type subcommands. Specify flags for each.
+- [ ] **P1-14: Plugin-to-plugin dependencies** -- ADR-001 D6 says "plugin dependencies, conflicts, source provenance deferred to future ADR." No ADR exists. Described as "load-bearing architectural concepts." Needed for dependency resolution spec.
+
+**State Management:**
+
+- [ ] **P1-10: .agent-lock.json corruption recovery** -- ADR-003 D3 specified: re-derive from disk scan, .bak file, integrity hash (SHA-256, self-excluded), lockfileVersion migration pipeline, file permissions (mode 600), atomic writes. ADR-014 D2 has none of this. Decide what carries forward.
+
+**Platform Adapters:**
+
+- [ ] **P1-12: Managed-section template rendering** -- ADR-002 D6 says "update instruction files without destroying content (append/merge, never overwrite)." IMP-006 mentions HTML comment markers. Missing: template format for rendered content, ordering when multiple plugins, removal behavior, user-edit handling.
+- [ ] **P1-13: platformConfig overlap resolution** -- ADR-001 D8 has top-level `platformConfig` field. ADR-014 D8 has per-component `platforms` field. Are both active? Does one supersede? Merge semantics if both present?
+
+**MCP:**
+
+- [ ] **P1-11: Daemon transport protocol** -- ADR-011 D2 describes daemon mode but not how CLI commands communicate with the daemon. stdio works for parent-child. Daemon is standalone process. What transport? Socket? HTTP? Named pipe? Port? Concurrency model? Readiness check for restart?
+
+**Dependencies:**
+
+- [ ] **P1-15: chokidar and @gunshi/plugin-completion necessity** -- Part of C-4. `dev` command eliminated (no chokidar). `complete` command deferred (no @gunshi/plugin-completion). Remove from dep stack OR identify new use cases.
+
+---
+
+#### Block D: GAP-9 Implementation Phasing (LOW, Deferrable to Phase 4)
+
+- [ ] **GAP-9: Implementation phasing** -- Spec Section 22 proposes 5 phases. ADR-002 P1-2 (audience priority) and P1-3 (phased delivery) also deferred. Needs: phasing plan aligned with ADR-014 architecture. Natural Phase 4 (Epic/PRD) deliverable but high-level alignment should be confirmed.
+
+---
+
+#### Block E: ADR Housekeeping (Non-Blocking but Important)
+
+- [ ] **Stale ADR body text updates (9 instances):**
+  - ADR-001: References root `plugin.json` (now `.agent-plugin/plugin.json`), `installMode` (superseded by features), 6 content types (now 8)
+  - ADR-003: References `plugin-lock.json` (now `.agent-lock.json`)
+  - ADR-007: Command tree includes pre-pivot commands
+  - ADR-009: References unspecified lockfile
+  - ADR-011: References ADR-010 installation context (ADR-010 superseded)
+  - ADR-012: References `instructions/` (now `rules/` + `AGENTS.md`)
+- [ ] **ADR-006 amendment**: Add remark, unified, mdast-util-heading-range as dependencies (required by ADR-014 D5, resolves C-2)
+- [ ] **IMP-007**: Update ANALYSIS-031 to remove stale gray-matter references (now using yaml 2.x per ADR-006)
+- [ ] **P1-6 (Reconciliation)**: Vercel Skills CLI research note (nice to have)
+
+---
+
+**Phase 1 Completion Criteria:**
+
+Block A (contradictions) + Block B (P0 gaps) + Block C (P1 gaps) resolved → Phase 1 COMPLETE. Ready for Phase 2.
+
+Block D (GAP-9) and Block E (housekeeping) can continue in parallel with Phase 2 but should be complete before Phase 3 (Feature Specifications).
+
+**Sequencing Notes:**
+
+- Block A MUST complete before Blocks B and C (cannot deepen contradicting decisions)
+- Within Block B: P0-1 (ADR-004) can run parallel with P0-2 (creator skills). Both are prerequisites for P0-5 (platform paths depend on security model for managed sections)
+- Block C items are mostly parallelizable within their groups (consumer commands can be specced in parallel, scaffolding items in parallel, etc.)
+- Block E can run anytime (housekeeping doesn't block other work)
