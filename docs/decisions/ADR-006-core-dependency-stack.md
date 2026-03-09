@@ -348,15 +348,15 @@ Implementation compliance will be confirmed via:
 
 ## References
 
-- **REF-001**: ANALYSIS-017 CLI Framework Comparison (gunshi vs commander vs citty vs oclif)
-- **REF-002**: ANALYSIS-018 Interactive Prompts and Colors (@clack/prompts evaluation, node:util styleText for terminal colors)
-- **REF-003**: ANALYSIS-019 MCP Framework and File Watching (@modelcontextprotocol/sdk vs fastmcp, chokidar vs alternatives)
-- **REF-004**: ANALYSIS-020 Frontmatter and Markdown Processing Libraries (gray-matter CVE, yaml 2.x selection)
-- **REF-005**: ANALYSIS-021 Data Storage and Search (drizzle-orm/orama removal, lockfile sufficiency)
-- **REF-006**: ANALYSIS-013 Input Sanitization Patterns (Zod v4, shell-quote, validator selection)
-- **REF-007**: ADR-001 Plugin Format and Manifest (plugin.json schema requiring validation)
-- **REF-008**: ADR-003 Conflict Resolution and Namespacing (lockfile, sanitization pipeline, deepmerge/atomically/shell-quote/validator)
-- **REF-009**: ADR-005 Bun Runtime (runtime decision driving compatibility requirements)
+- [[ANALYSIS-017 CLI Framework Comparison]] — gunshi vs commander vs citty vs oclif
+- [[ANALYSIS-018 Interactive Prompts and Colors]] — @clack/prompts evaluation, node:util styleText for terminal colors
+- [[ANALYSIS-019 MCP Framework and File Watching]] — @modelcontextprotocol/sdk vs fastmcp, chokidar vs alternatives
+- [[ANALYSIS-020 Frontmatter and Markdown Processing Libraries]] — gray-matter CVE, yaml 2.x selection
+- [[ANALYSIS-021 Data Storage and Search]] — drizzle-orm/orama removal, lockfile sufficiency
+- [[ANALYSIS-013 Input Sanitization Patterns]] — Zod v4, shell-quote, validator selection
+- [[ADR-001 Plugin Format and Manifest]] — plugin.json schema requiring validation
+- [[ADR-003 Conflict Resolution and Namespacing]] — lockfile, sanitization pipeline, deepmerge/atomically/shell-quote/validator
+- [[ADR-005 Runtime and Distribution Strategy]] — runtime decision driving compatibility requirements
 
 ## Observations
 

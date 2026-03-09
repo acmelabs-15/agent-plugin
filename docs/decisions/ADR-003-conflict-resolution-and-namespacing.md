@@ -87,6 +87,8 @@ Hook merging uses the overlay/recompute pattern (ANALYSIS-010). Each plugin's ho
 
 ### Decision 3: JSON Lockfile with Atomic Writes
 
+> **Partial supersession (2026-03-09):** Decision 3 lockfile model is superseded by ADR-014: `.agent-lock.json` replaces `plugin-lock.json` for plugin state (version, ref, hash, features, timestamps). Hook merge uses independent per-plugin entries namespaced by plugin name (ADR-014 D7 Step 7), replacing the overlay/recompute pattern. ADR-013 (which previously superseded this with `bun.lockb`) was itself superseded by ADR-014 on the same day.
+
 Plugin state is tracked in a single lockfile (ANALYSIS-011). No separate state directory is needed — hook overlay data, plugin inventory, and component registry all live in the lockfile.
 
 **Location**:
@@ -274,15 +276,15 @@ Implementation compliance will be confirmed via:
 
 ## References
 
-- **REF-001**: Claude Code component naming conventions (colon separator pattern as display convention)
-- **REF-002**: ANALYSIS-010 Hook Merge/Unmerge Patterns (overlay/recompute architecture, 40+ sources)
-- **REF-003**: ANALYSIS-011 Lockfile Management Patterns (`atomically`, integer versioning, re-derive on corruption)
-- **REF-004**: ANALYSIS-012 JSON Config Merge Patterns (`deepmerge` selection, strictest-wins via `customMerge`)
-- **REF-005**: ANALYSIS-013 Input Sanitization Patterns (Zod v4 + shell-quote + validator pipeline)
-- **REF-006**: ANALYSIS-014 Platform Config Patterns (hybrid D+C, 4-level resolution, cross-platform concepts)
-- **REF-007**: ADR-001 Plugin Format and Manifest (bundle/collection installModes, plugin.json schema)
-- **REF-008**: ADR-002 Target Platforms and Audiences (7 platforms, 3 audience types including CI/MCP)
-- **REF-009**: DEBATE-ADR-003 (unanimous Needs Revision, 7 P0 + 14 P1 issues, all resolved in this revision)
+- Claude Code component naming conventions — colon separator pattern as display convention
+- [[ANALYSIS-010 Hook Merge/Unmerge Patterns]] — overlay/recompute architecture, 40+ sources
+- [[ANALYSIS-011 Lockfile Management Patterns]] — `atomically`, integer versioning, re-derive on corruption
+- [[ANALYSIS-012 JSON Config Merge Patterns]] — `deepmerge` selection, strictest-wins via `customMerge`
+- [[ANALYSIS-013 Input Sanitization Patterns]] — Zod v4 + shell-quote + validator pipeline
+- [[ANALYSIS-014 Platform Config Patterns]] — hybrid D+C, 4-level resolution, cross-platform concepts
+- [[ADR-001 Plugin Format and Manifest]] — bundle/collection installModes, plugin.json schema
+- [[ADR-002 Target Platforms and Audiences]] — 7 platforms, 3 audience types including CI/MCP
+- [[DEBATE-ADR-003 Conflict Resolution and Namespacing]] — unanimous Needs Revision, 7 P0 + 14 P1 issues, all resolved in this revision
 
 ## Observations
 
@@ -301,6 +303,8 @@ Implementation compliance will be confirmed via:
 
 ## Relations
 
+- partially_superseded_by [[ADR-014 Explicit Installation Model and Content Features]]
+- partially_superseded_by [[ADR-013 npm-Package Distribution and Revised Command Tree]]
 - extends [[ADR-001 Plugin Format and Manifest]]
 - relates_to [[ADR-002 Target Platforms and Audiences]]
 - relates_to [[ANALYSIS-010-hook-merge-unmerge-patterns]]

@@ -15,7 +15,7 @@ tags:
 ---
 title: "ADR-001: Plugin Format and Manifest"
 status: "Accepted"
-date: "2026-03-07"
+date: "2026-03-09"
 authors: "Agent Plugin Core Team"
 tags: ["architecture", "plugin-format", "manifest", "decision", "plugin-json"]
 
@@ -39,7 +39,7 @@ Key forces at play:
 
 - **Cross-platform compatibility**: Plugins must work across 7 different AI agent platforms with varying native plugin formats
 - **Developer experience**: Authors need a clear, predictable structure that is easy to scaffold and maintain
-- **Component flexibility**: Plugins may contain skills, agents, prompts, hooks, and MCP server configurations in various combinations
+- **Component flexibility**: Plugins may contain skills, agents, prompts, hooks, commands, and MCP server configurations in various combinations
 - **Installation UX**: Users need control over which components to install when components are independent
 - **Conflict management**: Multiple plugins may provide overlapping components that require intelligent resolution
 
@@ -51,7 +51,7 @@ We adopt a **bundle model** with a **mandatory root-level manifest** (`plugin.js
 
 ### 1. Plugin = Bundle Model
 
-A plugin is a bundle that can contain many skills, many agents, many prompts, many hooks, and typically a single MCP server configuration. This follows Claude Code's bundle model conceptually but corrects its implementation issues.
+A plugin is a bundle that can contain many skills, many agents, many prompts, many hooks, many commands, and typically a single MCP server configuration. This follows Claude Code's bundle model conceptually but corrects its implementation issues.
 
 ### 2. Directory Structure
 
@@ -62,6 +62,7 @@ my-plugin/
   agents/              # Agent definitions
   prompts/             # Prompt templates
   hooks/               # Lifecycle hooks
+  commands/            # User-invoked commands
   mcp/                 # MCP server configuration
 ```
 
@@ -78,12 +79,11 @@ Every plugin must have a `plugin.json` manifest. Unlike Claude Code where the ma
 ```json
 {
   "name": "@scope/plugin-name",
-  "version": "1.0.0",
   "description": "What this plugin does"
 }
 ```
 
-Three fields are required: `name`, `version`, and `description`. These match npm `package.json` conventions that developers already know.
+Two fields are required: `name` and `description`. The `version` field is optional in plugin.json. When the plugin is distributed as an npm package (see ADR-013), the `package.json` version is authoritative. If `version` is present in plugin.json, it should match `package.json` version to avoid confusion.
 
 ### Schema Evolution Strategy
 
@@ -131,15 +131,31 @@ Plus component path declarations and platformConfig (see below).
 
 ### 7. Component Path Declarations
 
-Skills, agents, hooks, prompts, and MCP server configs are declared as paths in `plugin.json`:
+Skills, agents, hooks, prompts, commands, and MCP server configs are declared in `plugin.json`. Each component field accepts `string | string[]` for path references. Hooks and mcpServers also accept inline object declarations for direct configuration.
 
 ```json
 {
   "skills": ["skills/research", "skills/code-review"],
-  "agents": ["agents/analyst.md"],
+  "agents": "agents/analyst.md",
   "hooks": ["hooks/pre-commit.js"],
   "prompts": ["prompts/system.md"],
-  "mcp": "mcp/server.json"
+  "commands": ["commands/deploy", "commands/lint"],
+  "mcpServers": "mcp/server.json"
+}
+```
+
+**Path shorthand**: Single-component plugins can use a string instead of wrapping in an array. `"skills": "skills/review"` is equivalent to `"skills": ["skills/review"]`.
+
+**Inline objects**: Hooks and mcpServers support inline object declarations in addition to path references:
+
+```json
+{
+  "hooks": {
+    "pre-commit": { "command": "npm run lint", "blocking": true }
+  },
+  "mcpServers": {
+    "memory": { "command": "npx", "args": ["-y", "@brain/mcp-server"] }
+  }
 }
 ```
 
@@ -190,7 +206,7 @@ Different strategies per component type rather than blanket blocking:
 - **POS-001**: Mandatory manifest provides reliable metadata for cross-platform installation, registry indexing, and dependency resolution
 - **POS-002**: Root-level `plugin.json` eliminates the nested path confusion documented in Claude Code's format
 - **POS-003**: `installMode` gives plugin authors explicit control over whether their components are presented as a unit or a menu, creating appropriate UX for both tightly-coupled and loosely-coupled plugins
-- **POS-004**: Minimum required fields (`name`, `version`, `description`) match npm conventions, reducing cognitive load for JavaScript/TypeScript developers
+- **POS-004**: Minimum required fields (`name`, `description`) match npm conventions, reducing cognitive load for JavaScript/TypeScript developers. Version is optional in plugin.json (package.json is authoritative per ADR-013)
 - **POS-005**: Always-namespace conflict resolution (ADR-003) eliminates collision risk entirely; hooks use overlay/recompute merge pattern
 
 ### Negative
@@ -233,27 +249,29 @@ Different strategies per component type rather than blanket blocking:
 
 ## References
 
-- **REF-001**: ANALYSIS-003 Vercel Skills format deep dive
-- **REF-002**: ANALYSIS-004 TanStack Intent deep dive
-- **REF-003**: ANALYSIS-005 Claude Code plugin format analysis
-- **REF-004**: npm package.json specification (field naming conventions)
-- **REF-005**: Claude Code plugin documentation (nested path issues)
+- [[ANALYSIS-003 Vercel Skills Format Deep Dive]]
+- [[ANALYSIS-004 TanStack Intent Deep Dive]]
+- [[ANALYSIS-005 Claude Code Plugin Format]]
+- npm package.json specification — field naming conventions
+- Claude Code plugin documentation — nested path issues
 
 ## Future Considerations
 
-- **Hybrid installMode**: `installMode` may need a third mode or intra-plugin component dependency declarations for hybrid plugins that combine independent skills with a shared MCP server. Currently, `bundle` forces all-or-nothing and `collection` implies full independence. A plugin with 3 independent skills that all require the same MCP server has no way to express "install any skill, but MCP is mandatory."
-- **5-component model scope**: The 5-component model (skills, agents, prompts, hooks, mcp) is a deliberate subset of Claude Code's 7-type system. We omit commands (legacy slash-command pattern being replaced by skills), lspServers (platform-specific, not portable), and outputStyles (niche formatting concern). If future platforms introduce new component types that are genuinely cross-platform, the open component path declaration pattern in Section 7 can accommodate them without schema changes.
+- **Hybrid installMode**: `installMode` may need a third mode or intra-plugin component dependency declarations for hybrid plugins that combine independent skills with a shared MCP server. Currently, `bundle` forces all-or-nothing and `collection` implies full independence. A plugin with 3 independent skills that all require the same MCP server has no way to express "install any skill, but mcpServers is mandatory."
+- **6-component model scope**: The 6-component model (skills, agents, prompts, hooks, commands, mcpServers) is a deliberate subset of Claude Code's 7-type system. Commands are first-class user-invoked operations, distinct from agent-invoked skills (added per ADR-012 IMP-005). We omit lspServers (platform-specific, not portable) and outputStyles (niche formatting concern). If future platforms introduce new component types that are genuinely cross-platform, the open component path declaration pattern in Section 7 can accommodate them without schema changes.
 - **Platform translation layer**: The platformConfig section (Section 8) and adapter layer handle translation to each platform's native format. See [[ANALYSIS-014-platform-config-patterns]] for the full cross-platform concept mapping and 4-level resolution order.
 
 ## Observations
 
-- [decision] Plugin = bundle model: one plugin contains many skills, agents, prompts, hooks, and typically one MCP server #plugin-format #architecture
+- [decision] Plugin = bundle model: one plugin contains many skills, agents, prompts, hooks, commands, and typically one MCP server #plugin-format #architecture
 - [decision] plugin.json is mandatory at the plugin root directory, not nested #manifest #cross-platform
-- [decision] Minimum required fields: name, version, description — matching npm package.json conventions #manifest
+- [decision] Minimum required fields: name, description. Version is optional in plugin.json; package.json version is authoritative (ADR-013) #manifest
 - [decision] No formatVersion field — schema evolution via additive changes, unknown field tolerance, doctor command, and migration wizards (ANALYSIS-007 research: 70% of config formats handle evolution without version fields) #manifest #versioning
 - [decision] installMode field distinguishes bundle (all-or-nothing) from collection (user picks components) #installation-ux
 - [decision] Conflict resolution superseded by ADR-003: always-namespace for components, overlay/recompute for hooks #conflict-resolution
-- [decision] Component paths declared in manifest for skills, agents, hooks, prompts, and MCP #manifest #component-discovery
+- [decision] Component paths declared in manifest for skills, agents, hooks, prompts, commands, and mcpServers; paths accept string or string[] (ANALYSIS-041) #manifest #component-discovery
+- [decision] Hooks and mcpServers support inline object declarations in addition to path references (ANALYSIS-041) #manifest #flexibility
+- [decision] Commands added as 6th first-class component type for user-invoked operations (ADR-012 IMP-005) #plugin-format
 - [decision] JSON chosen over YAML/TOML for manifest: universal tooling, unambiguous parsing, JSON Schema support #manifest #format
 - [decision] prompts/ is a novel first-class component type not in reference systems, distinct from skills and agents #plugin-format
 - [decision] All plugins are inherently cross-platform; no platforms field needed; plugin manager handles translation to all 7 target platforms #cross-platform
@@ -262,9 +280,10 @@ Different strategies per component type rather than blanket blocking:
 - [constraint] Authors must always create plugin.json; scaffolding wizard mitigates this burden #developer-experience
 - [requirement] Installer must implement per-type conflict resolution strategies #installer
 - [insight] Claude Code's nested manifest path (.claude-plugin/plugin.json) is documented as error-prone by Claude Code itself #reference-analysis
-- [insight] Hybrid plugins (independent skills + shared MCP) expose a gap in the bundle/collection binary that may need future resolution #installMode
+- [insight] Hybrid plugins (independent skills + shared mcpServers) expose a gap in the bundle/collection binary that may need future resolution #installMode
 - [fact] Seven target platforms: Claude Code, Cursor, GitHub Copilot CLI, Kiro, OpenCode, Amp, Windsurf #cross-platform
-- [fact] 5-component model is a deliberate subset of Claude Code's 7-type system, omitting commands, lspServers, outputStyles #plugin-format
+- [fact] 6-component model (skills, agents, prompts, hooks, commands, mcpServers) is a deliberate subset of Claude Code's 7-type system, omitting lspServers and outputStyles #plugin-format
+- [fact] mcpServers field name aligns with 6/8 AI platforms: Claude Code, Copilot CLI, Cursor, Amazon Q, Kiro (ANALYSIS-041) #cross-platform
 
 ## Relations
 
@@ -275,11 +294,20 @@ Different strategies per component type rather than blanket blocking:
 - relates_to [[ANALYSIS-014-platform-config-patterns]]
 - relates_to [[ANALYSIS-007-config-schema-versioning-patterns]]
 - relates_to [[ADR-003-conflict-resolution-and-namespacing]]
+- relates_to [[ADR-012-component-type-taxonomy]]
+- relates_to [[ADR-013-npm-package-distribution]]
+- relates_to [[ADR-014 Explicit Installation Model and Content Features]]
+- relates_to [[ANALYSIS-041-cross-platform-field-naming]]
 
-## 9. Intelligent Conflict Resolution
+## Amendments
 
-### 9. Conflict Resolution
-
-> **Superseded by [[ADR-003 Conflict Resolution and Namespacing]]**
-
-All installed components are automatically namespaced as `plugin-name:component-name` (always-namespace). Hooks use an overlay/recompute merge pattern with strictest-wins for blocking booleans. See ADR-003 for full details.
+| # | Date | Change | Source |
+|---|------|--------|--------|
+| 1 | 2026-03-09 | Renamed `mcp` field to `mcpServers` for cross-platform alignment (6/8 AI platforms use this name) | ANALYSIS-041 |
+| 2 | 2026-03-09 | Component path fields accept `string \| string[]` (single-component shorthand without array wrapping) | ANALYSIS-041 |
+| 3 | 2026-03-09 | Hooks and mcpServers support inline object declarations in addition to path references | ANALYSIS-041 |
+| 4 | 2026-03-09 | Added `commands` as 6th first-class component type (user-invoked operations, distinct from agent-invoked skills) | ADR-012 IMP-005 |
+| 5 | 2026-03-09 | Removed `version` from required fields; package.json version is authoritative for npm-distributed plugins | ADR-013 |
+| 6 | 2026-03-09 | Manifest location changed from root `plugin.json` to `.agent-plugin/plugin.json`; 3/3 platforms (Claude Code, Copilot CLI, Cursor) converged on wrapper directories | ADR-014 D3 |
+| 7 | 2026-03-09 | Content types expanded from 6 to 8: `prompts` renamed to `rules` (platform rules/instructions), added `agentsMd` (AGENTS.md files), added `cli` (deferred to future ADR) | ADR-014 D4 |
+| 8 | 2026-03-09 | `installMode` (bundle/collection) superseded by features model with per-component granularity and three selection mechanisms (section-based, code regions, file-based) | ADR-014 D5 |

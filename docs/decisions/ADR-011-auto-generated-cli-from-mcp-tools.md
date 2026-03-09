@@ -249,12 +249,12 @@ Implementation compliance will be verified through:
 
 ## References
 
-- **REF-001**: ANALYSIS-030 Auto-Generated CLI from MCP Tools (cli field modes, flat command mapping, install-time selection)
-- **REF-002**: ADR-010 Installation Lifecycle (install flow phases, lockfile tracking, upgrade mechanics)
-- **REF-003**: ADR-007 CLI Architecture and Interaction Model (command tree, three-tier input resolution, @clack/prompts mapping)
-- **REF-004**: ADR-006 Core Dependency Stack (gunshi, @clack/prompts adoption)
-- **REF-005**: DEBATE-ADR-010 Installation Lifecycle and CLI Generation (P0-1 consensus for extraction)
-- **REF-006**: DEBATE-ADR-011 Auto-Generated CLI Debate (P0 issue resolutions for grouping, lifecycle, security, trust, type mapping)
+- [[ANALYSIS-030 Auto-Generated CLI from MCP Tools]] — cli field modes, flat command mapping, install-time selection
+- [[ADR-010 Installation Lifecycle]] — install flow phases, lockfile tracking, upgrade mechanics
+- [[ADR-007 CLI Architecture and Interaction Model]] — command tree, three-tier input resolution, @clack/prompts mapping
+- [[ADR-006 Core Dependency Stack]] — gunshi, @clack/prompts adoption
+- [[DEBATE-ADR-010 Installation Lifecycle and CLI Generation]] — P0-1 consensus for extraction
+- [[DEBATE-ADR-011 Auto-Generated CLI from MCP Tools]] — P0 issue resolutions for grouping, lifecycle, security, trust, type mapping
 
 ## Observations
 

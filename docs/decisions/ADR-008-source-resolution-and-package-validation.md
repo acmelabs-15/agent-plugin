@@ -16,12 +16,16 @@ tags:
 
 ## Status
 
-**Accepted**
+**Superseded**
+
+**Superseded by**: ADR-014 Explicit Installation Model and Content Features (via ADR-013)
 
 **Date**: 2026-03-07
 **Authors**: Agent Plugin Core Team
 **Consulted**: Analyst team (ANALYSIS-025 source resolution patterns, ANALYSIS-028 Bun API reliability)
 **Informed**: All project contributors
+
+> **Supersession note (2026-03-09):** ADR-013 delegated source resolution to Bun. ADR-014 then superseded ADR-013, reinstating custom source resolution handled by agent-plugin directly (npm registry fetch, git clone, filesystem read). ADR-014 D1 defines source types; IMP-001 specifies security constraints (CWE-22, CWE-494, CWE-78). The detailed resolution pipeline from this ADR is not reused, but some concepts (manifest discovery, validation) inform ADR-014's implementation design. This document is retained for historical reference.
 
 ## Context and Problem Statement
 
@@ -245,13 +249,13 @@ Implementation compliance will be confirmed via:
 
 ## References
 
-- **REF-001**: ANALYSIS-025 Source Resolution Patterns (npm registry API, GitHub archive URLs, manifest discovery, semver comparison, content staging)
-- **REF-002**: ANALYSIS-028 Bun Built-in API Reliability Assessment (Bun.semver maturity, Bun.Archive gaps, Bun.write hanging bug)
-- **REF-003**: ADR-001 Plugin Format and Manifest (plugin.json as mandatory manifest format)
-- **REF-004**: ADR-005 Runtime and Distribution Strategy (Bun 1.3.x as sole runtime)
-- **REF-005**: ADR-006 Core Dependency Stack (13 dependencies, dependency governance policy)
-- **REF-006**: ADR-007 CLI Architecture and Interaction Model (source type detection order, validation rules)
-- **REF-007**: HashiCorp go-getter detector chain pattern (detector chain precedent; note: go-getter places FileDetector last, agent-plugin intentionally inverts this order)
+- [[ANALYSIS-025 Source Resolution Patterns]] — npm registry API, GitHub archive URLs, manifest discovery, semver comparison, content staging
+- [[ANALYSIS-028 Bun Builtin API Reliability]] — Bun.semver maturity, Bun.Archive gaps, Bun.write hanging bug
+- [[ADR-001 Plugin Format and Manifest]] — plugin.json as mandatory manifest format
+- [[ADR-005 Runtime and Distribution Strategy]] — Bun 1.3.x as sole runtime
+- [[ADR-006 Core Dependency Stack]] — 13 dependencies, dependency governance policy
+- [[ADR-007 CLI Architecture and Interaction Model]] — source type detection order, validation rules
+- HashiCorp go-getter detector chain pattern — detector chain precedent; note: go-getter places FileDetector last, agent-plugin intentionally inverts this order
 
 ## Observations
 
@@ -271,6 +275,7 @@ Implementation compliance will be confirmed via:
 
 ## Relations
 
+- superseded_by [[ADR-013 npm-Package Distribution and Revised Command Tree]]
 - depends_on [[ADR-001 Plugin Format and Manifest]]
 - depends_on [[ADR-005 Runtime and Distribution Strategy]]
 - relates_to [[ADR-006 Core Dependency Stack]]

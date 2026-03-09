@@ -191,11 +191,11 @@ On plugin install, the tool MUST:
 
 ## References
 
-- **REF-001**: ANALYSIS-002 Platform Capability Matrix (16+ platform evaluation with 6-capability scoring)
-- **REF-002**: ANALYSIS-001 Agent Plugin Foundation and Vision (foundational research and vision document)
-- **REF-003**: Vercel Skills Standard (concepts borrowed for manifest design)
-- **REF-004**: Model Context Protocol Specification (MCP server integration standard)
-- **REF-005**: SESSION-2026-03-07_01 Agent Plugin Spec Ideation (session where these decisions were discussed and locked)
+- [[ANALYSIS-002 Platform Capability Matrix]] — 16+ platform evaluation with 6-capability scoring
+- [[ANALYSIS-001 Agent Plugin Foundation and Vision]] — foundational research and vision document
+- Vercel Skills Standard — concepts borrowed for manifest design
+- Model Context Protocol Specification — MCP server integration standard
+- [[SESSION-2026-03-07_01-agent-plugin-spec-ideation]] — session where these decisions were discussed and locked
 
 ## Observations
 

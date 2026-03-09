@@ -194,12 +194,12 @@ Bun-specific APIs (Bun.file, Bun.Glob, bun:sqlite) provide measurable developer 
 
 ## References
 
-- **REF-001**: ANALYSIS-016-bun-runtime-assessment (cold start benchmarks, compatibility matrix, API surface analysis)
-- **REF-002**: Anthropic acquires Oven (December 2025)
-- **REF-003**: Claude Code distribution model (Bun-compiled binary)
-- **REF-004**: Tigris CLI dual distribution pattern (npm + compiled binaries)
-- **REF-005**: @clack/prompts Bun issues: GitHub #4835, #3099, #7033
-- **REF-006**: gunshi CLI framework Bun support documentation
+- [[ANALYSIS-016 Bun Runtime Assessment]] — cold start benchmarks, compatibility matrix, API surface analysis
+- Anthropic acquires Oven (December 2025)
+- Claude Code distribution model — Bun-compiled binary
+- Tigris CLI dual distribution pattern — npm + compiled binaries
+- @clack/prompts Bun issues: GitHub #4835, #3099, #7033
+- gunshi CLI framework Bun support documentation
 
 ## Observations
 

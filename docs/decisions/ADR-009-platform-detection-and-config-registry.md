@@ -344,12 +344,12 @@ Implementation compliance will be verified through:
 
 ## References
 
-- **REF-001**: ANALYSIS-026 Platform Detection and Mapping (binary names, config paths, detection strategy, parallel implementation)
-- **REF-002**: ANALYSIS-029 Platform Config Registry (platforms.config.json design, data-driven approach, MCP key namespacing)
-- **REF-003**: ADR-001 Plugin Format and Manifest (plugin.json is platform-agnostic, no platforms field)
-- **REF-004**: ADR-002 Target Platforms and Audiences (7 target platforms, 3 audience types)
-- **REF-005**: ADR-003 Conflict Resolution and Namespacing (colon separator for component identifiers, kebab-case validation)
-- **REF-006**: ADR-005 Runtime and Distribution Strategy (Bun runtime, Bun.spawn for subprocess management)
+- [[ANALYSIS-026 Platform Detection and Mapping]] — binary names, config paths, detection strategy, parallel implementation
+- [[ANALYSIS-029 Platform Config Registry]] — platforms.config.json design, data-driven approach, MCP key namespacing
+- [[ADR-001 Plugin Format and Manifest]] — plugin.json is platform-agnostic, no platforms field
+- [[ADR-002 Target Platforms and Audiences]] — 7 target platforms, 3 audience types
+- [[ADR-003 Conflict Resolution and Namespacing]] — colon separator for component identifiers, kebab-case validation
+- [[ADR-005 Runtime and Distribution Strategy]] — Bun runtime, Bun.spawn for subprocess management
 
 ## Observations
 

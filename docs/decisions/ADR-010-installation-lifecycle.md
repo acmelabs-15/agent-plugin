@@ -1,7 +1,7 @@
 ---
 title: ADR-010 Installation Lifecycle
 type: decision
-status: accepted
+status: superseded
 date: 2026-03-07
 decision-makers: Peter Kloss
 permalink: decisions/adr-010-installation-lifecycle-1
@@ -19,10 +19,14 @@ tags:
 
 ## Status
 
-**Accepted**
+**Superseded**
+
+**Superseded by**: ADR-014 Explicit Installation Model and Content Features (via ADR-013)
 
 **Consulted**: Architect agent, Analyst agent, Critic agent
 **Informed**: All project contributors
+
+> **Supersession note (2026-03-09):** ADR-013 replaced the 6-phase model with `bun add` + `agent-plugin install`. ADR-014 then superseded ADR-013, replacing it with an explicit 8-step add flow: resolve source, read manifest, validate, detect platforms, features wizard, parse content, write to platform configs, update lockfile (ADR-014 D7). Platform detection (Phase 1 concept) and platform config writing (Phase 5 concept) survive in the new model. This document is retained for historical reference.
 
 ## Context and Problem Statement
 
@@ -355,13 +359,13 @@ Implementation compliance will be verified through:
 
 ## References
 
-- **REF-001**: ANALYSIS-027 Installation Mechanics (install scope patterns, system dependency management, 5-phase flow, upgrade mechanics)
-- **REF-002**: ANALYSIS-029 Platform Config Registry (platforms.config.json, MCP key namespacing)
-- **REF-007**: ADR-009 Platform Detection and Config Registry (MCP key namespacing with colon separator, Decision 2)
-- **REF-003**: ADR-003 Conflict Resolution and Namespacing (always-namespace, overlay/recompute hooks, lockfile design, sanitization pipeline)
-- **REF-004**: ADR-005 Runtime and Distribution Strategy (Bun runtime, distribution channels)
-- **REF-005**: ADR-007 CLI Architecture and Interaction Model (command tree, three-tier input resolution, @clack/prompts mapping)
-- **REF-006**: ADR-011 Auto-Generated CLI from MCP Tools (extracted from this ADR's original Decision 5)
+- [[ANALYSIS-027 Installation Mechanics]] — install scope patterns, system dependency management, 5-phase flow, upgrade mechanics
+- [[ANALYSIS-029 Platform Config Registry]] — platforms.config.json, MCP key namespacing
+- [[ADR-009 Platform Detection and Config Registry]] — MCP key namespacing with colon separator, Decision 2
+- [[ADR-003 Conflict Resolution and Namespacing]] — always-namespace, overlay/recompute hooks, lockfile design, sanitization pipeline
+- [[ADR-005 Runtime and Distribution Strategy]] — Bun runtime, distribution channels
+- [[ADR-007 CLI Architecture and Interaction Model]] — command tree, three-tier input resolution, @clack/prompts mapping
+- [[ADR-011 Auto-Generated CLI from MCP Tools]] — extracted from this ADR's original Decision 5
 
 ## Observations
 
@@ -384,6 +388,7 @@ Implementation compliance will be verified through:
 
 ## Relations
 
+- superseded_by [[ADR-013 npm-Package Distribution and Revised Command Tree]]
 - depends_on [[ADR-003 Conflict Resolution and Namespacing]]
 - depends_on [[ADR-005 Runtime and Distribution Strategy]]
 - relates_to [[ADR-007 CLI Architecture and Interaction Model]]

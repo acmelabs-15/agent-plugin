@@ -15,7 +15,7 @@ tags:
 **Status:** IN_PROGRESS
 **Branch:** ideation/agent-plugin-spec
 **Starting Commit:** 84f8511 first commit
-**Current Commit:** aff0c0f fix: restructure session note with correct group ordering and cleanup
+**Current Commit:** f4e5d37 docs: update session note with Group 7 npm-package distribution decisions
 **Objective:** Work through the `@acmelabs-15/agent-plugin` comprehensive design specification using the ideation workflow, conducting web research, creating ADRs for architectural decisions, and producing feature specs in the features/ directory
 
 ---
@@ -167,6 +167,36 @@ tags:
 - [decision] ADR-010 (Installation Lifecycle) MOSTLY SUPERSEDED: 6-phase model replaced by `bun add` + `agent-plugin install` wiring. #adr-010 #superseded
 - [decision] ADR-003 Decision 3 (lockfile) SUPERSEDED: bun.lockb replaces plugin-lock.json. #adr-003 #lockfile #superseded
 - [decision] ADR-001 needs amendment: version removed from required fields, minimum fields now just name + description. #adr-001 #amendment
+- [decision] Bun postinstall fires on ALL operations (add, remove, update, install) -- empirically verified on v1.3.8. Unlike npm/yarn which skip remove. #bun #lifecycle #verified
+- [decision] Full recompute for hook merging: scan all plugin.json files in node_modules, recompute merged hook state from scratch. node_modules IS the state. Under 20ms for 10 plugins. #hooks #merge #stateless
+- [decision] Supply chain: restrict node_modules scanning to direct dependencies in package.json only (not transitive). Matches TanStack Intent's actual behavior. #security #supply-chain
+- [decision] Rename `mcp` to `mcpServers` in plugin.json -- de facto standard across 6/8 AI platforms, copy-pasteable stdio config #manifest #cross-platform
+- [decision] Support `string | string[]` for content paths in plugin.json manifest -- matching Claude Code/Cursor/Copilot convergence pattern #manifest #cross-platform
+- [decision] Support inline objects for hooks/mcpServers in plugin.json (not just file paths) #manifest #flexibility
+- [decision] Commands are first-class content type, NOT legacy. User-invoked (distinct from agent-invoked skills). #commands #content-types
+- [decision] ADR-013 ACCEPTED (Round 2: 5 Accept + 1 D&C) but then SUPERSEDED by design pivot #adr-013 #accepted #superseded
+- [decision] DESIGN PIVOT: explicit `agent-plugin add/remove/update` commands replace ADR-013's npm-dependency + postinstall auto-wiring model. User prefers Vercel Skills approach. #distribution #major-pivot
+- [decision] ADR-014 to be created to supersede ADR-013's installation model (keep ADR-013 accepted, option C) #adr-impact
+- [decision] `.agent-lock.json` lockfile in consuming project: tracks source, sourceType, hash, features, timestamps per plugin. Enables team sync via `agent-plugin install` (restore from lockfile). #lockfile #state-management
+- [decision] No consumer-side config file: `.agent-lock.json` + platform configs are the only state. No `.agent-plugin/config.json`. #state-management #simplification
+- [decision] Features model: two scopes -- plugin-level (span multiple components) and component-level (single component). Top-level `features` declaration with description, default, requires fields. Per-component `features` mapping features to sections. #features #content-model
+- [decision] Section-based feature mechanism for markdown content (skills, agents, commands, AGENTS.md): sections mapped by markdown headers parsed via remark/unified/mdast-util-heading-range. #features #sections #markdown
+- [decision] Section-based feature mechanism for code content (hooks): `// #region feature:NAME` / `// #endregion feature:NAME` markers. Custom ~50-100 line parser. #features #sections #code
+- [decision] File-based feature mechanism for rules only: individual rule files included/excluded based on feature selection. #features #rules
+- [decision] MCP has NO features -- always installed as-is. #mcp #features
+- [decision] Plugin manifest: `.agent-plugin/plugin.json` in dedicated directory within plugin package. Follows Claude Code `.claude-plugin/plugin.json` convention. Directory provides disambiguation for generic "plugin.json" name. 3/3 AI platforms (Claude Code, Copilot CLI, Cursor) converged on plugin.json. #manifest #naming
+- [decision] Content types: Skills (SKILL.md per skill), Agents, Hooks, Commands, Rules, MCP, AGENTS.md (replaces instructions/), CLI (optional custom impl). #content-types
+- [decision] AGENTS.md replaces instructions/ as content type. Plugin-wide instructions via AGENTS.md file. Rules are separate file-based content type. #content-types #instructions
+- [decision] Platform-specific metadata lives in plugin.json per component `platforms` field, NOT in content files. Content files are platform-agnostic. #platform-config #content-model
+- [decision] Source types: npm packages, git repos (owner/repo shorthand, full URL), local paths. Same as Vercel Skills. #sources #distribution
+- [decision] Add flow: resolve source → read .agent-plugin/plugin.json → validate with Zod → detect platforms → feature wizard (clack multiselect) → parse/compile content → write to platforms → update .agent-lock.json → summary. #add-flow #installation
+- [decision] Revised command tree: add/remove/update/install/list (consumer) + create/validate/build (author) + mcp serve + content-type groups (skill/agent/mcp/command/hook/rule CRUD) #command-tree
+- [decision] `install` command restores all plugins from `.agent-lock.json` (team sync via git, analogous to `npm install` from package-lock.json) #install #team-sync
+- [fact] No cross-platform AI agent plugin manager exists -- this is confirmed whitespace opportunity (ANALYSIS-036) #market-gap
+- [fact] MCP is universal standard: 8/8 platforms support it, mcpServers JSON format identical across 6/8 #mcp #universal
+- [fact] AGENTS.md adopted by 6/8 platforms, 60K+ GitHub repos, Linux Foundation governance #standards
+- [fact] Style Dictionary is closest prior art for cross-platform adapter pattern (9/10 applicability score) #prior-art #adapters
+- [fact] Plugin manifest convergence: Claude Code, Copilot CLI, Cursor independently converged on nearly identical plugin.json schemas #manifest #convergence
 
 ---
 
@@ -208,7 +238,7 @@ Template reference: /Users/peter.kloss/Documents/examples/docs/features/FEAT-003
 
 ## Ideation Workflow Status
 
-**Current Position:** Phase 1 > Group 7 IN PROGRESS. Decisions made, ADR creation pending.
+**Current Position:** Phase 1 > Group 7 COMPLETE. ADR-013 ACCEPTED (Round 2: 5 Accept + 1 D&C). Major design pivot: moved AWAY from ADR-013's npm-dependency + postinstall model toward explicit `agent-plugin add/remove/update` command model (Vercel Skills style). ADR-014 to be created to supersede ADR-013. Features model, `.agent-plugin/plugin.json` manifest, `.agent-lock.json` lockfile, revised command tree, content type taxonomy, section-based feature mechanism all settled. Groups 8-9, Phases 2-5 NOT STARTED.
 
 ### Phase 1: Research and Discovery
 
@@ -439,12 +469,19 @@ ADR status:
 - [x] DEBATE-ADR-012 saved with both rounds
 - [x] ADR-012 COMPLETE
 
-#### Group 7: Commands (Sections 13-14) -- DECISIONS MADE, ADR CREATION PENDING
+#### Group 7: Commands and npm Distribution (Sections 13-14) -- COMPLETE
 
 Research completed:
 
 - [x] [[ANALYSIS-033-consumer-and-author-commands]] -- Consumer/author command analysis, npm-package distribution model research
 - [x] [[ANALYSIS-034-skill-versioning-models-comparison]] -- TanStack Intent model, npm-package distribution patterns
+- [x] [[ANALYSIS-035-hook-merging-strategies-without-custom-lockfile]] -- 6 strategies compared, full recompute recommended (<20ms for 10 plugins)
+- [x] [[ANALYSIS-036-ai-platform-plugin-standards-survey]] -- MCP 8/8, AGENTS.md 6/8, no cross-platform plugin manager exists
+- [x] [[ANALYSIS-037-cross-platform-hook-configuration-analysis]] -- 6 universal hook events, naming divergence, converging stdin/stdout/exit-code protocol
+- [x] [[ANALYSIS-038-cross-platform-agent-and-skill-definitions]] -- 6 universal agent fields, 3 platform tiers
+- [x] [[ANALYSIS-039-cross-platform-mcp-and-instruction-formats]] -- MCP stdio config copy-pasteable across 6/8 platforms, instruction file divergence
+- [x] [[ANALYSIS-040-prior-art-for-cross-platform-adapter-patterns]] -- Style Dictionary closest match (9/10), transform pipeline validated
+- [x] [[ANALYSIS-041-plugin-manifest-cross-platform-comparison]] -- 90% aligned with Claude Code/Copilot/Cursor convergence
 
 Major architectural pivot: npm-package distribution model adopted (TanStack Intent style)
 
@@ -462,8 +499,98 @@ Major architectural pivot: npm-package distribution model adopted (TanStack Inte
 - [x] ADR-010 to be mostly superseded (6-phase model replaced by bun add + install wiring)
 - [x] ADR-003 Decision 3 lockfile to be superseded (bun.lockb replaces plugin-lock.json)
 - [x] ADR-001 to be amended (version removed from required fields)
-- [ ] ADR creation for Group 7 decisions (pending)
-- [ ] ADR review and debate (pending)
+- [x] ADR-013 created (npm-Package Distribution and Revised Command Tree, 6 decisions)
+- [x] ADR-013 adr-review Round 1: unanimous NEEDS REVISION (0 Accept, 6 Needs Rev). 3 P0, 11 P1, 7 P2.
+- [x] DEBATE-ADR-013 saved to critique/
+- [x] ADR-013 adr-review Round 2: ACCEPTED (5 Accept, 1 D&C). 0 P0, 0 P1, 7 P2 (non-blocking).
+- [x] ADR-013 status changed from "proposed" to "accepted" (2026-03-09)
+- [x] ADR-013 COMPLETE (but to be superseded by ADR-014 due to design pivot)
+- [x] Design pivot: explicit add/remove/update commands replace postinstall auto-wiring
+- [x] Features model, .agent-plugin/plugin.json manifest, .agent-lock.json lockfile, content types, section mechanisms, command tree all settled
+- [x] ANALYSIS-047 Project Bootstrapping captured as pending workstream
+
+ADR-013 P0 resolutions (applied in Round 2 revision):
+
+- [x] P0-1 RESOLVED: Bun postinstall empirically verified on v1.3.8 -- fires on ALL operations (add, remove, update, install). ADR claim is correct. No change needed.
+- [x] P0-2 RESOLVED: Full recompute from plugin.json files in node_modules. No lockfile needed for hook tracking. ANALYSIS-035 validates <20ms for 10 plugins.
+- [x] P0-3 RESOLVED: Restrict scanning to direct dependencies in package.json only (not transitive). Resolves supply chain risk.
+
+ADR-013 P1 resolutions (all resolved via Round 2 revision):
+
+- [x] P1-1 agreed: Add acknowledgment that ANALYSIS-034 recommended against TanStack model, document why overridden
+- [x] P1-2: Husky uses `prepare` not `postinstall` -- corrected in ADR-013 revision
+- [x] P1-3: Missing MADR Confirmation section -- added in Round 2
+- [x] P1-4: Missing Pros/Cons for rejected options -- added in Round 2
+- [x] P1-5: Dev workflow gap -- addressed (file watching not needed with explicit add model)
+- [x] P1-6: "60% complexity reduction" unsourced -- removed rhetorical estimate
+- [x] P1-7: plugin.json name vs package.json name dual-source -- precedence defined
+- [x] P1-8: Path validation for plugin.json content -- validation rules added
+- [x] P1-9: Wiring change output/diff visibility -- summary output required
+- [x] P1-10: `bun update` postinstall behavior -- empirically verified on v1.3.8
+- [x] P1-11: Isolated linker compatibility -- scanning follows symlinks
+
+ADR-013 Round 2 (convergence vote):
+
+- [x] Round 2: CONSENSUS REACHED (5 Accept, 1 D&C). 0 P0, 0 P1. 7 P2 (non-blocking).
+- [x] ADR-013 status changed from "proposed" to "accepted" (2026-03-09)
+- [x] DEBATE-ADR-013 updated with Round 2 verdicts, P2 issues, D&C reservations
+- [x] Independent Thinker D&C: standalone content authors concern, Bun postinstall stability concern
+
+Cross-platform alignment decisions (from ANALYSIS-036 through 041):
+
+- [x] Rename `mcp` to `mcpServers` in plugin.json (de facto standard across 6/8 platforms)
+- [x] Support `string | string[]` for paths in manifest (matching Claude Code/Cursor/Copilot patterns)
+- [x] Support inline objects for hooks/mcpServers in addition to file paths
+- [x] Commands confirmed as first-class content type (NOT legacy, distinct from agent-invoked skills)
+- [x] Rules vs AGENTS.md scope: rules are file-based (included/excluded per feature), AGENTS.md is section-based
+- [x] installMode replaced by features model: plugin-level and component-level features with section-based cherry-picking
+- [x] Native platform plugin installation: deferred to v2 (explicit add/remove/update model first)
+
+Major design pivot (post ADR-013 acceptance):
+
+- [x] Moved AWAY from ADR-013's npm-dependency + postinstall auto-wiring model
+- [x] Adopted explicit `agent-plugin add/remove/update` command model (Vercel Skills style)
+- [x] ADR-014 to be created to supersede ADR-013's installation model
+- [x] `.agent-lock.json` lockfile in consuming project tracks installed plugins (source, sourceType, hash, features, timestamps)
+- [x] `agent-plugin install` restores from lockfile (team sync via git)
+- [x] Vercel Skills CLI deeply analyzed (lock files, installer, remove, list commands)
+- [x] Features model designed: two scopes (plugin-level, component-level), section-based mechanism for markdown+code, file-based for rules, none for MCP
+- [x] Plugin manifest: `.agent-plugin/plugin.json` (follows Claude Code `.claude-plugin/plugin.json` convention, directory provides disambiguation)
+- [x] Content types: Skills, Agents, Hooks, Commands, Rules, MCP, AGENTS.md (replaces instructions/), CLI (optional)
+- [x] Section parsing: markdown headers via remark/unified/mdast-util-heading-range for markdown, `// #region feature:NAME` for code files
+- [x] Platform-specific metadata in plugin.json per component `platforms` field, NOT in content files
+- [x] No consumer-side config file: `.agent-lock.json` + platform configs are the only state
+- [x] Source types: npm packages, git repos (owner/repo, full URL), local paths
+- [x] Add flow: resolve source → read plugin.json → detect platforms → feature wizard → parse/compile content → write to platforms → update lockfile → summary
+- [x] ANALYSIS-047 created as pending workstream: project bootstrapping (Biome, Bun, Turbo, releases, CI/CD, GitHub config, testing)
+
+#### Decision Audit Reconciliation -- COMPLETE
+
+Source: `docs/analysis/RECONCILIATION-2026-03-09-decision-audit.md`
+6 parallel extraction agents read 22,969 lines of conversation log, reconciliation agent resolved reversals chronologically.
+
+**P0 Tasks (Critical -- design decisions exist but have no ADR)**:
+
+- [x] P0-1: Create ADR-014 (785 lines, 8 decisions). adr-review completed: Round 2 consensus (5 Accept + 1 D&C). Status: Accepted.
+- [x] P0-2: ADR-001 updated with amendments #6 (manifest location), #7 (content types 6→8), #8 (installMode→features). Duplicate Section 9 removed. ADR-014 relation added.
+- [x] P0-3: ADR-013 status changed to "superseded" with full explanation referencing ADR-014.
+
+**P1 Tasks (Missing analysis/documentation)**:
+
+- [x] P1-1: ANALYSIS-043 updated with "Adoption Status" section noting ADR-014 adopted recommendations. ADR-014 relation added.
+- [x] P1-2: ANALYSIS-044 updated with "Adoption Status" section noting ADR-014 D5 adopted section-based selection. ADR-014 relation added.
+- [x] P1-3: Covered by ADR-014 D2 (lockfile schema). Standalone note not needed.
+- [x] P1-4: Covered by ADR-014 D3/D4/D8 (plugin.json schema, content types, platform metadata). Standalone note not needed.
+- [x] P1-5: Covered by ADR-014 D7 (8-step add flow). Standalone note not needed.
+- [ ] P1-6: Vercel Skills CLI research note (nice to have, not blocking)
+- [x] P1-7: ADR-003 Decision 3 supersession note updated to reference ADR-014 (.agent-lock.json, independent per-plugin hooks). ADR-014 relation added.
+- [x] P1-8: ANALYSIS-042 updated with "Adoption Status" section confirming deferral. ADR-014 relation added.
+
+**P2 Tasks (Housekeeping)**:
+
+- [ ] P2-1: Update session note with reconciliation results and completion status
+- [ ] P2-2: Commit all changes
+- [ ] P2-3: ADR-008/010 supersession chain update (when ADR-014 supersedes ADR-013)
 
 #### Group 8: MCP and Self-Bootstrap (Sections 15-18) -- NOT STARTED
 
@@ -746,6 +873,69 @@ Major architectural pivot: npm-package distribution model adopted (TanStack Inte
 - [x] [decision] ADR-001 to be amended: version removed from required fields #adr-impact
 - [x] [fix] ANALYSIS-033, ANALYSIS-034 renamed from space-separated to kebab-case file names #naming
 
+### Group 7 (cont'd): ADR-013 Debate and Cross-Platform Research
+
+- [x] [adr] ADR-013 npm-Package Distribution and Revised Command Tree created (6 decisions) #architecture
+- [x] [review] ADR-013 adr-review Round 1: unanimous NEEDS REVISION (0 Accept, 6 Needs Rev). 3 P0, 11 P1, 7 P2. #review
+- [x] [review] DEBATE-ADR-013 saved with Round 1 results, P0 proposed resolutions, agent conflict resolution #debate-log
+- [x] [test] Bun v1.3.8 postinstall empirical test: postinstall fires on ALL operations (add, remove, update, install). Disproves P0-1 concern. #bun #verified
+- [x] [research] Hook merging without lockfile -- [[ANALYSIS-035-hook-merging-strategies-without-custom-lockfile]] COMPLETE. Full recompute recommended (<20ms). #hooks
+- [x] [decision] P0-1 RESOLVED: ADR-013 Decision 3 claim is correct for Bun (unlike npm/yarn). No ADR change needed. #p0-resolution
+- [x] [decision] P0-2 RESOLVED: Full recompute from plugin.json files in node_modules. node_modules IS the state. No separate hook tracking needed. #p0-resolution
+- [x] [decision] P0-3 RESOLVED: Restrict scanning to direct dependencies in package.json only (not transitive). Supply chain risk mitigated. #p0-resolution
+- [x] [decision] P1-1 agreed: Add acknowledgment that ANALYSIS-034 recommended against TanStack model, document why overridden after ANALYSIS-033 revealed 12 conflicts #p1-resolution
+- [x] [done] P1-2 through P1-11: ALL resolved in ADR-013 Round 2 revision #adr-013
+- [x] [done] P0 resolutions applied to ADR-013 file #adr-013
+- [x] [done] ADR-013 Round 2 convergence vote: 5 Accept + 1 D&C = CONSENSUS #adr-013
+- [x] [research] AI platform plugin standards survey -- [[ANALYSIS-036-ai-platform-plugin-standards-survey]] COMPLETE #cross-platform
+- [x] [research] Cross-platform hook configuration -- [[ANALYSIS-037-cross-platform-hook-configuration-analysis]] COMPLETE #hooks #cross-platform
+- [x] [research] Cross-platform agent and skill definitions -- [[ANALYSIS-038-cross-platform-agent-and-skill-definitions]] COMPLETE #agents #skills #cross-platform
+- [x] [research] Cross-platform MCP and instruction formats -- [[ANALYSIS-039-cross-platform-mcp-and-instruction-formats]] COMPLETE #mcp #instructions #cross-platform
+- [x] [research] Prior art for cross-platform adapter patterns -- [[ANALYSIS-040-prior-art-for-cross-platform-adapter-patterns]] COMPLETE #adapters #cross-platform
+- [x] [research] Plugin manifest cross-platform comparison -- [[ANALYSIS-041-plugin-manifest-cross-platform-comparison]] COMPLETE #manifest #cross-platform
+- [x] [fix] ANALYSIS-035 through ANALYSIS-041 renamed from space-separated to kebab-case file names #naming
+- [x] [decision] Rename `mcp` to `mcpServers` in plugin.json (de facto standard across 6/8 platforms) #manifest #alignment
+- [x] [decision] Support `string | string[]` for content paths in manifest (matching Claude Code/Cursor/Copilot patterns) #manifest #alignment
+- [x] [decision] Support inline objects for hooks/mcpServers (not just file paths) #manifest #alignment
+- [x] [decision] Commands confirmed as first-class content type (user-invoked, distinct from agent-invoked skills) #commands #content-types
+- [x] [fact] Bun Plugin API (`Bun.plugin()`) is bundler/runtime only, cannot hook into package manager operations. No PM hook surface exists. Feature request #8062 open. #bun #limitation
+- [x] [fact] Style Dictionary is closest prior art for cross-platform adapter (9/10 applicability). Transform pipeline: Resolve, Map concepts, Translate fields, Format output, Write files. #prior-art
+- [x] [fact] 6 universal hook events across platforms: Pre Tool Use, Post Tool Use, User Prompt Submit, Session Start, Stop/Complete, Session End #hooks #universal
+- [x] [fact] 6 universal agent fields: name, description, prompt, tools, model, mcpServers #agents #universal
+- [x] [resolved] Native platform plugin installation: deferred to v2 (explicit add/remove/update model first) #architecture
+- [x] [resolved] installMode replaced by features model: plugin-level and component-level features with section-based cherry-picking #architecture
+- [x] [resolved] Rules vs AGENTS.md: rules are file-based (per feature), AGENTS.md is section-based. instructions/ renamed to AGENTS.md content type #content-types
+- [ ] [pending] ADR amendments: ADR-001 (version removed, mcp->mcpServers, string|string[] paths), ADR-003 (lockfile superseded) #amendments
+- [ ] [pending] ADR supersessions: Mark ADR-008 and ADR-010 as superseded by ADR-013, then ADR-013 superseded by ADR-014 #supersessions
+- [ ] [pending] Create ADR-014: explicit add/remove/update model superseding ADR-013's postinstall model #adr-014
+
+### Group 7 (cont'd): ADR-013 Round 2 and Design Pivot
+
+- [x] [review] ADR-013 Round 2 convergence vote: 6 agents spawned in parallel (architect, critic, independent-thinker, security, analyst, high-level-advisor) #review
+- [x] [review] Round 2 result: CONSENSUS REACHED (5 Accept, 1 D&C) -- Architect Accept, Security Accept, Advisor Accept, Analyst Accept, Critic Accept, Independent Thinker D&C #consensus
+- [x] [review] DEBATE-ADR-013 updated with Round 2 verdicts, 7 P2 issues (non-blocking), D&C reservations #review
+- [x] [fix] ADR-013 status changed from "proposed" to "accepted" (2026-03-09, Round 2: 5 Accept + 1 D&C) #status
+- [x] [decision] MAJOR DESIGN PIVOT: user rethought installation model, moved AWAY from ADR-013's npm-dependency + postinstall toward explicit `agent-plugin add/remove/update` commands (Vercel Skills style) #pivot
+- [x] [decision] ADR impact approach: Option C -- keep ADR-013 accepted, create ADR-014 to supersede it #adr-impact
+- [x] [research] Vercel Skills CLI deeply analyzed via GitHub API: lock files (global + project), installer, remove, list commands. Two repos: vercel-labs/skills (CLI) and vercel-labs/agent-skills (content). #vercel-skills
+- [x] [decision] `.agent-lock.json` lockfile in consuming project: source, sourceType, hash, features, timestamps per plugin. Team sync via `agent-plugin install`. #lockfile
+- [x] [decision] No consumer-side config file: `.agent-lock.json` + platform configs are the only state #simplification
+- [x] [decision] Features model designed: plugin-level (span multiple components) + component-level (single component). Top-level `features` declaration with description, default, requires. Per-component features mapping to sections. #features
+- [x] [decision] Section-based feature mechanism for markdown (skills, agents, commands, AGENTS.md): standard markdown headers parsed by remark/unified/mdast-util-heading-range #sections #markdown
+- [x] [decision] Section-based feature mechanism for code (hooks): `// #region feature:NAME` / `// #endregion feature:NAME`. Custom parser. #sections #code
+- [x] [decision] File-based feature mechanism for rules only: individual files included/excluded per feature #rules
+- [x] [decision] MCP has NO features -- always installed as-is #mcp
+- [x] [decision] Plugin manifest naming: `.agent-plugin/plugin.json` (follows Claude Code `.claude-plugin/plugin.json` convention). 3/3 AI platforms converged on plugin.json. Directory provides disambiguation. #manifest
+- [x] [decision] Content types: Skills, Agents, Hooks, Commands, Rules, MCP, AGENTS.md (replaces instructions/), CLI (optional) #content-types
+- [x] [decision] Platform-specific metadata in plugin.json per component `platforms` field, NOT in content files #platform-config
+- [x] [decision] Source types: npm packages, git repos (owner/repo, full URL), local paths #sources
+- [x] [decision] Revised command tree: add/remove/update/install/list (consumer) + create/validate/build (author) + mcp serve + content-type CRUD groups #command-tree
+- [x] [decision] Add end-to-end flow: resolve source → read plugin.json → validate Zod → detect platforms → feature wizard → parse/compile → write platforms → update lockfile → summary #add-flow
+- [x] [decision] plugin.json schema drafted with features, skills, hooks, rules, mcpServers, agentsMd sections #schema
+- [x] [decision] Plugin package structure settled: .agent-plugin/plugin.json, skills/, agents/, hooks/, commands/, cli/, mcp/, AGENTS.md, rules/, package.json #structure
+- [x] [workstream] ANALYSIS-047 created: project bootstrapping and DX infrastructure (Biome, Bun, Turbo, releases, CI/CD, GitHub config, testing) #pending
+- [ ] [pending] IMP-007 (from ADR-012): Update ANALYSIS-031 to remove stale gray-matter references #cleanup
+
 ### Organization Rename and Path Migration
 
 - [x] [fact] Organization renamed from acmelabz to acmelabs-15, npm scope @acmelabs-15
@@ -910,6 +1100,18 @@ From /Users/peter.kloss/Downloads/agent-plugin-design-spec.md:
 | created | [[ANALYSIS-033-consumer-and-author-commands]] | COMPLETE |
 | created | [[ANALYSIS-034-skill-versioning-models-comparison]] | COMPLETE |
 | renamed | ANALYSIS-033, ANALYSIS-034 | From space-separated to kebab-case file names |
+| created | [[ADR-013-npm-package-distribution-and-revised-command-tree]] | ACCEPTED (Round 2: 5 Accept + 1 D&C). To be superseded by ADR-014. |
+| updated | [[ADR-013-npm-package-distribution-and-revised-command-tree]] | ACCEPTED (2026-03-09, Round 2: 5 Accept + 1 D&C) |
+| updated | [[DEBATE-ADR-013-npm-package-distribution-and-revised-command-tree]] | COMPLETE (Round 1 + Round 2 verdicts, P2 issues, D&C reservations) |
+| created | [[ANALYSIS-047-project-bootstrapping-and-dx-infrastructure]] | PENDING (future workstream) |
+| created | [[ANALYSIS-035-hook-merging-strategies-without-custom-lockfile]] | COMPLETE |
+| created | [[ANALYSIS-036-ai-platform-plugin-standards-survey]] | COMPLETE |
+| created | [[ANALYSIS-037-cross-platform-hook-configuration-analysis]] | COMPLETE |
+| created | [[ANALYSIS-038-cross-platform-agent-and-skill-definitions]] | COMPLETE |
+| created | [[ANALYSIS-039-cross-platform-mcp-and-instruction-formats]] | COMPLETE |
+| created | [[ANALYSIS-040-prior-art-for-cross-platform-adapter-patterns]] | COMPLETE |
+| created | [[ANALYSIS-041-plugin-manifest-cross-platform-comparison]] | COMPLETE |
+| renamed | ANALYSIS-035 through ANALYSIS-041 | From space-separated to kebab-case file names |
 
 ### Code Files
 
@@ -995,6 +1197,16 @@ From /Users/peter.kloss/Downloads/agent-plugin-design-spec.md:
 - relates_to [[DEBATE-ADR-012-scaffolding-and-content-management]]
 - relates_to [[ANALYSIS-033-consumer-and-author-commands]]
 - relates_to [[ANALYSIS-034-skill-versioning-models-comparison]]
+- relates_to [[ADR-013-npm-package-distribution-and-revised-command-tree]]
+- relates_to [[DEBATE-ADR-013-npm-package-distribution-and-revised-command-tree]]
+- relates_to [[ANALYSIS-035-hook-merging-strategies-without-custom-lockfile]]
+- relates_to [[ANALYSIS-036-ai-platform-plugin-standards-survey]]
+- relates_to [[ANALYSIS-037-cross-platform-hook-configuration-analysis]]
+- relates_to [[ANALYSIS-038-cross-platform-agent-and-skill-definitions]]
+- relates_to [[ANALYSIS-039-cross-platform-mcp-and-instruction-formats]]
+- relates_to [[ANALYSIS-040-prior-art-for-cross-platform-adapter-patterns]]
+- relates_to [[ANALYSIS-041-plugin-manifest-cross-platform-comparison]]
+- relates_to [[ANALYSIS-047-project-bootstrapping-and-dx-infrastructure]]
 
 ---
 
