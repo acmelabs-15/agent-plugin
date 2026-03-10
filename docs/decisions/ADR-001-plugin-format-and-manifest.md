@@ -27,7 +27,7 @@ tags: ["architecture", "plugin-format", "manifest", "decision", "plugin-json"]
 
 ## Context
 
-We are designing the plugin format for `@acmelabs-15/agent-plugin`, a cross-platform AI agent plugin manager targeting 4 platforms: Claude Code, Cursor, GitHub Copilot, and Gemini CLI.
+We are designing the plugin format for `@acmelabs/agx`, a cross-platform AI agent plugin manager targeting 4 platforms: Claude Code, Cursor, GitHub Copilot, and Gemini CLI.
 
 Three reference systems were analyzed to inform this decision:
 
@@ -92,7 +92,7 @@ No `formatVersion` or `manifest_version` field. Research (ANALYSIS-007) found th
 1. **Additive changes only**: New optional fields are added without breaking existing manifests
 2. **Ignore unknown fields**: Older plugin manager versions silently ignore fields they don't recognize
 3. **Detect missing required fields**: Newer plugin manager versions detect when a manifest is missing fields that have become required and provide actionable error messages
-4. **`doctor` command**: A diagnostic command (`agent-plugin doctor`) validates installed plugin manifests against the current schema, identifying issues and suggesting fixes
+4. **`doctor` command**: A diagnostic command (`agx doctor`) validates installed plugin manifests against the current schema, identifying issues and suggesting fixes
 5. **Auto-detection on upgrade/update**: The `upgrade` and `update` commands detect schema mismatches automatically and trigger migration (auto-migration for non-breaking changes, migration wizard via @clack/prompts when user input is required)
 6. **Migration support**: When schema changes require user input, the plugin manager runs a migration wizard (via @clack/prompts) to guide the author through updates. Non-interactive migrations are applied automatically.
 

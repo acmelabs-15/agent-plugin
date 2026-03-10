@@ -31,7 +31,7 @@ tags:
 
 ## Context and Problem Statement
 
-`@acmelabs-15/agent-plugin` is a cross-platform CLI with an embedded MCP server for managing AI agent plugins across 4 platforms (see ADR-002 Amendment #1; reduced from 7). ADR-005 established Bun as the runtime. The design specification proposed a dependency list, but each library requires validation against 4 criteria: Bun compatibility, security posture, maintenance health, and actual necessity for a CLI tool (not a browser application).
+`@acmelabs/agx` is a cross-platform CLI with an embedded MCP server for managing AI agent plugins across 4 platforms (see ADR-002 Amendment #1; reduced from 7). ADR-005 established Bun as the runtime. The design specification proposed a dependency list, but each library requires validation against 4 criteria: Bun compatibility, security posture, maintenance health, and actual necessity for a CLI tool (not a browser application).
 
 Which libraries should constitute the core dependency stack, and which proposed dependencies should be removed?
 
@@ -342,7 +342,7 @@ Implementation compliance will be confirmed via:
 
 - **IMP-001**: Pin gunshi to exact version `0.29.2` in package.json (no caret, no tilde). Review each minor version bump individually before upgrading.
 - **IMP-002**: The frontmatter parser is a utility function, not a library. Implement in `src/utils/frontmatter.ts`. Approximately 10 lines of code.
-- **IMP-003**: chokidar is a devDependency-like concern (only used for `agent-plugin dev` command). Consider lazy-importing it only when the dev command is invoked.
+- **IMP-003**: chokidar is a devDependency-like concern (only used for `agx dev` command). Consider lazy-importing it only when the dev command is invoked.
 - **IMP-004**: @clack/prompts Bun stdin testing must happen before v1.0 release. Create a test harness that exercises: text input, select picker, confirm dialog, multi-select, and group wizard.
 - **IMP-005**: If @clack/prompts fails Bun stdin testing, migration to Inquirer.js requires replacing `group()` calls with sequential prompt chains. Estimate 1-2 days.
 - **IMP-006**: validator MUST be pinned to >= 13.15.22 due to CVE-2025-12758 (CVSS 7.5, Unicode length bypass in isLength()). Verify which validator functions the sanitization pipeline uses.

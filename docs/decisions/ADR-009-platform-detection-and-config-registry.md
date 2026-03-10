@@ -25,7 +25,7 @@ tags:
 
 ## Context and Problem Statement
 
-`@acmelabs-15/agent-plugin` targets 4 AI coding platforms (ADR-002). Each platform has different binary names, config directory paths, MCP config file locations, and content directory structures. Three interconnected problems must be solved:
+`@acmelabs/agx` targets 4 AI coding platforms (ADR-002). Each platform has different binary names, config directory paths, MCP config file locations, and content directory structures. Three interconnected problems must be solved:
 
 1. **Platform detection**: How does the CLI determine which of the 4 platforms are installed on the user's machine? Binary-only checks via `which`/`where` miss GUI editors (Cursor) that users install without adding shell commands to PATH. Config-directory-only checks may false-positive from leftover directories of uninstalled software.
 
@@ -61,7 +61,7 @@ These problems are tightly coupled: detection determines which platforms to conf
 
 ### For Platform Config Registry
 
-- **Option H: Static JSON data file** (`platforms.config.json` at agent-plugin project root)
+- **Option H: Static JSON data file** (`platforms.config.json` at agx project root)
 - **Option I: Code-based adapters** (per-platform TypeScript modules with hardcoded paths)
 - **Option J: Platform block in plugin.json** (plugin authors declare per-platform paths)
 
@@ -111,7 +111,7 @@ The MCP server object itself (command, args, env) is standard across all 4 suppo
 
 **Chosen option: Option H (static JSON data file)**, because it separates platform knowledge from both plugin authoring and runtime code.
 
-All platform-specific mapping lives in a single static JSON data file named `platforms.config.json` at the agent-plugin project root (the tool's own repository, not user projects). This file contains:
+All platform-specific mapping lives in a single static JSON data file named `platforms.config.json` at the agx project root (the tool's own repository, not user projects). This file contains:
 
 - **Config paths per OS**: macOS, Linux, and Windows paths for each platform's config directory
 - **Binary names**: CLI binary names for platform detection
@@ -180,7 +180,7 @@ All platform-specific mapping lives in a single static JSON data file named `pla
 
 All 4 supported platforms use the standard `{ command, args, env }` MCP object format. The schema retains a `formatTransformer` field in `mcpConfig` for future platforms that may require non-standard formats; the runtime would dispatch to a named transformer function that converts the standard shape to the platform's expected format.
 
-**Maintenance and distribution**: `platforms.config.json` is bundled inside the `@acmelabs-15/agent-plugin` npm package and ships with every release. When a platform changes its config paths (e.g., Gemini CLI changing its default config directory), the file is updated and published as a new package version. Users receive updates through normal `npm update` or `bun update` flows. No remote fetching or dynamic update mechanism is needed -- the file is static data that changes at the same cadence as the tool itself.
+**Maintenance and distribution**: `platforms.config.json` is bundled inside the `@acmelabs/agx` npm package and ships with every release. When a platform changes its config paths (e.g., Gemini CLI changing its default config directory), the file is updated and published as a new package version. Users receive updates through normal `npm update` or `bun update` flows. No remote fetching or dynamic update mechanism is needed -- the file is static data that changes at the same cadence as the tool itself.
 
 **Why not code-based adapters (Option I)**: Code-based adapters couple platform knowledge to TypeScript modules. Each new platform requires a new module, tests, and a build. ANALYSIS-029 refined ANALYSIS-027's adapter approach to this data-driven design, where the adapter logic reads from the data file rather than encoding paths in source code.
 
@@ -260,7 +260,7 @@ MCP keys formatted as `agentplugin--plugin-name--server-name`.
 - Good, because unambiguous (no other convention uses double-dash)
 - Bad, because verbose (42 characters for a simple key vs 20 with slash)
 - Bad, because hard to read in JSON config files
-- Bad, because the `agentplugin` prefix is redundant since only agent-plugin writes namespaced keys
+- Bad, because the `agentplugin` prefix is redundant since only agx writes namespaced keys
 
 ### Option G: Colon Separator (Chosen)
 
@@ -274,7 +274,7 @@ MCP keys formatted as `plugin-name:server-name`.
 
 ### Option H: Static JSON Data File (Chosen)
 
-All platform mapping in `platforms.config.json` at agent-plugin project root.
+All platform mapping in `platforms.config.json` at agx project root.
 
 - Good, because adding a standard-format platform requires zero code changes (non-standard formats need a format transformer)
 - Good, because separates platform knowledge from runtime logic and from plugin authoring
@@ -309,7 +309,7 @@ Plugin authors declare per-platform paths in their manifest.
 - **IMP-005**: The MCP key `plugin-name:server-name` is written into the platform's root key object. For Claude Code, this means `mcpServers["plugin-name:server-name"]`. All 4 supported platforms use the `mcpServers` root key.
 - **IMP-006**: MCP server objects contain `command`, `args`, and `env` fields. These are identical across all 4 supported platforms. The `formatTransformer` field in `platforms.config.json` is reserved for future platforms with non-standard formats.
 - **IMP-007**: The install flow reads `platforms.config.json` during the Detect phase (which platforms exist) and the Apply phase (where to write content).
-- **IMP-008**: `platforms.config.json` is bundled in the `@acmelabs-15/agent-plugin` npm package, validated against its JSON Schema at startup, and versioned alongside the tool. Platform path changes ship as new package versions through normal npm/bun update flows.
+- **IMP-008**: `platforms.config.json` is bundled in the `@acmelabs/agx` npm package, validated against its JSON Schema at startup, and versioned alongside the tool. Platform path changes ship as new package versions through normal npm/bun update flows.
 - **IMP-009**: The `--platform` flag skips the Detect phase and uses the specified platforms directly. Combined with `--ci`, this enables fully deterministic non-interactive installs. Users can also use `--platform` when auto-detection fails due to non-standard install locations, containerized environments, or slow filesystems.
 
 ## Reversibility Assessment
@@ -344,7 +344,7 @@ Implementation compliance will be verified through:
 - [decision] Dual platform detection adopted: binary check via which/where AND config directory existence check, run in parallel for all 4 platforms #platform-detection #reliability
 - [decision] Promise.allSettled with Bun.spawn timeout of 3000ms ensures parallel detection completes within bounded time regardless of individual failures #parallel-detection #performance
 - [decision] MCP key namespacing uses colon separator (plugin-name:server-name), matching Claude Code internal convention and ADR-003 component identifier pattern #mcp #namespacing
-- [decision] All platform-specific mapping consolidated into platforms.config.json as a static JSON data file at the agent-plugin project root #platform-config #data-driven
+- [decision] All platform-specific mapping consolidated into platforms.config.json as a static JSON data file at the agx project root #platform-config #data-driven
 - [decision] Adding a standard-format platform requires only a JSON entry in platforms.config.json. Non-standard-format platforms would additionally require a format transformer in runtime code #extensibility #data-driven
 - [fact] All 4 supported platforms use the mcpServers root key, simplifying MCP config writes #mcp #platform-consistency
 - [fact] All 4 supported platforms use the standard MCP format (command, args, env). No format transformers needed for current platform set. #mcp #format-consistency
@@ -354,7 +354,7 @@ Implementation compliance will be verified through:
 - [fact] Copilot CLI users may have only the gh extension (gh copilot) without a standalone copilot binary. binaryNames field supports arrays to check both copilot and gh with subcommand verification #copilot #detection-gap
 - [insight] Colon chosen over slash for MCP keys because Claude Code uses colon internally, JSON Pointer RFC 6901 requires slash escaping as ~1, and ADR-003 establishes colon as the project's identifier separator convention #namespacing #consistency
 - [insight] Static JSON chosen over code-based adapters because ANALYSIS-029 demonstrated platform knowledge can be fully expressed as data, enabling community contributions without runtime code changes #architecture #simplification
-- [constraint] Plugin authors write platform-agnostic plugin.json with no platforms block; agent-plugin reads both plugin.json and platforms.config.json at install time #authoring #separation-of-concerns
+- [constraint] Plugin authors write platform-agnostic plugin.json with no platforms block; agx reads both plugin.json and platforms.config.json at install time #authoring #separation-of-concerns
 - [decision] Dual detection kept for v1: low implementation cost (parallel async with Promise.allSettled + fs.existsSync), works for GUI editors from day one without retrofitting. Debate P0-7 simplification to binary-only rejected. #platform-detection #p0-resolution
 - [decision] --platform flag added as override: bypasses auto-detection entirely, enables CI pipelines to declare platforms declaratively, mitigates slow filesystem timeout concern (NEG-001) #platform-override #ci
 

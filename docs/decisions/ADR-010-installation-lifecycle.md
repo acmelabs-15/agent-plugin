@@ -26,11 +26,11 @@ tags:
 **Consulted**: Architect agent, Analyst agent, Critic agent
 **Informed**: All project contributors
 
-> **Supersession note (2026-03-09):** ADR-013 replaced the 6-phase model with `bun add` + `agent-plugin install`. ADR-014 then superseded ADR-013, replacing it with an explicit 8-step add flow: resolve source, read manifest, validate, detect platforms, features wizard, parse content, write to platform configs, update lockfile (ADR-014 D7). Platform detection (Phase 1 concept) and platform config writing (Phase 5 concept) survive in the new model. This document is retained for historical reference.
+> **Supersession note (2026-03-09):** ADR-013 replaced the 6-phase model with `bun add` + `agx install`. ADR-014 then superseded ADR-013, replacing it with an explicit 8-step add flow: resolve source, read manifest, validate, detect platforms, features wizard, parse content, write to platform configs, update lockfile (ADR-014 D7). Platform detection (Phase 1 concept) and platform config writing (Phase 5 concept) survive in the new model. This document is retained for historical reference.
 
 ## Context and Problem Statement
 
-`@acmelabs-15/agent-plugin` is a cross-platform CLI with an embedded MCP server for managing AI agent plugins across 4 platforms (ADR-002, as amended). ADR-003 established always-namespace, overlay/recompute hooks, JSON lockfile with atomic writes, and hybrid D+C platform config. ADR-005 established Bun as runtime. ADR-007 defined the CLI command tree, three-tier input resolution, and @clack/prompts component mapping.
+`@acmelabs/agx` is a cross-platform CLI with an embedded MCP server for managing AI agent plugins across 4 platforms (ADR-002, as amended). ADR-003 established always-namespace, overlay/recompute hooks, JSON lockfile with atomic writes, and hybrid D+C platform config. ADR-005 established Bun as runtime. ADR-007 defined the CLI command tree, three-tier input resolution, and @clack/prompts component mapping.
 
 What ADR-003 and ADR-007 left unspecified:
 
@@ -86,18 +86,18 @@ This follows ADR-007 Decision 4 (three-tier input resolution): interactive mode 
 
 | Target | Project Scope | Global Scope |
 |---|---|---|
-| Plugin files | Project root directories | `~/.config/agent-plugin/plugins/` |
-| Lockfile | `./plugin-lock.json` | `~/.config/agent-plugin/plugin-lock.json` |
+| Plugin files | Project root directories | `~/.config/agx/plugins/` |
+| Lockfile | `./plugin-lock.json` | `~/.config/agx/plugin-lock.json` |
 | Platform config | Project-level config files | User-level config files |
 | MCP server entries (colon-namespaced keys per ADR-009, e.g., `plugin:server`) | Project-level MCP config | User-level MCP config |
 
 ### Decision 2: Dependency Installation with User Confirmation
 
-**Chosen option**: Agent-plugin CAN install platform CLIs and system dependencies, but ONLY with explicit user confirmation via multiselect prompt.
+**Chosen option**: agx CAN install platform CLIs and system dependencies, but ONLY with explicit user confirmation via multiselect prompt.
 
-**Key distinction**: Dependencies are defined by the agent-plugin package itself in `platforms.config.json`, NOT by plugin authors in `plugin.json`. The `systemDependencies` field does not exist in the plugin manifest schema. Plugin authors never specify install commands. The agent-plugin package knows which binaries each platform requires (e.g., "claude-code needs the `claude` binary, installable via `brew install claude`") and encodes that knowledge in its own trusted source code.
+**Key distinction**: Dependencies are defined by the agx package itself in `platforms.config.json`, NOT by plugin authors in `plugin.json`. The `systemDependencies` field does not exist in the plugin manifest schema. Plugin authors never specify install commands. The agx package knows which binaries each platform requires (e.g., "claude-code needs the `claude` binary, installable via `brew install claude`") and encodes that knowledge in its own trusted source code.
 
-ANALYSIS-027 initially recommended check-only (never auto-install) based on supply chain security concerns (500,000+ malicious packages in 2024, CWE-78 arbitrary code execution from untrusted manifests). The debate (DEBATE-ADR-010, P0-2) raised this again with a CVSS 9.1 rating. The revised approach mitigates that concern: install commands come from the trusted agent-plugin package code, not from untrusted plugin manifests. The security model is equivalent to any npm package running postinstall scripts. Users trust the agent-plugin package when they install it.
+ANALYSIS-027 initially recommended check-only (never auto-install) based on supply chain security concerns (500,000+ malicious packages in 2024, CWE-78 arbitrary code execution from untrusted manifests). The debate (DEBATE-ADR-010, P0-2) raised this again with a CVSS 9.1 rating. The revised approach mitigates that concern: install commands come from the trusted agx package code, not from untrusted plugin manifests. The security model is equivalent to any npm package running postinstall scripts. Users trust the agx package when they install it.
 
 **How it works**:
 
@@ -120,7 +120,7 @@ ANALYSIS-027 initially recommended check-only (never auto-install) based on supp
 **Example uninstall prompt**:
 
 ```text
-  These dependencies were installed by agent-plugin during install.
+  These dependencies were installed by agx during install.
   Select which ones to uninstall:
 
   [x] claude (brew uninstall claude)
@@ -131,8 +131,8 @@ ANALYSIS-027 initially recommended check-only (never auto-install) based on supp
 
 The CVSS 9.1 concern (P0-2) targeted arbitrary code execution from plugin manifests. That threat no longer applies because:
 
-1. Install commands originate from `platforms.config.json` inside the agent-plugin npm package, not from plugin author-controlled `plugin.json` files.
-2. A compromised `platforms.config.json` requires a supply chain attack on the agent-plugin package itself. This is the same threat model as any npm package (postinstall scripts, bin entries). No additional attack surface is created.
+1. Install commands originate from `platforms.config.json` inside the agx npm package, not from plugin author-controlled `plugin.json` files.
+2. A compromised `platforms.config.json` requires a supply chain attack on the agx package itself. This is the same threat model as any npm package (postinstall scripts, bin entries). No additional attack surface is created.
 3. Plugin authors cannot inject install commands. The `systemDependencies` field was removed from the plugin manifest schema entirely.
 
 **Non-interactive mode**: When `--ci` or `--yes` flags are passed, all missing dependencies from `platforms.config.json` are auto-confirmed. The `--ci` flag implies the CI environment has all dependencies pre-installed or the user accepts the install plan. If a dependency install fails in CI mode, the entire operation rolls back (Decision 3 rollback).
@@ -236,7 +236,7 @@ Phase 6: RECORD
 
 Upgrade uses an interactive flow with atomic replace per plugin.
 
-**Upgrade command behavior** (`agent-plugin upgrade`):
+**Upgrade command behavior** (`agx upgrade`):
 
 1. Scan all installed plugins from the lockfile.
 2. Check latest versions from each plugin's original source (npm registry, git repo, local path).
@@ -254,23 +254,23 @@ Select plugins to upgrade:
    b. Swap: atomically replace old files with new files, update MCP entries, recompute hook contributions
    c. Remove old version artifacts no longer referenced
    d. If upgrade fails mid-way, the old version remains intact (no window with no plugin)
-**Version pinning**: `agent-plugin upgrade @scope/plugin@2.0.0` upgrades to a specific version. Without a version specifier, upgrades to latest.
+**Version pinning**: `agx upgrade@scope/plugin@2.0.0` upgrades to a specific version. Without a version specifier, upgrades to latest.
 
 **Downgrade warning**: If the specified version is older than installed, warn and proceed only with `--force`.
 
 **Breaking change detection**: Compare old and new manifests for removed components, removed MCP servers, and changed system dependencies. Warn before proceeding.
 
-**Non-interactive mode**: `--ci` or `--yes` auto-selects all available upgrades. `agent-plugin upgrade @scope/plugin --ci` upgrades a specific plugin without prompts.
+**Non-interactive mode**: `--ci` or `--yes` auto-selects all available upgrades. `agx upgrade@scope/plugin --ci` upgrades a specific plugin without prompts.
 
 ### Uninstall Flow
 
-Uninstall reverses the install flow. The command `agent-plugin uninstall <plugin-name>` executes these steps:
+Uninstall reverses the install flow. The command `agx uninstall <plugin-name>` executes these steps:
 
 1. **Locate**: Read the plugin's entry from `plugin-lock.json`. Error if the plugin is not installed.
 2. **Remove files**: Delete all files listed in the lockfile's file inventory for this plugin (namespaced directories).
 3. **Remove MCP entries**: Delete all colon-namespaced MCP server keys added by this plugin from platform config files.
 4. **Remove hook contributions**: Remove this plugin's hook contributions from the lockfile and recompute merged hooks (overlay/recompute per ADR-003 Decision 2).
-5. **Offer dependency uninstall**: If dependencies were installed by agent-plugin for this plugin (tracked in `installedDeps`), present a `@clack/prompts` multiselect (none selected by default) offering to uninstall them. Dependencies still required by other installed plugins are flagged. Dependency uninstall is best-effort (see NEG-004).
+5. **Offer dependency uninstall**: If dependencies were installed by agx for this plugin (tracked in `installedDeps`), present a `@clack/prompts` multiselect (none selected by default) offering to uninstall them. Dependencies still required by other installed plugins are flagged. Dependency uninstall is best-effort (see NEG-004).
 6. **Update lockfile**: Remove the plugin entry from `plugin-lock.json`. Write lockfile atomically.
 
 In non-interactive mode (`--ci` or `--yes`), skip the dependency uninstall prompt (dependencies are kept unless `--remove-deps` is passed).
@@ -291,7 +291,7 @@ Decision 5 (CLI generation) has been extracted to [[ADR-011 Auto-Generated CLI f
 
 ### Negative
 
-- **NEG-001**: Dependency installation increases the tool's attack surface compared to check-only. However, install commands come from the trusted agent-plugin package (`platforms.config.json`), not from plugin authors. The remaining risk is a supply chain attack on the agent-plugin npm package itself, which is the same risk as any npm dependency with postinstall scripts. Mitigation: user sees the full install plan via multiselect before confirmation; `platforms.config.json` is code-reviewed as part of the package.
+- **NEG-001**: Dependency installation increases the tool's attack surface compared to check-only. However, install commands come from the trusted agx package (`platforms.config.json`), not from plugin authors. The remaining risk is a supply chain attack on the agx npm package itself, which is the same risk as any npm dependency with postinstall scripts. Mitigation: user sees the full install plan via multiselect before confirmation; `platforms.config.json` is code-reviewed as part of the package.
 - **NEG-002**: 6 install phases add implementation complexity. Each phase needs its own rollback handler. Estimated 2000-3000 lines of TypeScript across install, uninstall, and upgrade commands (ANALYSIS-027 estimate).
 - **NEG-003**: Atomic replace for upgrades re-installs all files even when only one file changed. For large plugins, this is slower than incremental patching. Acceptable tradeoff: AI agent plugins are typically less than 1 MB total.
 - **NEG-004**: Phase 5 rollback for system dependencies is not atomic. Zero mainstream package managers (npm, pip, cargo, brew) implement reliable uninstall rollback. `brew uninstall` may fail if other packages depend on the target. Dependency uninstall is best-effort; the tool logs failures and advises the user to clean up manually.
@@ -311,8 +311,8 @@ ANALYSIS-027 initially recommended this approach based on supply chain security 
 
 - Good, because zero risk of installing malicious dependencies
 - Bad, because forces users to manually install each missing dependency, reading and following printed instructions
-- Bad, because breaks the flow: user runs `agent-plugin install`, gets a list of missing deps, leaves the terminal to install them, then re-runs the command
-- Rejected because the revised approach eliminates the CVSS 9.1 concern entirely: dependency definitions come from the trusted agent-plugin package (`platforms.config.json`), not from plugin author manifests. The `systemDependencies` field was removed from `plugin.json`. The remaining attack vector (compromised `platforms.config.json`) is equivalent to any npm package running arbitrary code via postinstall scripts. Multiselect confirmation with all deps visible provides user agency.
+- Bad, because breaks the flow: user runs `agx install`, gets a list of missing deps, leaves the terminal to install them, then re-runs the command
+- Rejected because the revised approach eliminates the CVSS 9.1 concern entirely: dependency definitions come from the trusted agx package (`platforms.config.json`), not from plugin author manifests. The `systemDependencies` field was removed from `plugin.json`. The remaining attack vector (compromised `platforms.config.json`) is equivalent to any npm package running arbitrary code via postinstall scripts. Multiselect confirmation with all deps visible provides user agency.
 
 ### Dependency Policy: Silent Auto-Install (Rejected)
 
@@ -325,10 +325,10 @@ ANALYSIS-027 initially recommended this approach based on supply chain security 
 - **IMP-001**: Platform detection (Phase 1) runs binary checks and config directory checks in parallel using `Promise.allSettled()` for maximum speed. A platform is "detected" when both the binary exists AND the config directory exists.
 - **IMP-002**: The `platforms.config.json` registry (ANALYSIS-029) provides all platform-specific paths, binary names, and config key mappings. No platform knowledge is hardcoded in install logic.
 - **IMP-003**: Upgrade's breaking change detection compares component lists between old and new manifests. Removed components are flagged. Renamed components are treated as remove + add (namespace handles this cleanly per ADR-003).
-- **IMP-004**: Dependency install commands are defined in `platforms.config.json` alongside platform detection data. Each platform entry specifies its binary name, detection method, and install command per OS/package-manager combination. This is trusted code shipped with the agent-plugin package, not user-supplied input.
+- **IMP-004**: Dependency install commands are defined in `platforms.config.json` alongside platform detection data. Each platform entry specifies its binary name, detection method, and install command per OS/package-manager combination. This is trusted code shipped with the agx package, not user-supplied input.
 - **IMP-005**: Package manager dependency chain resolution: if a platform dependency requires a package manager (e.g., `brew install claude` requires Homebrew), and that package manager is also missing, both appear in the missing dependencies list. The chain is resolved from `platforms.config.json` dependency metadata.
 - **IMP-006**: Install-time dependency prompt uses `@clack/prompts` multiselect with all missing deps selected by default. The user can deselect any dependency to handle it manually. Deselected required dependencies cause the install to abort with an actionable message.
-- **IMP-007**: Uninstall-time dependency prompt uses a reverse `@clack/prompts` multiselect showing only dependencies that were installed by agent-plugin (tracked in `plugin-lock.json` `installedDeps`). None are selected by default. The user selects which to remove.
+- **IMP-007**: Uninstall-time dependency prompt uses a reverse `@clack/prompts` multiselect showing only dependencies that were installed by agx (tracked in `plugin-lock.json` `installedDeps`). None are selected by default. The user selects which to remove.
 - **IMP-008**: Pre-install integrity verification (CWE-494 mitigation). Plugin source integrity MUST be verified before extraction/installation:
   - **npm**: Verify tarball integrity against the registry `dist.integrity` field (SHA-512) before extraction. Reject packages where the downloaded tarball hash does not match the registry-published hash.
   - **git**: Pin to commit SHA in the lockfile after first install. On upgrade, verify the resolved commit SHA matches the expected tag/branch target. Warn if the tag has been force-pushed (SHA changed for same tag).
@@ -371,7 +371,7 @@ Implementation compliance will be verified through:
 
 - [decision] Project scope is the default install target; `--global` flag required for user-wide installation, matching npm/mise/proto/asdf conventions #scope #installation
 - [decision] No-project fallback: interactive mode prompts via @clack/prompts confirm; non-interactive mode errors with flag hint (exit code 2) #scope #three-tier
-- [decision] Agent-plugin CAN install platform CLIs and system dependencies with explicit user confirmation via @clack/prompts multiselect. Dependencies defined by agent-plugin package (platforms.config.json), NOT by plugin authors. systemDependencies field removed from plugin.json. CVSS 9.1 concern (P0-2) mitigated by trusted source. #dependencies #user-consent #security
+- [decision] agx CAN install platform CLIs and system dependencies with explicit user confirmation via @clack/prompts multiselect. Dependencies defined by agx package (platforms.config.json), NOT by plugin authors. systemDependencies field removed from plugin.json. CVSS 9.1 concern (P0-2) mitigated by trusted source. #dependencies #user-consent #security
 - [decision] All installed dependencies tracked in plugin-lock.json installedDeps (top-level, not per-plugin) for clean uninstall via reverse multiselect prompt #dependencies #lockfile
 - [decision] 6-phase install flow: Detect, Select, Resolve, Confirm, Apply, Record. Checkpoint-based rollback reverses completed phases on failure #installation #atomicity
 - [decision] Platform detection uses binary + config directory dual check in parallel via platforms.config.json registry #detection #platforms

@@ -24,7 +24,7 @@ tags:
 
 ## Context
 
-We are designing `@acmelabs-15/agent-plugin`, a cross-platform AI agent plugin manager. The AI coding agent ecosystem is fragmented across 16+ platforms, each with varying levels of extensibility. ANALYSIS-002 evaluated these platforms against 6 required capabilities: prompts, skills, agents, hooks, MCPs, and running agents in parallel.
+We are designing `@acmelabs/agx`, a cross-platform AI agent plugin manager. The AI coding agent ecosystem is fragmented across 16+ platforms, each with varying levels of extensibility. ANALYSIS-002 evaluated these platforms against 6 required capabilities: prompts, skills, agents, hooks, MCPs, and running agents in parallel.
 
 The market lacks a unified plugin management solution that works across platforms. Developers building AI-assisted workflows are locked into single-platform tooling, and there is no standard way to package, distribute, and install agent capabilities across the ecosystem.
 
@@ -80,18 +80,18 @@ These platforms may be added in the future if they close their capability gaps. 
 
 ### 4. Three-Audience Model in a Single Package
 
-The package `@acmelabs-15/agent-plugin` serves three audiences through a single distribution:
+The package `@acmelabs/agx` serves three audiences through a single distribution:
 
-- **Consumer CLI**: End users install plugins via `agent-plugin install owner/repo`. Manages dependencies, updates platform instruction files, handles version management.
-- **Author CLI**: Plugin creators scaffold, build, and validate plugins via `agent-plugin init`, `agent-plugin build`, `agent-plugin validate`. Provides templates, linting, and packaging. There is no `publish` command — distribution is handled by making the plugin available at any supported source (GitHub repo, GitLab repo, npm package, local path).
+- **Consumer CLI**: End users install plugins via `agx install owner/repo`. Manages dependencies, updates platform instruction files, handles version management.
+- **Author CLI**: Plugin creators scaffold, build, and validate plugins via `agx init`, `agx build`, `agx validate`. Provides templates, linting, and packaging. There is no `publish` command -- distribution is handled by making the plugin available at any supported source (GitHub repo, GitLab repo, npm package, local path).
 - **AI Assistants**: At runtime, an embedded MCP server exposes installed plugin metadata to AI agents. Agents query available skills, prompts, and configurations through MCP tool calls. This is the key differentiator versus competitors that only address human users.
 
 The architecture uses shared core logic with thin audience-specific layers. No separate packages.
 
 ### 5. Package Identity
 
-- **npm package name**: `@acmelabs-15/agent-plugin` (scoped under the `acmelabs-15` npm organization)
-- **Action required**: Register the `acmelabs-15` organization at npmjs.com before first publish
+- **npm package name**: `@acmelabs/agx` (scoped under the `acmelabs` npm organization)
+- **Action required**: Register the `acmelabs` organization at npmjs.com before first publish
 
 ### 6. Platform Instruction File Management
 
@@ -120,9 +120,9 @@ On plugin install, the tool MUST:
 
 ### 8. Self-Bootstrapping Strategy
 
-- **Phase 1**: Design the manifest structure with self-bootstrap in mind. The manifest format must be capable of describing `agent-plugin` itself as a plugin.
+- **Phase 1**: Design the manifest structure with self-bootstrap in mind. The manifest format must be capable of describing `agx` itself as a plugin.
 - **Phase 4**: Ship the self-bootstrap runtime. The tool can install and manage itself through its own plugin system.
-- **Acceptance Criteria**: (a) `agent-plugin install acmelabs-15/agent-plugin` works — the plugin.json describes the tool itself as a valid plugin. (b) The tool's own skills, agents, prompts, and hooks are authored as plugin components using its own format, dogfooding the full authoring pipeline.
+- **Acceptance Criteria**: (a) `agx install acmelabs-15/agx` works -- the plugin.json describes the tool itself as a valid plugin. (b) The tool's own skills, agents, prompts, and hooks are authored as plugin components using its own format, dogfooding the full authoring pipeline.
 - **Rationale**: Design-first prevents retrofit breaking changes. Shipping the runtime later avoids premature complexity. This is a deliberate split: the manifest is stable from day one, the runtime matures over 3 phases before self-hosting.
 
 ## Consequences
@@ -155,11 +155,11 @@ On plugin install, the tool MUST:
 ### Consumer and Author Only (No MCP Server)
 
 - **ALT-002**: **Description**: Build only the Consumer CLI and Author CLI without an embedded MCP server for AI assistants
-- **ALT-002**: **Rejection Reason**: The MCP server is the key differentiator versus existing plugin managers. Without it, `agent-plugin` is just another CLI tool. The MCP server enables AI agents to discover and operate plugins autonomously, which is the unique value proposition.
+- **ALT-002**: **Rejection Reason**: The MCP server is the key differentiator versus existing plugin managers. Without it, `agx` is just another CLI tool. The MCP server enables AI agents to discover and operate plugins autonomously, which is the unique value proposition.
 
 ### Separate Packages per Audience
 
-- **ALT-003**: **Description**: Publish `@acmelabs-15/agent-plugin-cli` (consumer), `@acmelabs-15/agent-plugin-author` (author), and `@acmelabs-15/agent-plugin-mcp` (AI assistants) as independent packages
+- **ALT-003**: **Description**: Publish `@acmelabs/agx-cli` (consumer), `@acmelabs/agx-author` (author), and `@acmelabs/agx-mcp` (AI assistants) as independent packages
 - **ALT-003**: **Rejection Reason**: The three audiences share substantial core logic (manifest parsing, source resolution, platform detection). Separate packages would duplicate this logic, complicate versioning, and fragment the user experience. A single package with thin audience layers is simpler.
 
 ### Import from Vercel/Claude Code Ecosystems
@@ -181,8 +181,8 @@ On plugin install, the tool MUST:
 
 - **IMP-001**: Begin with platform adapter interfaces for all 7 primary targets. Each adapter handles instruction file detection, parsing, and safe update for its platform.
 - **IMP-002**: No graceful degradation adapters. Only 6/6 platforms are supported. Platforms that close capability gaps can be added via a new platform adapter.
-- **IMP-003**: Register the `acmelabs-15` npm organization at npmjs.com before any publish operations.
-- **IMP-004**: Design the manifest schema in Phase 1 with explicit fields for self-description (the manifest must be able to describe `agent-plugin` itself as a valid plugin).
+- **IMP-003**: Register the `acmelabs` npm organization at npmjs.com before any publish operations.
+- **IMP-004**: Design the manifest schema in Phase 1 with explicit fields for self-description (the manifest must be able to describe `agx` itself as a valid plugin).
 - **IMP-005**: Build the MCP server as an embedded component that starts automatically when AI assistants query for plugin metadata. No separate process management required.
 - **IMP-006**: Instruction file update logic uses a hybrid managed-section pattern (ANALYSIS-009): HTML comment markers (`<!-- BEGIN AGENT-PLUGIN:name -->` / `<!-- END AGENT-PLUGIN:name -->`) for shared files (CLAUDE.md, AGENTS.md), dedicated per-plugin files for per-file platforms (Cursor .mdc, Gemini CLI skills, Copilot CLI path-specific). Tool-owned templates render content from plugin metadata; authors never write raw instruction content. Content sanitization mandatory (3 CVEs prove instruction file injection is a real attack vector).
 
@@ -199,12 +199,12 @@ On plugin install, the tool MUST:
 - [decision] 4 primary target platforms selected based on full content type support: Claude Code, Cursor, GitHub Copilot, Gemini CLI (reduced from 7 per Amendment #1) #platforms #cross-platform
 - [decision] No graceful degradation tier — platforms below 6/6 are excluded entirely; partial support creates silent failures worse than no support #platforms #no-degradation
 - [decision] Three-audience model in single package: Consumer CLI, Author CLI, AI Assistants via embedded MCP server #architecture #audiences
-- [decision] Package scoped as @acmelabs-15/agent-plugin on npm #distribution #npm
+- [decision] Package scoped as @acmelabs/agx on npm (renamed from @acmelabs-15/agent-plugin per Amendment #2) #distribution #npm
 - [decision] Own plugin format borrowing from Vercel skills standard, no hosted registry, multiple source types #distribution #format
 - [decision] Platform instruction files (CLAUDE.md, .cursorrules, etc.) managed non-destructively on install #platforms #instruction-files
 - [decision] Self-bootstrap: design manifest in Phase 1, ship runtime in Phase 4 to prevent retrofit breaking changes #architecture #self-bootstrap
 - [requirement] All 6 capabilities required for primary platform support: prompts, skills, agents, hooks, MCPs, parallel agents #platforms #criteria
-- [constraint] Must register acmelabs-15 npm org before first publish #npm #prerequisite
+- [constraint] Must register acmelabs npm org before first publish #npm #prerequisite
 - [insight] MCP server for AI assistants is the key differentiator versus competitor plugin managers #differentiation #mcp
 
 ## Relations
@@ -236,3 +236,14 @@ The original 7 target platforms are reduced to 4. Only platforms that support AL
 **Rationale**: The plugin manager installs 7 content types to platform directories. If a platform doesn't support a content type natively, the installed content would be ignored. Rather than partial support with confusing "skipped" messages, we support platforms that can use everything we install.
 
 **Re-evaluation criteria**: If a dropped platform adds the missing content types, it can be re-added by updating `platforms.config.json` with an entry for that platform. No code changes needed (ADR-009 D3 data-driven design).
+
+### Amendment #2: Package and Repository Rename (2026-03-09)
+
+The package and repository are renamed to reflect expanded scope (individual content type management, not just plugins):
+
+- **npm package**: `@acmelabs-15/agent-plugin` → `@acmelabs/agx`
+- **Git repo**: `acmelabs-15/agent-plugin` → `acmelabs-15/agx`
+- **CLI binary**: `agx`
+- **Name meaning**: "agx" = Agent eXtensions
+
+**Rationale**: The tool manages 8 content types (skills, agents, commands, rules, hooks, MCP servers, plugins, instructions) both individually and bundled as plugins. The old name `agent-plugin` implied plugin-only scope. `agx` is short (3 chars), unique, pronounceable, and has no npm conflicts. See ANALYSIS-054.

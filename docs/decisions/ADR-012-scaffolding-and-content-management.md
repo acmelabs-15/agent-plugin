@@ -24,7 +24,7 @@ tags:
 
 ## Context and Problem Statement
 
-The agent-plugin CLI needs scaffolding wizards for creating plugin content (skills, agents, MCP servers, commands, hooks, instructions) and lifecycle commands for managing that content post-creation. The design spec (Section 12) defines wizard flows for 6 content types. Research (ANALYSIS-031) evaluated template strategies, @clack/prompts group() patterns, and prior art from Anthropic's creator skills.
+The agx CLI needs scaffolding wizards for creating plugin content (skills, agents, MCP servers, commands, hooks, instructions) and lifecycle commands for managing that content post-creation. The design spec (Section 12) defines wizard flows for 6 content types. Research (ANALYSIS-031) evaluated template strategies, @clack/prompts group() patterns, and prior art from Anthropic's creator skills.
 
 Three Anthropic creator skills (skill-creator, mcp-builder, agent-creator) offer iterative development lifecycles -- eval/improve loops -- that go beyond simple scaffolding. How should the CLI structure its content creation commands, template rendering, wizard flows, and iterative improvement capabilities?
 
@@ -35,14 +35,14 @@ Three Anthropic creator skills (skill-creator, mcp-builder, agent-creator) offer
 - Three Anthropic creator skills provide eval/improve workflows worth adapting
 - CLI must serve three interfaces: interactive prompts, CI flags, MCP tool parameters
 - Zero new dependencies preferred per ADR-006 dependency minimalism
-- Self-bootstrapping principle requires agent-plugin to use its own capabilities
+- Self-bootstrapping principle requires agx to use its own capabilities
 - Instructions (formerly "rules") need platform-aware merge behavior at install time
 
 ## Considered Options
 
 - **Option A: Content-type command groups with bundled creator skills** -- Each content type gets a top-level command group; creator skills provide eval/improve
 - **Option B: Retain `new` subtree with creator skills as separate plugins** -- Keep ADR-007 `new` tree; creator skills installed separately
-- **Option C: Single `create` command with type flag** -- Flat `agent-plugin create --type skill`
+- **Option C: Single `create` command with type flag** -- Flat `agx create --type skill`
 
 ## Decision Outcome
 
@@ -61,7 +61,7 @@ The `new` command tree from ADR-007 is replaced by content-type command groups. 
 Full command tree:
 
 ```text
-agent-plugin
+agx
 ├── Consumer: add, remove, upgrade, list
 ├── Author: init, validate, build, dev
 ├── skill: create, remove, list, eval, improve
@@ -160,14 +160,14 @@ Design constraints:
 
 ## Decision 7: Bundled Creator Skills
 
-Four creator skills are bundled with agent-plugin:
+Four creator skills are bundled with agx:
 
 | Content Type | Creator Skill | Source | Adaptation |
 |---|---|---|---|
 | Skill | skill-creator | anthropics/skills | Python to Bun TypeScript |
 | Agent | agent-creator | anthropics/claude-code/plugins/plugin-dev | Python to Bun TypeScript |
 | MCP | mcp-builder | anthropics/skills | Python to Bun TS, fastmcp to @modelcontextprotocol/sdk |
-| Instruction | instruction-evaluator | Original | agent-plugin exclusive |
+| Instruction | instruction-evaluator | Original | agx exclusive |
 
 Adaptation principles:
 
@@ -177,9 +177,9 @@ Adaptation principles:
 - Output aligned with ADR-001 plugin.json manifest format
 - Logic and workflow stay faithful to Anthropic originals where applicable
 
-The instruction-evaluator is original to agent-plugin. It scores and optimizes CLAUDE.md/AGENTS.md content, detects anti-patterns in instruction files, and provides improvement suggestions.
+The instruction-evaluator is original to agx. It scores and optimizes CLAUDE.md/AGENTS.md content, detects anti-patterns in instruction files, and provides improvement suggestions.
 
-Self-bootstrapping: agent-plugin installs itself as a plugin, making these creator skills available through the standard eval/improve commands.
+Self-bootstrapping: agx installs itself as a plugin, making these creator skills available through the standard eval/improve commands.
 
 ## Decision 8: Interactive Improve Preview
 
@@ -324,7 +324,7 @@ Confirmation Checklist
 
 ### Option C: Single `create` command with type flag
 
-- Good, because minimal command surface (`agent-plugin create --type skill`)
+- Good, because minimal command surface (`agx create --type skill`)
 - Good, because simple to implement
 - Bad, because no natural home for lifecycle commands (eval, improve, list, remove)
 - Bad, because tab completion cannot expose type-specific subcommands
@@ -350,7 +350,7 @@ Anthropic creator skill sources:
 - mcp-builder: `anthropics/skills` repository
 - agent-creator: `anthropics/claude-code/plugins/plugin-dev`
 
-The instruction-evaluator has no Anthropic source. It is original to agent-plugin and scores instruction quality against platform-specific best practices (CLAUDE.md structure, AGENTS.md conventions, token efficiency).
+The instruction-evaluator has no Anthropic source. It is original to agx and scores instruction quality against platform-specific best practices (CLAUDE.md structure, AGENTS.md conventions, token efficiency).
 
 Design spec Section 12 contains the original wizard flow diagrams. ANALYSIS-031 contains template strategy evaluation data.
 

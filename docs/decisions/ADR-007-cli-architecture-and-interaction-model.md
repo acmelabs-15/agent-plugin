@@ -24,7 +24,7 @@ tags:
 
 ## Context and Problem Statement
 
-`@acmelabs-15/agent-plugin` is a cross-platform CLI with an embedded MCP server for managing AI agent plugins across 4 platforms (see ADR-002 Amendment #1; reduced from 7). ADR-005 established Bun as runtime, ADR-006 established the dependency stack (gunshi for command routing, @clack/prompts for interactive UX, ci-info for CI detection). This ADR defines how the CLI is structured, how commands are organized, and how three execution modes (interactive, CI, MCP) shape user interaction.
+`@acmelabs/agx` is a cross-platform CLI with an embedded MCP server for managing AI agent plugins across 4 platforms (see ADR-002 Amendment #1; reduced from 7). ADR-005 established Bun as runtime, ADR-006 established the dependency stack (gunshi for command routing, @clack/prompts for interactive UX, ci-info for CI detection). This ADR defines how the CLI is structured, how commands are organized, and how three execution modes (interactive, CI, MCP) shape user interaction.
 
 The core question: How should the CLI organize its command tree, handle global flags, resolve missing input across execution modes, and map interactive prompts to @clack/prompts components?
 
@@ -69,7 +69,7 @@ Ten interconnected decisions govern CLI architecture and interaction. Each is do
 Chosen option: Grouped tree with consumer, author, and scaffolding categories.
 
 ```text
-agent-plugin
+agx
 ├── Consumer Commands
 │   ├── add <source>                    Install source to platforms
 │   ├── remove [source]                 Uninstall source(s)
@@ -183,7 +183,7 @@ Removed: `--conflict` flag. Always-namespace (ADR-003) prevents file conflicts b
 
 ### Decision 6: Interactive Fallback (No Subcommand)
 
-When user runs `agent-plugin` with no subcommand in interactive mode:
+When user runs `agx` with no subcommand in interactive mode:
 
 - Show context-aware `p.select()` menu
 - If `plugin.json` present (author project): author commands appear first
@@ -407,3 +407,25 @@ Exit codes: 0 = success, 1 = runtime error (operation failed), 2 = usage error (
 - relates_to [[ANALYSIS-023 gunshi Command Patterns and Capabilities]]
 - relates_to [[ANALYSIS-024 CLI CI Mode and Non-Interactive Patterns]]
 - [decision] Decision 1 command tree superseded by ADR-014 Decision 6 (Revised Command Tree) as of 2026-03-09; D2-D10 remain active #command-tree #superseded
+
+## Amendments
+
+### Amendment #1: Resource-First CLI Structure and Individual Content Type Management (2026-03-09)
+
+The CLI adopts resource-first (noun-verb) command structure per ANALYSIS-054 research. Each content type is a top-level command group with uniform subcommands:
+
+```
+agx plugin    add|remove|list|create
+agx skill     add|remove|list|create
+agx agent     add|remove|list|create
+agx command   add|remove|list|create
+agx rule      add|remove|list|create
+agx hook      add|remove|list|create
+agx mcp       add|remove|list|create
+```
+
+**Rationale**: 7 of 9 multi-resource CLI tools use noun-verb with singular nouns (Docker `container`, gh `issue`, AWS `s3`). Tab completion works better with resource-first. Resource-specific operations (like `agx mcp create-tool`) nest naturally. See ANALYSIS-054.
+
+**Scope expansion**: Content types can be added/removed individually (not just as part of a plugin bundle). Sources for individual content types are the same as plugins: npm packages, git repos, local paths.
+
+This supersedes the previous verb-first command tree in Decision 6.

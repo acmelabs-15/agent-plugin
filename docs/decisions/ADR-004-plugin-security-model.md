@@ -29,7 +29,7 @@ Forward-referenced by ADR-001 (IMP-006), ADR-002 (NEG-006, NEG-007), ADR-003 (D2
 
 ## Context and Problem Statement
 
-`@acmelabs-15/agent-plugin` installs third-party content (skills, agents, hooks, rules, MCP servers, AGENTS.md) into AI coding agent platform configurations. This content can:
+`@acmelabs/agx` installs third-party content (skills, agents, hooks, rules, MCP servers, AGENTS.md) into AI coding agent platform configurations. This content can:
 
 1. **Execute arbitrary commands** via hooks and MCP server entries
 2. **Manipulate AI agent behavior** via injected instructions in skills, agents, rules, and AGENTS.md
@@ -78,7 +78,7 @@ Dangerous patterns common across all languages:
 
 Hook commands are executed via `execFile` (never `exec`). No hook command string is ever passed through a shell interpreter.
 
-**Recommended hook format**: Bun TypeScript (`.ts`). Plugin authors write hook logic in TypeScript using Bun APIs. `agent-plugin create` scaffolds TypeScript hook stubs by default.
+**Recommended hook format**: Bun TypeScript (`.ts`). Plugin authors write hook logic in TypeScript using Bun APIs. `agx create` scaffolds TypeScript hook stubs by default.
 
 **Execution model**:
 
@@ -130,7 +130,7 @@ Prompt injection via plugin instruction files (skills, agents, rules, AGENTS.md)
 
 1. **Source trust model** (Decision 5) — provenance and publisher reputation are stronger signals than content scanning
 2. **Platform-level protections** — AI platforms (Claude Code, Cursor, etc.) enforce their own boundaries around tool permissions, confirmation prompts, and sandboxing. This is the platform's responsibility, not the plugin manager's
-3. **Visibility and auditability** — `agent-plugin list --content` shows all installed instruction content per plugin. Users can inspect any file at any time. The `add` flow shows file counts and types being installed
+3. **Visibility and auditability** — `agx list --content` shows all installed instruction content per plugin. Users can inspect any file at any time. The `add` flow shows file counts and types being installed
 4. **Community signals** — download counts, GitHub stars, known publishers provide trust indicators
 
 **Explicitly out of scope**:

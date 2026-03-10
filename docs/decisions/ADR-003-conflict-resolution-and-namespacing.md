@@ -25,7 +25,7 @@ tags:
 
 ## Context and Problem Statement
 
-`@acmelabs-15/agent-plugin` is a cross-platform AI agent plugin manager. Plugins are bundles containing multiple component types (skills, agents, prompts, hooks, MCP). When installing plugins from different sources, four problems must be solved:
+`@acmelabs/agx` is a cross-platform AI agent plugin manager. Plugins are bundles containing multiple component types (skills, agents, prompts, hooks, MCP). When installing plugins from different sources, four problems must be solved:
 
 1. **Naming collisions**: Multiple plugins may define components with the same name (e.g., two plugins both provide a skill called `code-review`). Without disambiguation, the second install silently overwrites the first.
 2. **Hook merging**: Hook components have different collision semantics than named components. Multiple hooks on the same event are additive, not conflicting. Blocking hooks (e.g., Claude Code PreToolUse) require a resolution rule when plugins disagree.
@@ -96,7 +96,7 @@ Plugin state is tracked in a single lockfile (ANALYSIS-011). No separate state d
 **Location**:
 
 - **Project-scoped** (default): `./plugin-lock.json` at project root, alongside `plugin.json`
-- **User-scoped** (global install): `~/.config/agent-plugin/plugin-lock.json` (XDG-compliant)
+- **User-scoped** (global install): `~/.config/agx/plugin-lock.json` (XDG-compliant)
 
 **Format**: JSON with `lockfileVersion` (integer, starting at 1) for schema evolution. Contains plugin inventory, component registry per plugin, hook contributions per plugin per platform, user-owned hook snapshot, and file modification history.
 
@@ -131,7 +131,7 @@ Plugin state is tracked in a single lockfile (ANALYSIS-011). No separate state d
 
 **Schema migration**: Integer `lockfileVersion` with sequential migration pipeline. Each migration transforms v(N) to v(N+1). Matches npm's proven model.
 
-**File permissions**: The lockfile and its backup are written with mode 600. The XDG config directory (`~/.config/agent-plugin/`) is created with mode 700.
+**File permissions**: The lockfile and its backup are written with mode 600. The XDG config directory (`~/.config/agx/`) is created with mode 700.
 
 ### Decision 4: Hybrid Platform Configuration (Adapter + Layered Overrides)
 
@@ -251,7 +251,7 @@ Use `plugin-name/component-name` as the namespace pattern.
 - **IMP-002**: Name validation regex `^[a-z0-9]([a-z0-9-]*[a-z0-9])?$` applies to both plugin names and component names independently. Validation runs at manifest parse time via Zod schema.
 - **IMP-003**: Hook contributions are stored per-plugin within the lockfile under `plugins.{plugin-name}.hooks.{platform}`. No separate overlay files or state directory needed.
 - **IMP-004**: The `deepmerge` `customMerge` option dispatches per-key: boolean fields named `blocking` or `deny` use logical OR (strictest wins); all other fields use default deep merge. Arrays always concatenate via `arrayMerge: (target, source) => [...target, ...source]`.
-- **IMP-005**: Project-scoped lockfile at `./plugin-lock.json` (project root). User-scoped lockfile at `~/.config/agent-plugin/plugin-lock.json` (XDG). Backup at `plugin-lock.json.bak` in the same directory.
+- **IMP-005**: Project-scoped lockfile at `./plugin-lock.json` (project root). User-scoped lockfile at `~/.config/agx/plugin-lock.json` (XDG). Backup at `plugin-lock.json.bak` in the same directory.
 - **IMP-006**: Lockfile writes use `atomically` (npm package). Reads validate `_integrity` hash and `lockfileVersion`. Migration functions transform v(N) to v(N+1).
 - **IMP-007**: Platform adapters implement a concept-to-field mapping table. The adapter for Cursor maps `loadingStrategy: "always"` to `alwaysApply: true`. The adapter for Gemini CLI maps it to `inclusion: "always"`. Each adapter is a separate module.
 - **IMP-008**: Zod v4 schemas define the exact shape of `plugin.json`, component frontmatter, and `platformConfig`. All use `.strict()` mode. The `__proto__`, `constructor`, and `prototype` keys are explicitly rejected via `.refine()`.
@@ -293,7 +293,7 @@ Implementation compliance will be confirmed via:
 - [decision] Always-namespace adopted: auto-prefix every component with plugin-name:component-name, eliminating conflict resolution UI, rename tracking, and cross-reference updates #namespacing #simplification
 - [decision] Colon is logical-only identifier, never in filenames; kebab-case validation enforced via regex for both plugin and component names #namespacing #cross-platform
 - [decision] Overlay/recompute pattern for hook merging: each plugin's hooks stored as sections within the lockfile, merged deterministically via deepmerge with customMerge for strictest-wins booleans #hooks #architecture
-- [decision] Single lockfile at project root (plugin-lock.json) or user home (~/.config/agent-plugin/plugin-lock.json) with atomically for atomic writes, integer lockfileVersion for schema evolution, re-derive from disk on corruption. No separate state directory needed. #lockfile #state-management
+- [decision] Single lockfile at project root (plugin-lock.json) or user home (~/.config/agx/plugin-lock.json) with atomically for atomic writes, integer lockfileVersion for schema evolution, re-derive from disk on corruption. No separate state directory needed. #lockfile #state-management
 - [risk] Strictest-wins hook merge can make plugins non-composable when security postures conflict; mitigation scoped to ADR-004 #hooks #composability
 - [decision] Hybrid D+C platformConfig with 4-level resolution: standard fields, adapter mapping, manifest platformConfig, per-component platforms block #platform-config #cross-platform
 - [decision] Sanitization via Zod v4 strict mode + shell-quote + validator in a 6-layer pipeline from schema validation through output escaping #security #validation

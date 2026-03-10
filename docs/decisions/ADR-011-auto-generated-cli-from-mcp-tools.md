@@ -10,7 +10,7 @@ tags:
 - mcp
 - auto-generation
 - command-grouping
-- agent-plugin
+- agx
 ---
 
 # ADR-011 Auto-Generated CLI from MCP Tools
@@ -26,7 +26,7 @@ tags:
 
 ## Context and Problem Statement
 
-ADR-010 governs the installation lifecycle for `@acmelabs-15/agent-plugin`. This ADR was originally Decision 5 within ADR-010, but was extracted into a standalone ADR based on debate consensus (P0-1: 5 of 6 reviewers agreed on split). The rationale for extraction:
+ADR-010 governs the installation lifecycle for `@acmelabs/agx`. This ADR was originally Decision 5 within ADR-010, but was extracted into a standalone ADR based on debate consensus (P0-1: 5 of 6 reviewers agreed on split). The rationale for extraction:
 
 1. CLI generation is a different concern with different stakeholders, change frequency, and risk profile than install lifecycle.
 2. 4 of 7 P0 issues on ADR-010 were CLI-specific (command grouping algorithm, MCP server lifecycle, CLI symlink security, Windows distribution).
@@ -139,7 +139,7 @@ The auto-generated CLI includes a built-in `mcp` command group for every plugin 
 
 | Command | Behavior |
 |---------|----------|
-| `plugin-name mcp start` | Start MCP server as background daemon (PID file tracked in `~/.local/share/agent-plugin/pids/plugin-name.pid`) |
+| `plugin-name mcp start` | Start MCP server as background daemon (PID file tracked in `~/.local/share/agx/pids/plugin-name.pid`) |
 | `plugin-name mcp stop` | Graceful shutdown via SIGTERM to daemon instance |
 | `plugin-name mcp restart` | Graceful restart: start new instance, verify ready, then stop old |
 | `plugin-name mcp status` | Show running state, PID, uptime, transport mode |
@@ -151,7 +151,7 @@ The auto-generated CLI includes a built-in `mcp` command group for every plugin 
 
 **Restart safety**: `mcp restart` only affects the daemon instance started via `mcp start`. It never touches stdio instances managed by Claude Code or other MCP clients. This means restarting via CLI cannot break an active Claude Code session.
 
-**PID file management**: Daemon PID tracked at `~/.local/share/agent-plugin/pids/plugin-name.pid`. On `mcp start`, verify no existing daemon is running. On `mcp stop`, send SIGTERM and clean up PID file. Orphan detection: on any CLI invocation, check PID file. If PID exists but process is dead, clean up stale PID file.
+**PID file management**: Daemon PID tracked at `~/.local/share/agx/pids/plugin-name.pid`. On `mcp start`, verify no existing daemon is running. On `mcp stop`, send SIGTERM and clean up PID file. Orphan detection: on any CLI invocation, check PID file. If PID exists but process is dead, clean up stale PID file.
 
 **Server lifecycle for CLI tool commands**: When running a tool command (e.g., `plugin-name write-note`), the CLI checks for a running daemon first. If a daemon is running (PID file valid), connect to it. If no daemon, start a per-invocation MCP server via `Bun.spawn` with stdio transport, execute the command, then terminate the server on CLI exit.
 
@@ -190,7 +190,7 @@ Installing a plugin with `cli: "auto"` or `cli: "./path"` grants the plugin auth
 | FastMCP CLI | Python, auto-installs with FastMCP | Tied to FastMCP framework (Python only) |
 | mcptools | Go, shell mode + proxy | Inspector/debugger, not end-user CLI |
 
-agent-plugin's CLI generation differs from these tools by producing a standalone per-plugin binary with plugin-specific command names. Users run `brain write-note` not `mcp-cli call brain write_note`. This is a developer experience decision: plugin CLIs should feel like native tools, not generic MCP callers.
+agx's CLI generation differs from these tools by producing a standalone per-plugin binary with plugin-specific command names. Users run `brain write-note` not `mcp-cli call brain write_note`. This is a developer experience decision: plugin CLIs should feel like native tools, not generic MCP callers.
 
 ## Alternatives Considered
 
@@ -208,7 +208,7 @@ agent-plugin's CLI generation differs from these tools by producing a standalone
 ## Implementation Notes
 
 - **IMP-001**: CLI binary generation uses gunshi's lazy command loading to keep startup fast. Each command group is a separate module loaded on demand.
-- **IMP-002**: MCP server lifecycle follows Decision 2. Per-invocation server uses `Bun.spawn` with stdio transport, started on CLI invocation and terminated on CLI exit. Daemon mode uses PID file tracking at `~/.local/share/agent-plugin/pids/plugin-name.pid`.
+- **IMP-002**: MCP server lifecycle follows Decision 2. Per-invocation server uses `Bun.spawn` with stdio transport, started on CLI invocation and terminated on CLI exit. Daemon mode uses PID file tracking at `~/.local/share/agx/pids/plugin-name.pid`.
 - **IMP-003**: ADR-011 applies to Unix-like systems (macOS, Linux) for v1. Windows CLI distribution is out of scope for v1 and will be addressed in a future ADR.
 - **IMP-004**: Server startup timeout: 10s default, configurable via plugin.json.
 - **IMP-005**: Orphaned process detection via stale PID file cleanup. On any CLI invocation, check PID file. If PID exists but process is dead, clean up stale PID file.
@@ -267,7 +267,7 @@ Implementation compliance will be verified through:
 - [fact] Custom CLI binary path containment via `realpathSync()` boundary check. Rejects paths resolving outside plugin directory #cli #security
 - [risk] MCP servers execute with full user permissions. No sandboxing applied. Consistent with all current MCP clients but plugin authors are fully trusted #trust #security
 - [risk] Per-invocation MCP server startup adds ~1-3s cold-start latency. Daemon mode eliminates this #cli #performance
-- [insight] Prior art tools (MCPShim, mcp-cli, FastMCP CLI, mcptools) are generic callers. agent-plugin produces standalone per-plugin binaries that feel like native tools #cli #dx
+- [insight] Prior art tools (MCPShim, mcp-cli, FastMCP CLI, mcptools) are generic callers. agx produces standalone per-plugin binaries that feel like native tools #cli #dx
 - [decision] v1 scoped to Unix-like systems (macOS, Linux). Windows CLI distribution deferred to future ADR #cli #scope
 - [decision] Extracted from ADR-010 Decision 5 per debate P0-1 consensus: 5 of 6 reviewers agreed CLI generation is an independent concern #architecture #extraction
 

@@ -31,11 +31,11 @@ Supersedes ADR-013 (npm-Package Distribution and Revised Command Tree). ADR-013 
 
 ## Context and Problem Statement
 
-ADR-013 adopted the TanStack Intent model: plugins ship as npm packages, bun handles all package management, and `agent-plugin install` auto-wires content via a `postinstall` lifecycle hook. The user accepted ADR-013 (Round 2: 5 Accept + 1 D&C) then immediately pivoted to a different model after reviewing the Vercel Skills CLI approach.
+ADR-013 adopted the TanStack Intent model: plugins ship as npm packages, bun handles all package management, and `agx install` auto-wires content via a `postinstall` lifecycle hook. The user accepted ADR-013 (Round 2: 5 Accept + 1 D&C) then immediately pivoted to a different model after reviewing the Vercel Skills CLI approach.
 
 The pivot was driven by three concerns:
 
-1. **Implicit wiring is opaque.** The postinstall hook fires silently during `bun add/remove/update`. Users cannot see what changed in their AI platform configs without running `agent-plugin list` after every dependency operation.
+1. **Implicit wiring is opaque.** The postinstall hook fires silently during `bun add/remove/update`. Users cannot see what changed in their AI platform configs without running `agx list` after every dependency operation.
 
 2. **No feature selection.** ADR-013's `installMode: bundle | collection` binary was already flagged as insufficient by 2 of 6 ADR-001 debate reviewers. The postinstall model wires everything unconditionally. Users cannot select which skills, agents, or hooks they want from a plugin.
 
@@ -43,14 +43,14 @@ The pivot was driven by three concerns:
 
 The Vercel Skills CLI demonstrated that an explicit `add/remove/update` command model with a custom lockfile provides better UX: the user sees exactly what happens, selects features interactively, and the lockfile enables team synchronization via git.
 
-How should `@acmelabs-15/agent-plugin` install plugins, manage state, select features, and structure its content model?
+How should `@acmelabs/agx` install plugins, manage state, select features, and structure its content model?
 
 ## Decision Drivers
 
 - **Explicit over implicit**: Users should invoke a command and see what it does, not discover changes after a silent postinstall hook
 - **Feature selection**: Irrelevant skills in agent context consume context window tokens and degrade agent behavior (ANALYSIS-043). Users need per-feature granularity.
 - **Source flexibility**: npm packages, git repos (owner/repo shorthand, full URLs), and local paths must all work as plugin sources (matching Vercel Skills)
-- **Team synchronization**: A lockfile checked into version control enables `agent-plugin install` to restore the exact plugin set for all team members
+- **Team synchronization**: A lockfile checked into version control enables `agx install` to restore the exact plugin set for all team members
 - **No unnecessary state files**: The lockfile and platform configs are sufficient. No separate config file.
 - **Platform convergence**: Three AI platforms (Claude Code, Copilot CLI, Cursor) independently converged on `plugin.json` as the manifest filename. The manifest location should follow Claude Code's `.claude-plugin/plugin.json` convention for disambiguation.
 - **Content type completeness**: The 6-type model from ADR-001 (skills, agents, prompts, hooks, commands, mcpServers) is incomplete. Rules, AGENTS.md, and CLI are missing. Prompts and instructions need reclassification.
@@ -85,16 +85,16 @@ Chosen option: "Option B: Explicit add/remove/update commands with lockfile and 
 
 ### Decision 1: Explicit Add/Remove/Update Model
 
-The `agent-plugin add <source>` command fetches a plugin from any supported source, runs a feature wizard, and installs content directly to AI platform configuration locations. This replaces ADR-013's postinstall auto-wiring model.
+The `agx add <source>` command fetches a plugin from any supported source, runs a feature wizard, and installs content directly to AI platform configuration locations. This replaces ADR-013's postinstall auto-wiring model.
 
-**Source types supported** (by agent-plugin, not bun):
+**Source types supported** (by agx, not bun):
 
 | Source | Example | Resolution |
 |---|---|---|
-| npm package | `agent-plugin add @scope/plugin-name` | npm registry fetch |
-| GitHub shorthand | `agent-plugin add owner/repo` | GitHub API |
-| Full git URL | `agent-plugin add https://github.com/owner/repo.git` | git clone |
-| Local path | `agent-plugin add ./path/to/plugin` | filesystem read |
+| npm package | `agx add @scope/plugin-name` | npm registry fetch |
+| GitHub shorthand | `agx add owner/repo` | GitHub API |
+| Full git URL | `agx add https://github.com/owner/repo.git` | git clone |
+| Local path | `agx add ./path/to/plugin` | filesystem read |
 
 This follows the Vercel Skills CLI model where `npx skills` fetches skills from git repos and copies content to platform-specific directories.
 
@@ -157,7 +157,7 @@ A lockfile named `.agent-lock.json` lives in the consuming project root. It trac
 | `installedAt` | string | ISO 8601 timestamp of initial installation |
 | `updatedAt` | string | ISO 8601 timestamp of last update |
 
-**Team synchronization**: `agent-plugin install` (no arguments) reads `.agent-lock.json` and restores all plugins with their recorded feature selections. This enables team sync by committing `.agent-lock.json` to version control. Analogous to `npm install` restoring from `package-lock.json`.
+**Team synchronization**: `agx install` (no arguments) reads `.agent-lock.json` and restores all plugins with their recorded feature selections. This enables team sync by committing `.agent-lock.json` to version control. Analogous to `npm install` restoring from `package-lock.json`.
 
 **No consumer-side config file**: The lockfile and platform config files are the only state. No `.agent-plugin/config.json` or similar file. This reverses ANALYSIS-046's recommendation of `.agent-plugin/config.json`. The lockfile's `features` array captures what ANALYSIS-046 proposed storing in a config file.
 
@@ -174,7 +174,7 @@ The plugin manifest lives at `.agent-plugin/plugin.json` within the plugin packa
 - Claude Code uses `.claude-plugin/plugin.json` as its plugin manifest location. Following this convention aligns with the dominant AI platform.
 - 3 of 3 AI platforms that have plugin manifest formats (Claude Code, Copilot CLI, Cursor) converged on `plugin.json` as the filename. The directory wrapper is our differentiation.
 
-**plugin.json name vs package.json name**: These are intentionally independent (Option C from the design discussion). The `plugin.json` `name` field is the plugin identity used for namespacing, display in `agent-plugin list`, and component prefixing (`plugin-name:component-name`). It does not need to match `package.json` `name`, which is the npm package identifier. A plugin distributed as `@scope/my-helpers` can declare its plugin name as `my-helpers` without the scope prefix.
+**plugin.json name vs package.json name**: These are intentionally independent (Option C from the design discussion). The `plugin.json` `name` field is the plugin identity used for namespacing, display in `agx list`, and component prefixing (`plugin-name:component-name`). It does not need to match `package.json` `name`, which is the npm package identifier. A plugin distributed as `@scope/my-helpers` can declare its plugin name as `my-helpers` without the scope prefix.
 
 **What this supersedes**: ADR-001 Decision 2 placed the manifest at the plugin root as `plugin.json`. This ADR moves it into `.agent-plugin/plugin.json`.
 
@@ -330,10 +330,10 @@ Individual rule files in `rules/` are included or excluded based on feature sele
 
 **MCP has NO features**: MCP server configurations are always installed as-is. They cannot be partially installed because MCP servers expose tools as an atomic unit. Skipping part of an MCP server breaks the tool contract.
 
-**Feature wizard**: During `agent-plugin add`, a multiselect wizard (via `@clack/prompts`) presents all declared features with their descriptions and defaults. Features with `requires` dependencies are auto-selected when their dependent feature is selected.
+**Feature wizard**: During `agx add`, a multiselect wizard (via `@clack/prompts`) presents all declared features with their descriptions and defaults. Features with `requires` dependencies are auto-selected when their dependent feature is selected.
 
 ```text
-$ agent-plugin add @scope/code-tools
+$ agx add @scope/code-tools
 
 Select features:
   [x] typescript    TypeScript-specific rules and patterns
@@ -355,7 +355,7 @@ Select features:
 ### Decision 6: Revised Command Tree
 
 ```text
-agent-plugin
+agx
   Consumer Commands
     add <source>            Fetch plugin, feature wizard, install content
     remove [plugin]         Remove plugin (multiselect if no arg)
@@ -420,7 +420,7 @@ agent-plugin
 
 ### Decision 7: Add Command Flow (8 Steps)
 
-The `agent-plugin add <source>` command executes 8 sequential steps:
+The `agx add <source>` command executes 8 sequential steps:
 
 **Step 1: Resolve source**
 
@@ -634,9 +634,9 @@ The following example demonstrates all decisions in this ADR working together:
 
 ### Positive
 
-- **POS-001**: Users see exactly what happens during installation. `agent-plugin add` prints a summary of installed content, selected features, and targeted platforms. No silent postinstall side effects.
+- **POS-001**: Users see exactly what happens during installation. `agx add` prints a summary of installed content, selected features, and targeted platforms. No silent postinstall side effects.
 - **POS-002**: Feature selection reduces context window waste. A plugin with 8 features and 5 skills can be installed with only the 2 relevant features, preventing 6 irrelevant instruction sections from consuming agent context tokens (ANALYSIS-043 motivation).
-- **POS-003**: `.agent-lock.json` enables deterministic team synchronization. `agent-plugin install` restores the exact plugin set with the same feature selections across all team members.
+- **POS-003**: `.agent-lock.json` enables deterministic team synchronization. `agx install` restores the exact plugin set with the same feature selections across all team members.
 - **POS-004**: Three source types (npm, git, local) with simple syntax (bare `owner/repo`, `./path`) provide better UX than ADR-013's bun-delegated model, which required protocol prefixes and created npm dependency entries.
 - **POS-005**: No consumer-side config file simplifies the state model. Two sources of truth: `.agent-lock.json` (what was installed) and platform configs (where it was installed). No third file.
 - **POS-006**: The features model replaces the insufficient `installMode: bundle | collection` binary with granular, dependency-aware feature selection. This resolves the ADR-001 Future Considerations gap ("skills + mandatory MCP").
@@ -645,7 +645,7 @@ The following example demonstrates all decisions in this ADR working together:
 
 ### Negative
 
-- **NEG-001**: Custom source resolution is reinstated. ADR-013 eliminated this by delegating to bun. This ADR requires agent-plugin to handle npm registry fetch, git clone, and local path resolution. Estimated 500-1000 lines of TypeScript (significantly less than ADR-008/010's 2000-3000 lines because git clone and npm fetch are simpler than ADR-008's full archive extraction pipeline).
+- **NEG-001**: Custom source resolution is reinstated. ADR-013 eliminated this by delegating to bun. This ADR requires agx to handle npm registry fetch, git clone, and local path resolution. Estimated 500-1000 lines of TypeScript (significantly less than ADR-008/010's 2000-3000 lines because git clone and npm fetch are simpler than ADR-008's full archive extraction pipeline).
 - **NEG-002**: The features model adds authoring complexity. Plugin authors must declare features, map them to sections, and use `// #region` markers in code. Authors of simple plugins can skip features entirely (no features = all content installed).
 - **NEG-003**: Three selection mechanisms (markdown headers, code regions, file-based) create a learning curve. Each content type uses a different mechanism. This is inherent to the content types having different structures.
 - **NEG-004**: `.agent-lock.json` is a custom lockfile. ADR-013 eliminated custom lockfiles. This ADR reintroduces one, though simpler than ADR-003's `plugin-lock.json` (no overlay contributions, no lockfileVersion migration pipeline).
@@ -808,12 +808,12 @@ Resolves GAP-8 from the comprehensive gap analysis. Spec Section 18 described a 
 
 **REQ-CTX-3: Consumer Scope Resolution.** Consumer commands (add, remove, update, install, list) support two scopes:
 
-- `--global` flag explicitly provided: operate on user scope (global lockfile at `~/.config/agent-plugin/agent-lock.json`, write to user-level platform config paths).
+- `--global` flag explicitly provided: operate on user scope (global lockfile at `~/.config/agx/agent-lock.json`, write to user-level platform config paths).
 - Project detected (`.agent-lock.json` found): operate on project scope (project lockfile, project platform configs).
 - No project detected AND interactive terminal: prompt user via `@clack/prompts confirm` asking whether to operate globally.
 - No project detected AND non-interactive (CI): error with message suggesting `--global` flag.
 
-**REQ-CTX-4: Author Command Gating.** Author commands (create content-type subcommands like `skills create`, `agents create`, `mcp create`, `mcp create-tool`, etc.) require `.agent-plugin/plugin.json` to exist. If not found during project root walking, error with message suggesting `agent-plugin create` to scaffold a new plugin project.
+**REQ-CTX-4: Author Command Gating.** Author commands (create content-type subcommands like `skills create`, `agents create`, `mcp create`, `mcp create-tool`, etc.) require `.agent-plugin/plugin.json` to exist. If not found during project root walking, error with message suggesting `agx create` to scaffold a new plugin project.
 
 **REQ-CTX-5: Context-Independent Commands.** `mcp serve` works in any context (author, consumer, both, or neither). It starts the embedded MCP server regardless of project detection state. Similarly, `--help`, `--version`, and shell completions are always available.
 
@@ -824,7 +824,7 @@ Resolves GAP-8 from the comprehensive gap analysis. Spec Section 18 described a 
 - Consumer context only (`.agent-lock.json` but no `.agent-plugin/plugin.json`): show consumer commands first, author commands second.
 - Neither context detected: show `create` (scaffold new plugin) and `add` (start consuming plugins) as primary options, with `--global` flag hint for user-scope operations.
 
-**REQ-CTX-7: Global Lockfile Location.** User-scope (global) installations use `~/.config/agent-plugin/agent-lock.json` following XDG conventions (consistent with ADR-003's XDG lockfile placement). This lockfile has the same schema as project-scope `.agent-lock.json`.
+**REQ-CTX-7: Global Lockfile Location.** User-scope (global) installations use `~/.config/agx/agent-lock.json` following XDG conventions (consistent with ADR-003's XDG lockfile placement). This lockfile has the same schema as project-scope `.agent-lock.json`.
 
 **REQ-CTX-8: Global Platform Config Writing.** User-scope installations write to user-level platform configuration paths (e.g., `~/.claude/AGENTS.md`, `~/.cursor/rules/`, `~/.config/github-copilot/agents.json`). Platform detection (ADR-009) determines which user-level paths exist. The same platform adapter logic from project-scope installs applies, just targeting user-level paths instead of project-level paths.
 
@@ -841,14 +841,14 @@ Resolves GAP-6/7 from the comprehensive gap analysis. Spec Section 17 described 
 - MCP server scaffolding and management
 - npm publishing configuration
 
-**`agent-plugin create` layers plugin-specific scaffolding on top:**
+**`agx create` layers plugin-specific scaffolding on top:**
 
 - `.agent-plugin/plugin.json` manifest (Decision 3)
 - Content type directories: skills/, agents/, hooks/, commands/, rules/, mcp/, AGENTS.md (Decision 4)
 - Plugin-specific package.json fields (name, description per Decision 3)
 - Example/template content files (optional)
 
-The `@acmelabs-15/config` package has no knowledge of agent-plugin concepts. The boundary is clean: config handles everything about "how a project is set up," agent-plugin handles everything about "what makes a project a plugin."
+The `@acmelabs-15/config` package has no knowledge of agx concepts. The boundary is clean: config handles everything about "how a project is set up," agx handles everything about "what makes a project a plugin."
 
 `@acmelabs-15/config` is a separate codebase with its own spec and decision process. The spec brief is captured externally. Decisions about monorepo tooling, testing framework, release automation, Biome configuration, and other DX infrastructure are made in that package's context, not here.
 
@@ -894,11 +894,11 @@ Source resolution uses three-tier manifest detection in priority order:
 
 1. **`.agent-plugin/plugin.json`** (our format): Full feature support including cherry-picking via features model (D5). This is the richest installation path.
 
-2. **`.claude-plugin/plugin.json`** (Claude plugin format): Mapped installation. Content types are translated to our model. Feature cherry-picking not available (Claude format has no features concept). Enables agent-plugin to install and manage Claude plugins directly.
+2. **`.claude-plugin/plugin.json`** (Claude plugin format): Mapped installation. Content types are translated to our model. Feature cherry-picking not available (Claude format has no features concept). Enables agx to install and manage Claude plugins directly.
 
 3. **No manifest found** (directory scan fallback): Check source root for well-known directories: `skills/`, `agents/`, `commands/`, `AGENTS.md`, `rules/`, `hooks/`, `mcp/`. For monorepo sources, scan all packages. Each discovered item is validated individually per content type. All valid content is installed (no cherry-picking — no features definition exists). This enables consuming sources created by Vercel `npx skills`, TanStack intent, or any tool that produces well-known directory layouts.
 
-**Cross-ecosystem compatibility is bidirectional**: (A) Our generated plugin codebases produce well-known directory layouts consumable by Vercel/TanStack. (B) Sources created by those tools are consumable by `agent-plugin add`.
+**Cross-ecosystem compatibility is bidirectional**: (A) Our generated plugin codebases produce well-known directory layouts consumable by Vercel/TanStack. (B) Sources created by those tools are consumable by `agx add`.
 
 In all three tiers: sources are tracked in the lockfile. Removal works by consulting lockfile then re-checking the source (via manifest or directory scan) to determine what to remove from all scopes.
 
@@ -937,10 +937,16 @@ Specifies validation criteria for items discovered during configless directory s
 
 **Invalid items**: Files that fail validation are skipped with a warning message during the `add` flow. They do not block installation of valid items from the same source.
 
+### Amendment #8: Individual Content Type Management (2026-03-09)
+
+The tool now supports adding/removing individual content types (skills, agents, commands, rules, hooks, MCP servers) independently, not just as part of plugin bundles. Each content type supports the same source types as plugins (npm packages, git repos, local paths).
+
+This expands the `add`/`remove` model from plugin-only to per-content-type. The resource-first CLI structure (ADR-007 Amendment #1) provides the command interface.
+
 ## Observations
 
 - [decision] Explicit add/remove/update commands replace ADR-013's postinstall auto-wiring model. User invokes commands and sees what happens. Vercel Skills CLI is the primary prior art. #installation #explicit #vercel
-- [decision] .agent-lock.json lockfile in consuming project tracks source, sourceType, hash, features, timestamps per plugin. Enables team sync via `agent-plugin install`. No consumer-side config file. #lockfile #state
+- [decision] .agent-lock.json lockfile in consuming project tracks source, sourceType, hash, features, timestamps per plugin. Enables team sync via `agx install`. No consumer-side config file. #lockfile #state
 - [decision] Manifest location moved to .agent-plugin/plugin.json. Directory provides disambiguation. Follows Claude Code .claude-plugin/plugin.json convention. 3/3 AI platforms converged on plugin.json filename. #manifest #location
 - [decision] 8 content types replace 6: Skills, Agents, Hooks, Commands, Rules (was prompts/), MCP, AGENTS.md (was instructions/), CLI (new, optional). #content-types #taxonomy
 - [decision] Features model replaces installMode binary. Two scopes: plugin-level features (span components) and component-level features (section mappings). Three mechanisms: markdown headers (remark/unified), code regions (#region markers), file-based (rules). MCP has no features. #features #selection
@@ -953,7 +959,7 @@ Specifies validation criteria for items discovered during configless directory s
 - [risk] Custom source resolution reinstated at 500-1000 lines (less than ADR-008's 2000-3000 but still custom code). #complexity #tradeoff
 - [risk] Three selection mechanisms (markdown headers, code regions, file-based) create a learning curve for plugin authors #authoring #complexity
 - [decision] Project context system: 8 behavioral requirements (REQ-CTX-1 through REQ-CTX-8) define project root finding, dual context detection, consumer scope resolution, author command gating, context-independent commands, interactive fallback menu, global lockfile location, and global platform config writing. .acmelabz/project.json eliminated -- .agent-plugin/plugin.json sufficient. #project-context #amendment-3
-- [decision] Base project scaffolding delegated to `@acmelabs-15/config` (separate package, TanStack Config inspired). `agent-plugin create` depends on config for project setup, then layers plugin-specific files on top. Clean boundary: config handles project DX, agent-plugin handles plugin identity. #scaffolding #delegation #amendment-4
+- [decision] Base project scaffolding delegated to `@acmelabs-15/config` (separate package, TanStack Config inspired). `agx create` depends on config for project setup, then layers plugin-specific files on top. Clean boundary: config handles project DX, agx handles plugin identity. #scaffolding #delegation #amendment-4
 
 ## Relations
 
